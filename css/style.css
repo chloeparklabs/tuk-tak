@@ -53,6 +53,7 @@ button {
 #start-screen {
   align-items: center;
   justify-content: center;
+  background-color: var(--color-brand);
 }
 
 /* ==========================================================================
@@ -116,7 +117,8 @@ button {
 }
 
 .btn-primary {
-  background-color: var(--color-brand);
+  flex: none;
+  background-color: var(--color-point);
   color: var(--color-base);
   padding: 16px 40px;
   border-radius: 12px;
