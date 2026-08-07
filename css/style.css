@@ -60,12 +60,14 @@ button {
    카드 학습 화면
    ========================================================================== */
 #card-screen {
+  display: grid;
+  /* 위쪽 절반: 카드 영역 / 아래쪽 절반: 3등분 (버튼은 가운데, 마지막 1/3은 추후 설정 등을 위한 여백) */
+  grid-template-rows: 2fr 1fr 1fr;
   padding: 24px;
-  justify-content: space-between;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .card {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -102,8 +104,8 @@ button {
    ========================================================================== */
 .control-bar {
   display: flex;
+  align-items: center;
   gap: 12px;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .btn {
