@@ -1,0 +1,134 @@
+/* ==========================================================================
+   컬러 변수 (CLAUDE.md 디자인 기획 기준 — 임의 변경 금지)
+   ========================================================================== */
+:root {
+  --color-brand: #378ADD;       /* Brand Blue */
+  --color-brand-dark: #0C447C;  /* Brand Navy */
+  --color-base: #FFFFFF;        /* Base White */
+  --color-point: #D85A30;       /* Point Coral */
+}
+
+/* ==========================================================================
+   기본 리셋
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  /* Pretendard 폰트 파일 추가 전까지 시스템 폰트로 대체 */
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-base);
+  color: var(--color-brand-dark);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   화면 공통
+   ========================================================================== */
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   시작 화면
+   ========================================================================== */
+#start-screen {
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   카드 학습 화면
+   ========================================================================== */
+#card-screen {
+  padding: 24px;
+  justify-content: space-between;
+}
+
+.card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.kr-text {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  transition: font-size 0.2s ease, color 0.2s ease;
+  word-break: keep-all;
+}
+
+/* 정답 노출 후에는 한국어 문장을 작게, 옅게 표시 */
+.card.revealed .kr-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #9AA6B2;
+}
+
+.en-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-brand);
+  word-break: keep-all;
+}
+
+/* ==========================================================================
+   하단 버튼 바
+   ========================================================================== */
+.control-bar {
+  display: flex;
+  gap: 12px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.btn {
+  flex: 1;
+  padding: 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: var(--color-brand);
+  color: var(--color-base);
+  padding: 16px 40px;
+  border-radius: 12px;
+}
+
+.btn-outline {
+  background-color: var(--color-base);
+  color: var(--color-brand-dark);
+  border: 1.5px solid var(--color-brand);
+}
+
+.btn-outline:active {
+  background-color: var(--color-brand);
+  color: var(--color-base);
+}
