@@ -53,7 +53,15 @@ button {
 #start-screen {
   align-items: center;
   justify-content: center;
+  gap: 24px;
   background-color: var(--color-brand);
+}
+
+.start-logo {
+  color: var(--color-base);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 /* ==========================================================================
@@ -135,8 +143,9 @@ button {
 
 .btn-primary {
   flex: none;
-  background-color: var(--color-point);
+  background-color: rgba(255, 255, 255, 0.15);
   color: var(--color-base);
+  border: 2px solid var(--color-base);
   padding: 16px 40px;
   border-radius: 12px;
 }
