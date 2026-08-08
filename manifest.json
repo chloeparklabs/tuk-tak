@@ -4,7 +4,7 @@
   "description": "한국어 문장을 보고 영어로 알아맞추는 암기 학습 앱",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#FFFFFF",
+  "background_color": "#378ADD",
   "theme_color": "#378ADD",
   "lang": "ko",
   "icons": [
