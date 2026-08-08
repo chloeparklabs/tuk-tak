@@ -69,10 +69,10 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 위쪽 절반: 카드 영역 / 아래쪽 절반: 3등분 (버튼은 가운데, 마지막 1/3은 추후 설정 등을 위한 여백) */
-  grid-template-rows: 2fr 1fr 1.4fr;
+  /* 버튼 위치 임시로 화면 하단에 붙임 (최종 위치 확정 전까지) */
+  grid-template-rows: 1fr auto;
   padding: 24px;
-  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .card {
@@ -115,7 +115,6 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 24px;
 }
 
 .btn {
