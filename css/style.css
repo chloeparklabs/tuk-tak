@@ -120,13 +120,14 @@ button {
   cursor: pointer;
 }
 
-/* 카드 화면 하단 버튼: 정사각형 형태 */
+/* 카드 화면 하단 버튼: 정사각형 형태
+   넓은 화면에서는 100px/20px, 좁은 화면(예: iPhone SE)에서는 화면 폭에 맞춰 자동 축소 */
 .control-bar .btn {
   flex: none;
-  width: 76px;
+  width: clamp(64px, 25vw, 100px);
   aspect-ratio: 1 / 1;
   padding: 0;
-  font-size: 14px;
+  font-size: clamp(14px, 5vw, 20px);
   display: flex;
   align-items: center;
   justify-content: center;
