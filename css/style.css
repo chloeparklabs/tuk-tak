@@ -62,9 +62,9 @@ button {
 #card-screen {
   display: grid;
   /* 위쪽 절반: 카드 영역 / 아래쪽 절반: 3등분 (버튼은 가운데, 마지막 1/3은 추후 설정 등을 위한 여백) */
-  grid-template-rows: 2fr 1fr 1fr;
+  grid-template-rows: 2fr 1fr 1.4fr;
   padding: 24px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 
 .card {
@@ -105,7 +105,9 @@ button {
 .control-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .btn {
@@ -116,6 +118,18 @@ button {
   border-radius: 12px;
   border: none;
   cursor: pointer;
+}
+
+/* 카드 화면 하단 버튼: 정사각형 형태 */
+.control-bar .btn {
+  flex: none;
+  width: 76px;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
