@@ -40,7 +40,7 @@ function addSentence(kr, en) {
 
 // ==========================================================================
 // 공통 파서 (TSV/CSV → {kr, en}[])
-// 구글시트 연동(체크리스트 4번)에서도 이 함수를 그대로 재사용할 예정
+// 파일 가져오기(엑셀/메모장 등에서 작성한 CSV/TSV/TXT)에서 사용
 // ==========================================================================
 const HEADER_KEYWORDS = ['한국어', 'kr', 'korean'];
 
@@ -99,11 +99,6 @@ const addSubmitBtn = document.getElementById('add-submit-btn');
 const addCancelBtn = document.getElementById('add-cancel-btn');
 const importOpenBtn = document.getElementById('import-open-btn');
 const importFileInput = document.getElementById('import-file-input');
-const sheetOpenBtn = document.getElementById('sheet-open-btn');
-const sheetModal = document.getElementById('sheet-modal');
-const sheetUrlInput = document.getElementById('sheet-url-input');
-const sheetSubmitBtn = document.getElementById('sheet-submit-btn');
-const sheetCancelBtn = document.getElementById('sheet-cancel-btn');
 
 // ==========================================================================
 // 렌더링
@@ -191,45 +186,4 @@ importFileInput.addEventListener('change', () => {
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
-});
-
-// ==========================================================================
-// 구글시트 연동 (웹에 게시 CSV URL → 공통 파서 → 병합)
-// ==========================================================================
-function openSheetModal() {
-  sheetModal.classList.remove('hidden');
-  sheetUrlInput.focus();
-}
-
-function closeSheetModal() {
-  sheetModal.classList.add('hidden');
-  sheetUrlInput.value = '';
-}
-
-sheetOpenBtn.addEventListener('click', openSheetModal);
-sheetCancelBtn.addEventListener('click', closeSheetModal);
-
-sheetSubmitBtn.addEventListener('click', async () => {
-  const url = sheetUrlInput.value.trim();
-  if (!url) return;
-
-  sheetSubmitBtn.disabled = true;
-  try {
-    // 브라우저가 이전 응답을 캐시해서 재사용하지 않도록 매번 다른 URL로 요청
-    const noCacheUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
-    const response = await fetch(noCacheUrl, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const text = await response.text();
-    const parsed = parseSentencesText(text);
-    parsed.forEach((s) => addSentence(s.kr, s.en));
-
-    alert(`${parsed.length}개 문장을 가져왔습니다.`);
-    closeSheetModal();
-  } catch (err) {
-    // 실패 시 기존 LocalStorage 데이터는 그대로 유지됨(변경 없음)
-    alert('구글시트를 불러오지 못했습니다. 링크가 "웹에 게시" CSV 형식인지 확인해주세요.');
-  } finally {
-    sheetSubmitBtn.disabled = false;
-  }
 });
