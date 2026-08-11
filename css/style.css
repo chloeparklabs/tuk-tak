@@ -173,8 +173,9 @@ button {
    ========================================================================== */
 .screen-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 4px 8px;
 }
 
 .text-link-btn {
