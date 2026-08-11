@@ -6,6 +6,14 @@
   --color-brand-dark: #0C447C;  /* Brand Navy */
   --color-base: #FFFFFF;        /* Base White */
   --color-point: #D85A30;       /* Point Coral */
+
+  --color-gray-50: #F5F7FA;
+  --color-gray-100: #E7EAEE;
+  --color-gray-200: #D3D8DE;
+  --color-gray-300: #B4BAC2;
+  --color-gray-500: #6B7280;
+  --color-gray-800: #23272F;
+  --color-gray-900: #14171C;
 }
 
 /* ==========================================================================
@@ -70,7 +78,7 @@ button {
 #card-screen {
   display: grid;
   /* 버튼 위치 임시로 화면 하단에 붙임 (최종 위치 확정 전까지) */
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto 1fr auto;
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
@@ -156,6 +164,95 @@ button {
 }
 
 .btn-outline:active {
+  background-color: var(--color-brand);
+  color: var(--color-base);
+}
+
+/* ==========================================================================
+   문장 추가 진입점 버튼
+   ========================================================================== */
+.add-open-btn {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: var(--color-brand);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   문장 추가 모달
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 23, 28, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 360px;
+  background-color: var(--color-base);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-brand-dark);
+  margin-bottom: 8px;
+}
+
+.modal-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gray-500);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--color-gray-800);
+  background-color: var(--color-base);
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.modal-input::placeholder {
+  color: var(--color-gray-300);
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modal-btn {
+  padding: 12px 0;
+  font-size: 15px;
+}
+
+.modal-btn-submit {
   background-color: var(--color-brand);
   color: var(--color-base);
 }
