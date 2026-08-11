@@ -19,7 +19,11 @@
 
   <!-- 카드 학습 화면 -->
   <main id="card-screen" class="screen hidden">
-    <button id="add-open-btn" class="add-open-btn">+ 문장 추가</button>
+    <div class="screen-actions">
+      <button id="add-open-btn" class="text-link-btn">+ 문장 추가</button>
+      <button id="import-open-btn" class="text-link-btn">파일 가져오기</button>
+      <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
+    </div>
 
     <div class="card">
       <p id="kr-text" class="kr-text"></p>

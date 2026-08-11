@@ -169,10 +169,15 @@ button {
 }
 
 /* ==========================================================================
-   문장 추가 진입점 버튼
+   문장 추가 / 파일 가져오기 진입점 버튼
    ========================================================================== */
-.add-open-btn {
-  align-self: flex-end;
+.screen-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.text-link-btn {
   background: none;
   border: none;
   color: var(--color-brand);
