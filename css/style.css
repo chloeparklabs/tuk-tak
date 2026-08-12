@@ -23,6 +23,29 @@
 
 /* 설정 > 글자 크기 5단계는 js/app.js에서 위 변수 값을 인라인으로 갱신 */
 
+/* 다크모드: html[data-theme="dark"]에서 배경/그레이스케일을 반전 (브랜드 블루/코럴/네이비는 유지) */
+[data-theme="dark"] {
+  --color-base: #14171C;
+  --color-gray-50: #1C2027;
+  --color-gray-100: #262B33;
+  --color-gray-200: #333944;
+  --color-gray-300: #4B5563;
+  --color-gray-500: #9AA6B2;
+  --color-gray-800: #E7EAEE;
+  --color-gray-900: #F5F7FA;
+}
+
+/* body 기본 텍스트, 카드 한국어 문장, 모달 제목, 이전/확인/다음 버튼, 스테퍼 버튼은
+   라이트 모드에서 var(--color-brand-dark)(진한 남색)를 텍스트 색으로 쓰기 때문에
+   다크 배경 위에서는 시인성이 떨어짐 → 다크모드에서만 밝은 색으로 개별 전환 */
+[data-theme="dark"] body,
+[data-theme="dark"] .kr-text,
+[data-theme="dark"] .modal-title,
+[data-theme="dark"] .btn-outline,
+[data-theme="dark"] .stepper-btn {
+  color: var(--color-gray-900);
+}
+
 /* ==========================================================================
    기본 리셋
    ========================================================================== */
@@ -73,7 +96,8 @@ button {
 }
 
 .start-logo {
-  color: var(--color-base);
+  /* 시작 화면은 항상 브랜드 블루 배경이라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
   font-size: 40px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -84,10 +108,156 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 카드 영역이 남은 공간을 채우고, 확인/이전/다음 버튼과 하단 네비게이션 바가 순서대로 아래에 위치 */
-  grid-template-rows: 1fr auto auto;
+  /* 상단바가 맨 위, 카드 영역이 남은 공간을 채우고, 이전/확인/다음 버튼이 맨 아래에 위치 */
+  grid-template-rows: auto 1fr auto;
   padding: 24px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+/* ==========================================================================
+   카드 화면 상단바 (로고 + 더보기 메뉴)
+   ========================================================================== */
+.card-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* 카드 화면 padding(24px) 밖으로 확장해 화면 좌우 끝까지 꽉 차게 표시 */
+  margin: -24px -24px 0 -24px;
+  padding: 16px 24px;
+  background-color: var(--color-brand-dark);
+}
+
+.topbar-logo {
+  font-size: 18px;
+  font-weight: 700;
+  /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
+}
+
+.topbar-more {
+  position: relative;
+}
+
+.topbar-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.topbar-more-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.more-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 250px;
+  background-color: var(--color-base);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(20, 23, 28, 0.15);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.more-menu-divider {
+  height: 1px;
+  background-color: var(--color-gray-100);
+  margin: 4px 8px;
+}
+
+.more-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.more-menu-row-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  flex-shrink: 0;
+}
+
+.more-menu-row .stepper-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   다크모드 토글 스위치
+   ========================================================================== */
+.theme-toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background-color: var(--color-gray-200);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  /* 토글 손잡이는 트랙 색과 대비되도록 테마와 무관하게 흰색 고정 */
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(20, 23, 28, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.theme-toggle[aria-checked="true"] {
+  background-color: var(--color-brand);
+}
+
+.theme-toggle[aria-checked="true"] .theme-toggle-thumb {
+  transform: translateX(18px);
+}
+
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-gray-800);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.more-menu-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-gray-500);
+  flex-shrink: 0;
+}
+
+.more-menu-item:active {
+  background-color: var(--color-gray-50);
 }
 
 .card {
@@ -130,7 +300,6 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 20px;
 }
 
 .btn {
@@ -159,8 +328,9 @@ button {
 .btn-primary {
   flex: none;
   background-color: rgba(255, 255, 255, 0.15);
-  color: var(--color-base);
-  border: 2px solid var(--color-base);
+  /* 시작 화면은 항상 브랜드 블루 배경이라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
   padding: 16px 40px;
   border-radius: 12px;
 }
@@ -173,41 +343,8 @@ button {
 
 .btn-outline:active {
   background-color: var(--color-brand);
-  color: var(--color-base);
-}
-
-/* ==========================================================================
-   하단 네비게이션 바 (문장추가 / 파일가져오기 / 설정)
-   ========================================================================== */
-.bottom-nav {
-  display: flex;
-  border-top: 1px solid var(--color-gray-100);
-  padding-top: 8px;
-}
-
-.bottom-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  padding: 6px 0;
-  color: var(--color-gray-500);
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.bottom-nav-item svg {
-  width: 22px;
-  height: 22px;
-}
-
-.bottom-nav-item:active {
-  color: var(--color-brand);
+  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
 }
 
 /* ==========================================================================
@@ -233,20 +370,6 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-/* 설정 모달: 화면을 가리지 않는 하단 시트 형태 (카드 텍스트를 그대로 보며 조절 가능) */
-.settings-sheet-overlay {
-  align-items: flex-end;
-  background-color: transparent;
-  padding: 0;
-}
-
-.settings-sheet-box {
-  max-width: 100%;
-  border-radius: 20px 20px 0 0;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
-  box-shadow: 0 -4px 24px rgba(20, 23, 28, 0.15);
 }
 
 .modal-title {
@@ -351,5 +474,6 @@ button {
 
 .modal-btn-submit {
   background-color: var(--color-brand);
-  color: var(--color-base);
+  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
 }

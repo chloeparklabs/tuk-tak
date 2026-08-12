@@ -99,12 +99,12 @@ const addSubmitBtn = document.getElementById('add-submit-btn');
 const addCancelBtn = document.getElementById('add-cancel-btn');
 const importOpenBtn = document.getElementById('import-open-btn');
 const importFileInput = document.getElementById('import-file-input');
-const settingsOpenBtn = document.getElementById('settings-open-btn');
-const settingsModal = document.getElementById('settings-modal');
-const settingsCloseBtn = document.getElementById('settings-close-btn');
 const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
+const moreOpenBtn = document.getElementById('more-open-btn');
+const moreMenu = document.getElementById('more-menu');
+const darkModeToggleBtn = document.getElementById('dark-mode-toggle-btn');
 
 // ==========================================================================
 // 렌더링
@@ -195,7 +195,7 @@ importFileInput.addEventListener('change', () => {
 });
 
 // ==========================================================================
-// 설정 (글자 크기, 5단계 도트 + 스테퍼)
+// 글자 크기 (5단계 도트 + 스테퍼, 더보기 메뉴 안에 상시 노출)
 // ==========================================================================
 const FONT_SIZE_KEY = 'tuktak_font_size';
 const FONT_SIZE_LEVELS = [
@@ -231,14 +231,6 @@ function loadFontSize() {
 
 loadFontSize();
 
-settingsOpenBtn.addEventListener('click', () => {
-  settingsModal.classList.remove('hidden');
-});
-
-settingsCloseBtn.addEventListener('click', () => {
-  settingsModal.classList.add('hidden');
-});
-
 fontSizeDecBtn.addEventListener('click', () => {
   const next = fontSizeIndex - 1;
   if (next < 1) return;
@@ -251,4 +243,48 @@ fontSizeIncBtn.addEventListener('click', () => {
   if (next > FONT_SIZE_LEVELS.length) return;
   localStorage.setItem(FONT_SIZE_KEY, String(next));
   applyFontSize(next);
+});
+
+// ==========================================================================
+// 다크모드
+// ==========================================================================
+const THEME_KEY = 'tuktak_theme';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  darkModeToggleBtn.setAttribute('aria-checked', String(theme === 'dark'));
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+  applyTheme(saved);
+}
+
+loadTheme();
+
+darkModeToggleBtn.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+// ==========================================================================
+// 상단바 더보기 메뉴 (문장추가 / 파일가져오기 / 글자크기 / 다크모드)
+// ==========================================================================
+moreOpenBtn.addEventListener('click', () => {
+  moreMenu.classList.toggle('hidden');
+});
+
+// 메뉴 안의 항목(문장추가/파일가져오기/설정)을 선택하면 메뉴를 닫음
+moreMenu.addEventListener('click', (e) => {
+  if (e.target.closest('.more-menu-item')) {
+    moreMenu.classList.add('hidden');
+  }
+});
+
+// 메뉴 바깥을 클릭하면 메뉴를 닫음
+document.addEventListener('click', (e) => {
+  if (!moreMenu.classList.contains('hidden') && !e.target.closest('.topbar-more')) {
+    moreMenu.classList.add('hidden');
+  }
 });
