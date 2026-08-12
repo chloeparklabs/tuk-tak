@@ -99,6 +99,12 @@ const addSubmitBtn = document.getElementById('add-submit-btn');
 const addCancelBtn = document.getElementById('add-cancel-btn');
 const importOpenBtn = document.getElementById('import-open-btn');
 const importFileInput = document.getElementById('import-file-input');
+const settingsOpenBtn = document.getElementById('settings-open-btn');
+const settingsModal = document.getElementById('settings-modal');
+const settingsCloseBtn = document.getElementById('settings-close-btn');
+const fontSizeDots = document.querySelectorAll('.font-size-dot');
+const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
+const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
 
 // ==========================================================================
 // 렌더링
@@ -186,4 +192,63 @@ importFileInput.addEventListener('change', () => {
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
+});
+
+// ==========================================================================
+// 설정 (글자 크기, 5단계 도트 + 스테퍼)
+// ==========================================================================
+const FONT_SIZE_KEY = 'tuktak_font_size';
+const FONT_SIZE_LEVELS = [
+  { kr: 16, revealed: 12, en: 18 },
+  { kr: 19, revealed: 14, en: 21 },
+  { kr: 22, revealed: 16, en: 24 }, // 기본값(보통)
+  { kr: 25, revealed: 18, en: 27 },
+  { kr: 28, revealed: 20, en: 30 },
+];
+const DEFAULT_FONT_SIZE_INDEX = 3;
+let fontSizeIndex = DEFAULT_FONT_SIZE_INDEX;
+
+function applyFontSize(index) {
+  fontSizeIndex = Math.min(Math.max(index, 1), FONT_SIZE_LEVELS.length);
+  const level = FONT_SIZE_LEVELS[fontSizeIndex - 1];
+
+  document.documentElement.style.setProperty('--kr-font-size', `${level.kr}px`);
+  document.documentElement.style.setProperty('--kr-font-size-revealed', `${level.revealed}px`);
+  document.documentElement.style.setProperty('--en-font-size', `${level.en}px`);
+
+  fontSizeDots.forEach((dot) => {
+    dot.classList.toggle('active', Number(dot.dataset.index) === fontSizeIndex);
+  });
+  fontSizeDecBtn.disabled = fontSizeIndex === 1;
+  fontSizeIncBtn.disabled = fontSizeIndex === FONT_SIZE_LEVELS.length;
+}
+
+function loadFontSize() {
+  const saved = Number(localStorage.getItem(FONT_SIZE_KEY));
+  const index = FONT_SIZE_LEVELS[saved - 1] ? saved : DEFAULT_FONT_SIZE_INDEX;
+  applyFontSize(index);
+}
+
+loadFontSize();
+
+settingsOpenBtn.addEventListener('click', () => {
+  settingsModal.classList.remove('hidden');
+});
+
+settingsCloseBtn.addEventListener('click', () => {
+  settingsModal.classList.add('hidden');
+});
+
+fontSizeDecBtn.addEventListener('click', () => {
+  const next = fontSizeIndex - 1;
+  if (next < 1) return;
+  localStorage.setItem(FONT_SIZE_KEY, String(next));
+  applyFontSize(next);
+});
+
+fontSizeIncBtn.addEventListener('click', () => {
+  const next = fontSizeIndex + 1;
+  if (next > FONT_SIZE_LEVELS.length) return;
+  localStorage.setItem(FONT_SIZE_KEY, String(next));
+  applyFontSize(next);
 });

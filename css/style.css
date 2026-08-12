@@ -14,7 +14,14 @@
   --color-gray-500: #6B7280;
   --color-gray-800: #23272F;
   --color-gray-900: #14171C;
+
+  /* 카드 텍스트 글자 크기 (기본값 = 보통) */
+  --kr-font-size: 22px;
+  --kr-font-size-revealed: 16px;
+  --en-font-size: 24px;
 }
+
+/* 설정 > 글자 크기 5단계는 js/app.js에서 위 변수 값을 인라인으로 갱신 */
 
 /* ==========================================================================
    기본 리셋
@@ -77,10 +84,10 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 버튼 위치 임시로 화면 하단에 붙임 (최종 위치 확정 전까지) */
-  grid-template-rows: auto 1fr auto;
+  /* 카드 영역이 남은 공간을 채우고, 확인/이전/다음 버튼과 하단 네비게이션 바가 순서대로 아래에 위치 */
+  grid-template-rows: 1fr auto auto;
   padding: 24px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 
 .card {
@@ -94,7 +101,7 @@ button {
 }
 
 .kr-text {
-  font-size: 22px;
+  font-size: var(--kr-font-size);
   font-weight: 600;
   color: var(--color-brand-dark);
   transition: font-size 0.2s ease, color 0.2s ease;
@@ -103,13 +110,13 @@ button {
 
 /* 정답 노출 후에는 한국어 문장을 작게, 옅게 표시 */
 .card.revealed .kr-text {
-  font-size: 16px;
+  font-size: var(--kr-font-size-revealed);
   font-weight: 500;
   color: #9AA6B2;
 }
 
 .en-text {
-  font-size: 24px;
+  font-size: var(--en-font-size);
   font-weight: 700;
   color: var(--color-brand);
   word-break: keep-all;
@@ -123,6 +130,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
+  margin-bottom: 20px;
 }
 
 .btn {
@@ -169,23 +177,37 @@ button {
 }
 
 /* ==========================================================================
-   문장 추가 / 파일 가져오기 진입점 버튼
+   하단 네비게이션 바 (문장추가 / 파일가져오기 / 설정)
    ========================================================================== */
-.screen-actions {
+.bottom-nav {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 4px 8px;
+  border-top: 1px solid var(--color-gray-100);
+  padding-top: 8px;
 }
 
-.text-link-btn {
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   background: none;
   border: none;
-  color: var(--color-brand);
-  font-size: 14px;
+  padding: 6px 0;
+  color: var(--color-gray-500);
+  font-size: 12px;
   font-weight: 600;
-  padding: 8px;
+  font-family: inherit;
   cursor: pointer;
+}
+
+.bottom-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bottom-nav-item:active {
+  color: var(--color-brand);
 }
 
 /* ==========================================================================
@@ -211,6 +233,20 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* 설정 모달: 화면을 가리지 않는 하단 시트 형태 (카드 텍스트를 그대로 보며 조절 가능) */
+.settings-sheet-overlay {
+  align-items: flex-end;
+  background-color: transparent;
+  padding: 0;
+}
+
+.settings-sheet-box {
+  max-width: 100%;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 24px rgba(20, 23, 28, 0.15);
 }
 
 .modal-title {
@@ -245,6 +281,61 @@ button {
 .modal-input:focus {
   outline: none;
   border-color: var(--color-brand);
+}
+
+.font-size-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.font-size-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-size-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-gray-200);
+  transition: all 0.15s ease;
+}
+
+.font-size-dot.active {
+  width: 11px;
+  height: 11px;
+  background-color: var(--color-brand);
+}
+
+.stepper {
+  display: flex;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stepper-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-brand-dark);
+  background-color: var(--color-base);
+  border: none;
+  cursor: pointer;
+}
+
+.stepper-btn:first-child {
+  border-right: 1.5px solid var(--color-gray-200);
+}
+
+.stepper-btn:disabled {
+  color: var(--color-gray-300);
+  cursor: not-allowed;
 }
 
 .modal-actions {
