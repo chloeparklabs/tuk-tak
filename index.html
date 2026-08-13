@@ -76,26 +76,35 @@
     </header>
 
     <div class="settings-body">
-      <div class="settings-row">
-        <span class="settings-row-label">글자크기</span>
-        <div class="font-size-dots">
-          <span class="font-size-dot" data-index="1"></span>
-          <span class="font-size-dot" data-index="2"></span>
-          <span class="font-size-dot" data-index="3"></span>
-          <span class="font-size-dot" data-index="4"></span>
-          <span class="font-size-dot" data-index="5"></span>
+      <div class="settings-row settings-row-fontsize">
+        <div class="settings-row-top">
+          <span class="settings-row-label">글자크기</span>
+          <span id="font-size-sample" class="font-size-sample">가</span>
         </div>
-        <div class="stepper">
-          <button id="font-size-dec-btn" class="stepper-btn" type="button" aria-label="글자 작게">&minus;</button>
-          <button id="font-size-inc-btn" class="stepper-btn" type="button" aria-label="글자 크게">+</button>
+        <div class="settings-row-bottom">
+          <div class="font-size-dots">
+            <span class="font-size-dot" data-index="1"></span>
+            <span class="font-size-dot" data-index="2"></span>
+            <span class="font-size-dot" data-index="3"></span>
+            <span class="font-size-dot" data-index="4"></span>
+            <span class="font-size-dot" data-index="5"></span>
+          </div>
+          <div class="stepper">
+            <button id="font-size-dec-btn" class="stepper-btn" type="button" aria-label="글자 작게">&minus;</button>
+            <button id="font-size-inc-btn" class="stepper-btn" type="button" aria-label="글자 크게">+</button>
+          </div>
         </div>
       </div>
 
-      <div class="settings-row">
-        <span class="settings-row-label">화면모드</span>
-        <button id="dark-mode-toggle-btn" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="다크모드 전환">
-          <span class="theme-toggle-thumb"></span>
-        </button>
+      <div class="settings-row settings-row-fontsize">
+        <div class="settings-row-top">
+          <span class="settings-row-label">화면모드</span>
+        </div>
+        <div class="mode-select" role="radiogroup" aria-label="화면모드 선택">
+          <button id="mode-system-btn" class="mode-select-btn" type="button" role="radio" data-mode="system">시스템</button>
+          <button id="mode-light-btn" class="mode-select-btn" type="button" role="radio" data-mode="light">라이트</button>
+          <button id="mode-dark-btn" class="mode-select-btn" type="button" role="radio" data-mode="dark">다크</button>
+        </div>
       </div>
 
       <div class="settings-section-title">데이터 관리</div>

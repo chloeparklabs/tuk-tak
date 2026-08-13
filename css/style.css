@@ -192,40 +192,66 @@ button {
   font-size: 18px;
 }
 
+/* 글자크기/화면모드 행: 위(라벨) - 아래(조절 UI) 2줄 구조 */
+.settings-row-fontsize {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.settings-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.font-size-sample {
+  font-size: var(--kr-font-size);
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  transition: font-size 0.2s ease;
+}
+
+[data-theme="dark"] .font-size-sample {
+  color: var(--color-gray-900);
+}
+
 /* ==========================================================================
-   다크모드 토글 스위치
+   화면모드 3단 선택 (시스템 / 라이트 / 다크)
    ========================================================================== */
-.theme-toggle {
-  position: relative;
-  flex-shrink: 0;
-  width: 40px;
-  height: 22px;
-  border-radius: 999px;
-  background-color: var(--color-gray-200);
+.mode-select {
+  display: flex;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-select-btn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-gray-500);
+  background-color: var(--color-base);
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
-.theme-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  /* 토글 손잡이는 트랙 색과 대비되도록 테마와 무관하게 흰색 고정 */
-  background-color: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(20, 23, 28, 0.3);
-  transition: transform 0.2s ease;
+.mode-select-btn:not(:last-child) {
+  border-right: 1.5px solid var(--color-gray-200);
 }
 
-.theme-toggle[aria-checked="true"] {
+.mode-select-btn.active {
   background-color: var(--color-brand);
-}
-
-.theme-toggle[aria-checked="true"] .theme-toggle-thumb {
-  transform: translateX(18px);
+  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
 }
 
 .more-menu-item {

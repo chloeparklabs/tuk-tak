@@ -122,7 +122,7 @@ const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
 const moreOpenBtn = document.getElementById('more-open-btn');
 const moreMenu = document.getElementById('more-menu');
-const darkModeToggleBtn = document.getElementById('dark-mode-toggle-btn');
+const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
 const addModalTitleEl = document.getElementById('add-modal-title');
 const listOpenBtn = document.getElementById('list-open-btn');
 const listScreen = document.getElementById('list-screen');
@@ -426,26 +426,50 @@ fontSizeIncBtn.addEventListener('click', () => {
 });
 
 // ==========================================================================
-// 다크모드
+// 화면모드 (시스템 / 라이트 / 다크)
 // ==========================================================================
 const THEME_KEY = 'tuktak_theme';
+const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+let themeMode = 'light';
 
-function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  darkModeToggleBtn.setAttribute('aria-checked', String(theme === 'dark'));
+function resolveTheme(mode) {
+  if (mode === 'system') {
+    return systemDarkQuery.matches ? 'dark' : 'light';
+  }
+  return mode;
+}
+
+function applyThemeMode(mode) {
+  themeMode = mode;
+  document.documentElement.setAttribute('data-theme', resolveTheme(mode));
+
+  modeSelectBtns.forEach((btn) => {
+    const isActive = btn.dataset.mode === mode;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-checked', String(isActive));
+  });
 }
 
 function loadTheme() {
-  const saved = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
-  applyTheme(saved);
+  const saved = localStorage.getItem(THEME_KEY);
+  const mode = ['system', 'light', 'dark'].includes(saved) ? saved : 'light';
+  applyThemeMode(mode);
 }
 
 loadTheme();
 
-darkModeToggleBtn.addEventListener('click', () => {
-  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
+modeSelectBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    localStorage.setItem(THEME_KEY, btn.dataset.mode);
+    applyThemeMode(btn.dataset.mode);
+  });
+});
+
+// 시스템 모드 선택 중에는 기기의 다크모드 설정이 바뀌면 앱도 실시간으로 따라감
+systemDarkQuery.addEventListener('change', () => {
+  if (themeMode === 'system') {
+    document.documentElement.setAttribute('data-theme', resolveTheme('system'));
+  }
 });
 
 // ==========================================================================
