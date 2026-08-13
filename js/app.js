@@ -38,6 +38,24 @@ function addSentence(kr, en) {
   saveSentences(sentences);
 }
 
+function updateSentence(id, kr, en) {
+  const target = sentences.find((s) => String(s.id) === String(id));
+  if (!target) return;
+  target.kr = kr;
+  target.en = en;
+  saveSentences(sentences);
+}
+
+function deleteSentence(id) {
+  const index = sentences.findIndex((s) => String(s.id) === String(id));
+  if (index === -1) return;
+  sentences.splice(index, 1);
+  if (currentIndex >= sentences.length) {
+    currentIndex = sentences.length - 1;
+  }
+  saveSentences(sentences);
+}
+
 // ==========================================================================
 // 공통 파서 (TSV/CSV → {kr, en}[])
 // 파일 가져오기(엑셀/메모장 등에서 작성한 CSV/TSV/TXT)에서 사용
@@ -105,6 +123,11 @@ const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
 const moreOpenBtn = document.getElementById('more-open-btn');
 const moreMenu = document.getElementById('more-menu');
 const darkModeToggleBtn = document.getElementById('dark-mode-toggle-btn');
+const addModalTitleEl = document.getElementById('add-modal-title');
+const listOpenBtn = document.getElementById('list-open-btn');
+const listScreen = document.getElementById('list-screen');
+const listBackBtn = document.getElementById('list-back-btn');
+const sentenceListEl = document.getElementById('sentence-list');
 
 // ==========================================================================
 // 렌더링
@@ -148,9 +171,22 @@ nextBtn.addEventListener('click', () => {
 });
 
 // ==========================================================================
-// 문장 추가 폼
+// 문장 추가/수정 폼 (같은 모달을 재사용, editingId가 있으면 수정 모드)
 // ==========================================================================
-function openAddModal() {
+let editingId = null;
+
+function openAddModal(sentence) {
+  if (sentence) {
+    editingId = sentence.id;
+    addModalTitleEl.textContent = '문장 수정';
+    addSubmitBtn.textContent = '저장';
+    addKrInput.value = sentence.kr;
+    addEnInput.value = sentence.en;
+  } else {
+    editingId = null;
+    addModalTitleEl.textContent = '문장 추가';
+    addSubmitBtn.textContent = '추가';
+  }
   addModal.classList.remove('hidden');
   addKrInput.focus();
 }
@@ -159,9 +195,10 @@ function closeAddModal() {
   addModal.classList.add('hidden');
   addKrInput.value = '';
   addEnInput.value = '';
+  editingId = null;
 }
 
-addOpenBtn.addEventListener('click', openAddModal);
+addOpenBtn.addEventListener('click', () => openAddModal());
 addCancelBtn.addEventListener('click', closeAddModal);
 
 addSubmitBtn.addEventListener('click', () => {
@@ -169,8 +206,16 @@ addSubmitBtn.addEventListener('click', () => {
   const en = addEnInput.value.trim();
   if (!kr || !en) return;
 
-  addSentence(kr, en);
+  if (editingId) {
+    updateSentence(editingId, kr, en);
+  } else {
+    addSentence(kr, en);
+  }
   closeAddModal();
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
 });
 
 // ==========================================================================
@@ -192,6 +237,75 @@ importFileInput.addEventListener('change', () => {
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
+});
+
+// ==========================================================================
+// 문장 목록 화면 (수정/삭제)
+// ==========================================================================
+function renderSentenceList() {
+  sentenceListEl.innerHTML = '';
+
+  sentences.forEach((s) => {
+    const item = document.createElement('div');
+    item.className = 'sentence-list-item';
+    item.dataset.id = String(s.id);
+
+    const textWrap = document.createElement('div');
+    textWrap.className = 'sentence-list-text';
+
+    const krEl = document.createElement('p');
+    krEl.className = 'sentence-list-kr';
+    krEl.textContent = s.kr;
+
+    const enEl = document.createElement('p');
+    enEl.className = 'sentence-list-en';
+    enEl.textContent = s.en;
+
+    textWrap.appendChild(krEl);
+    textWrap.appendChild(enEl);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'sentence-delete-btn';
+    deleteBtn.setAttribute('aria-label', '삭제');
+    deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
+
+    item.appendChild(textWrap);
+    item.appendChild(deleteBtn);
+    sentenceListEl.appendChild(item);
+  });
+}
+
+listOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  listScreen.classList.remove('hidden');
+  renderSentenceList();
+});
+
+listBackBtn.addEventListener('click', () => {
+  listScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+sentenceListEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  const id = item.dataset.id;
+
+  if (e.target.closest('.sentence-delete-btn')) {
+    if (sentences.length <= 1) {
+      alert('최소 1개의 문장은 있어야 합니다.');
+      return;
+    }
+    if (!confirm('이 문장을 삭제하시겠습니까?')) return;
+    deleteSentence(id);
+    renderSentenceList();
+    renderCard();
+    return;
+  }
+
+  const sentence = sentences.find((s) => String(s.id) === id);
+  if (sentence) openAddModal(sentence);
 });
 
 // ==========================================================================
