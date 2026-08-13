@@ -170,31 +170,26 @@ button {
   z-index: 10;
 }
 
-.more-menu-divider {
-  height: 1px;
-  background-color: var(--color-gray-100);
-  margin: 4px 8px;
-}
-
-.more-menu-row {
+.settings-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--color-gray-100);
 }
 
-.more-menu-row-label {
-  font-size: 14px;
+.settings-row-label {
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-gray-800);
   flex-shrink: 0;
 }
 
-.more-menu-row .stepper-btn {
-  width: 32px;
-  height: 32px;
-  font-size: 16px;
+.settings-row .stepper-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
 }
 
 /* ==========================================================================
@@ -347,6 +342,16 @@ button {
   color: #FFFFFF;
 }
 
+.btn-outline:disabled {
+  border-color: var(--color-gray-200);
+  color: var(--color-gray-300);
+  cursor: not-allowed;
+}
+
+.btn-outline:disabled:active {
+  background-color: var(--color-base);
+}
+
 /* ==========================================================================
    문장 추가 모달
    ========================================================================== */
@@ -479,13 +484,14 @@ button {
 }
 
 /* ==========================================================================
-   문장 목록 화면
+   문장 관리 화면 / 설정 화면 (헤더는 두 화면이 공유)
    ========================================================================== */
-#list-screen {
+#list-screen,
+#settings-screen {
   padding: 0;
 }
 
-.list-topbar {
+.screen-topbar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -493,7 +499,7 @@ button {
   background-color: var(--color-brand-dark);
 }
 
-.list-back-btn {
+.screen-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -506,12 +512,12 @@ button {
   cursor: pointer;
 }
 
-.list-back-btn svg {
+.screen-back-btn svg {
   width: 22px;
   height: 22px;
 }
 
-.list-topbar-title {
+.screen-topbar-title {
   font-size: 17px;
   font-weight: 700;
   /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
@@ -582,4 +588,50 @@ button {
 
 .sentence-delete-btn:active {
   color: var(--color-gray-800);
+}
+
+/* ==========================================================================
+   설정 화면
+   ========================================================================== */
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  margin: 24px 4px 8px;
+}
+
+.settings-action-btn {
+  width: 100%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.settings-action-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   카드 학습 화면 빈 상태 (문장 0개)
+   ========================================================================== */
+.empty-state-msg {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--color-gray-500);
 }

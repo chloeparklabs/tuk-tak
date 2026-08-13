@@ -128,11 +128,31 @@ const listOpenBtn = document.getElementById('list-open-btn');
 const listScreen = document.getElementById('list-screen');
 const listBackBtn = document.getElementById('list-back-btn');
 const sentenceListEl = document.getElementById('sentence-list');
+const settingsOpenBtn = document.getElementById('settings-open-btn');
+const settingsScreen = document.getElementById('settings-screen');
+const settingsBackBtn = document.getElementById('settings-back-btn');
+const exportBackupBtn = document.getElementById('export-backup-btn');
+const resetOpenBtn = document.getElementById('reset-open-btn');
+const emptyStateMsg = document.getElementById('empty-state-msg');
 
 // ==========================================================================
 // 렌더링
 // ==========================================================================
 function renderCard() {
+  const isEmpty = sentences.length === 0;
+
+  emptyStateMsg.classList.toggle('hidden', !isEmpty);
+  krTextEl.classList.toggle('hidden', isEmpty);
+  prevBtn.disabled = isEmpty;
+  checkBtn.disabled = isEmpty;
+  nextBtn.disabled = isEmpty;
+
+  if (isEmpty) {
+    enTextEl.classList.add('hidden');
+    cardEl.classList.remove('revealed');
+    return;
+  }
+
   const sentence = sentences[currentIndex];
   krTextEl.textContent = sentence.kr;
   enTextEl.textContent = sentence.en;
@@ -145,6 +165,10 @@ function renderCard() {
 // 이벤트 핸들러
 // ==========================================================================
 function goToSentence(index) {
+  if (sentences.length === 0) {
+    renderCard();
+    return;
+  }
   // 문장 목록의 처음/끝에서 순환
   currentIndex = (index + sentences.length) % sentences.length;
   revealed = false;
@@ -309,7 +333,49 @@ sentenceListEl.addEventListener('click', (e) => {
 });
 
 // ==========================================================================
-// 글자 크기 (5단계 도트 + 스테퍼, 더보기 메뉴 안에 상시 노출)
+// 설정 화면 (글자크기 / 화면모드 / 데이터 관리)
+// ==========================================================================
+settingsOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  settingsScreen.classList.remove('hidden');
+});
+
+settingsBackBtn.addEventListener('click', () => {
+  settingsScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+// 백업 내보내기: 현재 문장을 TSV로 만들어 파일 다운로드
+// (복원은 별도 기능 없이 기존 "파일가져오기"로 이 파일을 그대로 불러오면 됨)
+exportBackupBtn.addEventListener('click', () => {
+  const tsvText = sentences.map((s) => `${s.kr}\t${s.en}`).join('\n');
+  const blob = new Blob([tsvText], { type: 'text/tab-separated-values' });
+  const url = URL.createObjectURL(blob);
+
+  const today = new Date();
+  const dateStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('');
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `tuktak_backup_${dateStr}.tsv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+});
+
+// 초기화: 문장 전체 삭제(글자크기/화면모드 등 설정값은 유지)
+resetOpenBtn.addEventListener('click', () => {
+  if (!confirm('문장을 모두 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+
+  sentences.length = 0;
+  currentIndex = 0;
+  saveSentences(sentences);
+  renderCard();
+  alert('문장을 모두 삭제했습니다.');
+});
+
+// ==========================================================================
+// 글자 크기 (5단계 도트 + 스테퍼, 설정 화면에 상시 노출)
 // ==========================================================================
 const FONT_SIZE_KEY = 'tuktak_font_size';
 const FONT_SIZE_LEVELS = [
@@ -383,13 +449,13 @@ darkModeToggleBtn.addEventListener('click', () => {
 });
 
 // ==========================================================================
-// 상단바 더보기 메뉴 (문장추가 / 파일가져오기 / 글자크기 / 다크모드)
+// 상단바 더보기 메뉴 (문장추가 / 문장관리 / 설정)
 // ==========================================================================
 moreOpenBtn.addEventListener('click', () => {
   moreMenu.classList.toggle('hidden');
 });
 
-// 메뉴 안의 항목(문장추가/파일가져오기/설정)을 선택하면 메뉴를 닫음
+// 메뉴 안의 항목(문장추가/문장관리/설정)을 선택하면 메뉴를 닫음
 moreMenu.addEventListener('click', (e) => {
   if (e.target.closest('.more-menu-item')) {
     moreMenu.classList.add('hidden');
