@@ -108,8 +108,8 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 상단바 - 카드(남는 공간) - 이전/확인/다음 - 자가평가(정답 공개 시에만) 순서 */
-  grid-template-rows: auto 1fr auto auto;
+  /* 상단바가 맨 위, 카드 영역이 남은 공간을 채우고, 이전/확인/다음 버튼이 맨 아래에 위치 */
+  grid-template-rows: auto 1fr auto;
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
@@ -282,7 +282,6 @@ button {
 }
 
 .card {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -290,34 +289,6 @@ button {
   gap: 16px;
   text-align: center;
   padding: 0 8px;
-}
-
-.card-star-btn {
-  position: absolute;
-  top: 0;
-  right: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: none;
-  color: var(--color-gray-300);
-  cursor: pointer;
-}
-
-.card-star-btn svg {
-  width: 24px;
-  height: 24px;
-}
-
-.card-star-btn.active {
-  color: var(--color-brand);
-}
-
-.card-star-btn.active svg {
-  fill: currentColor;
 }
 
 .kr-text {
@@ -352,21 +323,6 @@ button {
   gap: 16px;
 }
 
-/* ==========================================================================
-   자가평가 바 (정답 확인 후에만 노출되는 외웠어요/아직이요)
-   ========================================================================== */
-.self-eval-bar {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.familiar-btn.active {
-  background-color: var(--color-brand);
-  border-color: var(--color-brand);
-  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
-  color: #FFFFFF;
-}
 
 .btn {
   flex: 1;
@@ -647,6 +603,7 @@ button {
 }
 
 .sentence-star-btn,
+.sentence-unfamiliar-btn,
 .sentence-delete-btn {
   display: flex;
   align-items: center;
@@ -661,6 +618,7 @@ button {
 }
 
 .sentence-star-btn svg,
+.sentence-unfamiliar-btn svg,
 .sentence-delete-btn svg {
   width: 18px;
   height: 18px;
@@ -670,11 +628,13 @@ button {
   color: var(--color-gray-800);
 }
 
-.sentence-star-btn.active {
+.sentence-star-btn.active,
+.sentence-unfamiliar-btn.active {
   color: var(--color-brand);
 }
 
-.sentence-star-btn.active svg {
+.sentence-star-btn.active svg,
+.sentence-unfamiliar-btn.active svg {
   fill: currentColor;
 }
 

@@ -13,13 +13,12 @@ const SEED_SENTENCES = [
 ];
 
 function makeSentence(kr, en) {
-  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, familiar: null };
+  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, unfamiliar: false };
 }
 
-// 예전 버전에서 저장된 문장에는 important/familiar 필드가 없을 수 있어 불러올 때 보정
-// familiar: null(아직 평가 안 함) / true(외웠어요) / false(아직이요)
+// 예전 버전에서 저장된 문장에는 important/unfamiliar 필드가 없을 수 있어 불러올 때 보정
 function normalizeSentence(s) {
-  return { important: false, familiar: null, ...s };
+  return { important: false, unfamiliar: false, ...s };
 }
 
 function loadSentences() {
@@ -59,10 +58,10 @@ function toggleImportant(id) {
   saveSentences(sentences);
 }
 
-function markFamiliar(id, value) {
+function toggleUnfamiliar(id) {
   const target = sentences.find((s) => String(s.id) === String(id));
   if (!target) return;
-  target.familiar = value;
+  target.unfamiliar = !target.unfamiliar;
   saveSentences(sentences);
 }
 
@@ -154,10 +153,6 @@ const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
-const cardStarBtn = document.getElementById('card-star-btn');
-const selfEvalBar = document.getElementById('self-eval-bar');
-const familiarYesBtn = document.getElementById('familiar-yes-btn');
-const familiarNoBtn = document.getElementById('familiar-no-btn');
 
 // ==========================================================================
 // 렌더링
@@ -170,12 +165,9 @@ function renderCard() {
   prevBtn.disabled = isEmpty;
   checkBtn.disabled = isEmpty;
   nextBtn.disabled = isEmpty;
-  cardStarBtn.classList.toggle('hidden', isEmpty);
-
   if (isEmpty) {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
-    selfEvalBar.classList.add('hidden');
     return;
   }
 
@@ -185,12 +177,6 @@ function renderCard() {
 
   enTextEl.classList.toggle('hidden', !revealed);
   cardEl.classList.toggle('revealed', revealed);
-  cardStarBtn.classList.toggle('active', sentence.important);
-
-  // 정답이 공개된 뒤에만 자가평가(외웠어요/아직이요) 버튼 노출
-  selfEvalBar.classList.toggle('hidden', !revealed);
-  familiarYesBtn.classList.toggle('active', sentence.familiar === true);
-  familiarNoBtn.classList.toggle('active', sentence.familiar === false);
 }
 
 // ==========================================================================
@@ -226,26 +212,6 @@ nextBtn.addEventListener('click', () => {
   goToSentence(currentIndex + 1);
 });
 
-familiarYesBtn.addEventListener('click', () => {
-  if (sentences.length === 0) return;
-  markFamiliar(sentences[currentIndex].id, true);
-  renderCard();
-});
-
-familiarNoBtn.addEventListener('click', () => {
-  if (sentences.length === 0) return;
-  markFamiliar(sentences[currentIndex].id, false);
-  renderCard();
-});
-
-cardStarBtn.addEventListener('click', () => {
-  if (sentences.length === 0) return;
-  toggleImportant(sentences[currentIndex].id);
-  renderCard();
-  if (!listScreen.classList.contains('hidden')) {
-    renderSentenceList();
-  }
-});
 
 // ==========================================================================
 // 문장 추가/수정 폼 (같은 모달을 재사용, editingId가 있으면 수정 모드)
@@ -351,6 +317,13 @@ function renderSentenceList() {
     starBtn.setAttribute('aria-label', '중요 표시');
     starBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
+    const unfamiliarBtn = document.createElement('button');
+    unfamiliarBtn.type = 'button';
+    unfamiliarBtn.className = 'sentence-unfamiliar-btn';
+    unfamiliarBtn.classList.toggle('active', s.unfamiliar);
+    unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
+    unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
+
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'sentence-delete-btn';
@@ -358,6 +331,7 @@ function renderSentenceList() {
     deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
 
     actions.appendChild(starBtn);
+    actions.appendChild(unfamiliarBtn);
     actions.appendChild(deleteBtn);
 
     item.appendChild(textWrap);
@@ -386,6 +360,12 @@ sentenceListEl.addEventListener('click', (e) => {
     toggleImportant(id);
     renderSentenceList();
     renderCard();
+    return;
+  }
+
+  if (e.target.closest('.sentence-unfamiliar-btn')) {
+    toggleUnfamiliar(id);
+    renderSentenceList();
     return;
   }
 
