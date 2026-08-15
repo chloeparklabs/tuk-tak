@@ -13,12 +13,13 @@ const SEED_SENTENCES = [
 ];
 
 function makeSentence(kr, en) {
-  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false };
+  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, familiar: null };
 }
 
-// 예전 버전에서 저장된 문장에는 important 필드가 없을 수 있어 불러올 때 보정
+// 예전 버전에서 저장된 문장에는 important/familiar 필드가 없을 수 있어 불러올 때 보정
+// familiar: null(아직 평가 안 함) / true(외웠어요) / false(아직이요)
 function normalizeSentence(s) {
-  return { important: false, ...s };
+  return { important: false, familiar: null, ...s };
 }
 
 function loadSentences() {
@@ -55,6 +56,13 @@ function toggleImportant(id) {
   const target = sentences.find((s) => String(s.id) === String(id));
   if (!target) return;
   target.important = !target.important;
+  saveSentences(sentences);
+}
+
+function markFamiliar(id, value) {
+  const target = sentences.find((s) => String(s.id) === String(id));
+  if (!target) return;
+  target.familiar = value;
   saveSentences(sentences);
 }
 
@@ -147,6 +155,9 @@ const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardStarBtn = document.getElementById('card-star-btn');
+const selfEvalBar = document.getElementById('self-eval-bar');
+const familiarYesBtn = document.getElementById('familiar-yes-btn');
+const familiarNoBtn = document.getElementById('familiar-no-btn');
 
 // ==========================================================================
 // 렌더링
@@ -164,6 +175,7 @@ function renderCard() {
   if (isEmpty) {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
+    selfEvalBar.classList.add('hidden');
     return;
   }
 
@@ -174,6 +186,11 @@ function renderCard() {
   enTextEl.classList.toggle('hidden', !revealed);
   cardEl.classList.toggle('revealed', revealed);
   cardStarBtn.classList.toggle('active', sentence.important);
+
+  // 정답이 공개된 뒤에만 자가평가(외웠어요/아직이요) 버튼 노출
+  selfEvalBar.classList.toggle('hidden', !revealed);
+  familiarYesBtn.classList.toggle('active', sentence.familiar === true);
+  familiarNoBtn.classList.toggle('active', sentence.familiar === false);
 }
 
 // ==========================================================================
@@ -207,6 +224,18 @@ prevBtn.addEventListener('click', () => {
 
 nextBtn.addEventListener('click', () => {
   goToSentence(currentIndex + 1);
+});
+
+familiarYesBtn.addEventListener('click', () => {
+  if (sentences.length === 0) return;
+  markFamiliar(sentences[currentIndex].id, true);
+  renderCard();
+});
+
+familiarNoBtn.addEventListener('click', () => {
+  if (sentences.length === 0) return;
+  markFamiliar(sentences[currentIndex].id, false);
+  renderCard();
 });
 
 cardStarBtn.addEventListener('click', () => {
