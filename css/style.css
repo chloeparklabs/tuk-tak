@@ -524,6 +524,12 @@ button {
   gap: 8px;
   padding: 16px 20px;
   background-color: var(--color-brand-dark);
+  transition: background-color 0.15s ease;
+}
+
+/* 문장관리 화면의 선택 모드(다중 삭제)일 때 브랜드 블루로 바뀌어 모드 전환을 알림 */
+.screen-topbar.selecting {
+  background-color: var(--color-brand);
 }
 
 .screen-back-btn {
@@ -544,11 +550,46 @@ button {
   height: 22px;
 }
 
+/* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
+.screen-back-btn.text-mode {
+  width: auto;
+  padding: 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
 .screen-topbar-title {
   font-size: 17px;
   font-weight: 700;
   /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
+}
+
+.screen-topbar-text-btn {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.16);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.screen-topbar-delete-btn {
+  background: none;
+  padding: 8px 6px;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.screen-topbar-delete-btn.enabled {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sentence-list {
@@ -568,10 +609,47 @@ button {
   padding: 14px 16px;
   background-color: var(--color-gray-50);
   border-radius: 12px;
+  border: 1.5px solid transparent;
   cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.sentence-list-item.checked {
+  background-color: var(--color-gray-100);
+  border-color: var(--color-brand);
+}
+
+.sentence-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-gray-300);
+  background-color: var(--color-base);
+}
+
+.sentence-checkbox svg {
+  width: 13px;
+  height: 13px;
+  color: #FFFFFF;
+  opacity: 0;
+}
+
+.sentence-list-item.checked .sentence-checkbox {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
+.sentence-list-item.checked .sentence-checkbox svg {
+  opacity: 1;
 }
 
 .sentence-list-text {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -603,8 +681,7 @@ button {
 }
 
 .sentence-star-btn,
-.sentence-unfamiliar-btn,
-.sentence-delete-btn {
+.sentence-unfamiliar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -618,14 +695,9 @@ button {
 }
 
 .sentence-star-btn svg,
-.sentence-unfamiliar-btn svg,
-.sentence-delete-btn svg {
+.sentence-unfamiliar-btn svg {
   width: 18px;
   height: 18px;
-}
-
-.sentence-delete-btn:active {
-  color: var(--color-gray-800);
 }
 
 .sentence-star-btn.active,

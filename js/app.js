@@ -145,7 +145,11 @@ const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
 const addModalTitleEl = document.getElementById('add-modal-title');
 const listOpenBtn = document.getElementById('list-open-btn');
 const listScreen = document.getElementById('list-screen');
+const listTopbarEl = document.getElementById('list-topbar');
 const listBackBtn = document.getElementById('list-back-btn');
+const listTopbarTitleEl = document.getElementById('list-topbar-title');
+const listSelectBtn = document.getElementById('list-select-btn');
+const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const sentenceListEl = document.getElementById('sentence-list');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
 const settingsScreen = document.getElementById('settings-screen');
@@ -284,14 +288,82 @@ importFileInput.addEventListener('change', () => {
 
 // ==========================================================================
 // 문장 목록 화면 (수정/삭제)
+// 기본: 별(즐겨찾기)/깃발(미암기) 토글 + 길게 누르면 해당 문장만 삭제
+// 선택 모드: 상단 "선택"으로 진입, 체크박스로 여러 개 골라 한 번에 삭제
 // ==========================================================================
+const LIST_BACK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+const LIST_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const LONG_PRESS_MS = 550;
+
+let selecting = false;
+let selectedIds = new Set();
+let longPressTimer = null;
+let longPressFiredId = null;
+
+function updateListTopbar() {
+  listTopbarEl.classList.toggle('selecting', selecting);
+
+  if (selecting) {
+    const n = selectedIds.size;
+    listBackBtn.classList.add('text-mode');
+    listBackBtn.textContent = '취소';
+    listBackBtn.setAttribute('aria-label', '선택 취소');
+    listTopbarTitleEl.textContent = n > 0 ? `${n}개 선택` : '문장 선택';
+    listSelectBtn.classList.add('hidden');
+    listBulkDeleteBtn.classList.remove('hidden');
+    listBulkDeleteBtn.classList.toggle('enabled', n > 0);
+  } else {
+    listBackBtn.classList.remove('text-mode');
+    listBackBtn.innerHTML = LIST_BACK_ICON;
+    listBackBtn.setAttribute('aria-label', '뒤로가기');
+    listTopbarTitleEl.textContent = '문장 관리';
+    listSelectBtn.classList.remove('hidden');
+    listBulkDeleteBtn.classList.add('hidden');
+  }
+}
+
+function enterSelectMode() {
+  selecting = true;
+  selectedIds.clear();
+  renderSentenceList();
+  updateListTopbar();
+}
+
+function exitSelectMode() {
+  selecting = false;
+  selectedIds.clear();
+  renderSentenceList();
+  updateListTopbar();
+}
+
+function confirmDeleteSingle(id) {
+  if (sentences.length <= 1) {
+    alert('최소 1개의 문장은 있어야 합니다.');
+    return;
+  }
+  const sentence = sentences.find((s) => String(s.id) === String(id));
+  if (!sentence) return;
+  if (!confirm(`"${sentence.kr}" 문장을 삭제하시겠습니까?`)) return;
+  deleteSentence(id);
+  renderSentenceList();
+  renderCard();
+}
+
 function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
   sentences.forEach((s) => {
+    const id = String(s.id);
     const item = document.createElement('div');
-    item.className = 'sentence-list-item';
-    item.dataset.id = String(s.id);
+    item.className = 'sentence-list-item' + (selecting && selectedIds.has(id) ? ' checked' : '');
+    item.dataset.id = id;
+
+    if (selecting) {
+      const checkbox = document.createElement('span');
+      checkbox.className = 'sentence-checkbox';
+      checkbox.innerHTML = LIST_CHECK_ICON;
+      item.appendChild(checkbox);
+    }
 
     const textWrap = document.createElement('div');
     textWrap.className = 'sentence-list-text';
@@ -306,36 +378,31 @@ function renderSentenceList() {
 
     textWrap.appendChild(krEl);
     textWrap.appendChild(enEl);
-
-    const actions = document.createElement('div');
-    actions.className = 'sentence-list-actions';
-
-    const starBtn = document.createElement('button');
-    starBtn.type = 'button';
-    starBtn.className = 'sentence-star-btn';
-    starBtn.classList.toggle('active', s.important);
-    starBtn.setAttribute('aria-label', '중요 표시');
-    starBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-
-    const unfamiliarBtn = document.createElement('button');
-    unfamiliarBtn.type = 'button';
-    unfamiliarBtn.className = 'sentence-unfamiliar-btn';
-    unfamiliarBtn.classList.toggle('active', s.unfamiliar);
-    unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
-    unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.className = 'sentence-delete-btn';
-    deleteBtn.setAttribute('aria-label', '삭제');
-    deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
-
-    actions.appendChild(starBtn);
-    actions.appendChild(unfamiliarBtn);
-    actions.appendChild(deleteBtn);
-
     item.appendChild(textWrap);
-    item.appendChild(actions);
+
+    if (!selecting) {
+      const actions = document.createElement('div');
+      actions.className = 'sentence-list-actions';
+
+      const starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.className = 'sentence-star-btn';
+      starBtn.classList.toggle('active', s.important);
+      starBtn.setAttribute('aria-label', '중요 표시');
+      starBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+      const unfamiliarBtn = document.createElement('button');
+      unfamiliarBtn.type = 'button';
+      unfamiliarBtn.className = 'sentence-unfamiliar-btn';
+      unfamiliarBtn.classList.toggle('active', s.unfamiliar);
+      unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
+      unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
+
+      actions.appendChild(starBtn);
+      actions.appendChild(unfamiliarBtn);
+      item.appendChild(actions);
+    }
+
     sentenceListEl.appendChild(item);
   });
 }
@@ -343,18 +410,45 @@ function renderSentenceList() {
 listOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   listScreen.classList.remove('hidden');
+  selecting = false;
+  selectedIds.clear();
   renderSentenceList();
+  updateListTopbar();
 });
 
 listBackBtn.addEventListener('click', () => {
+  if (selecting) {
+    exitSelectMode();
+    return;
+  }
   listScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
+});
+
+listSelectBtn.addEventListener('click', enterSelectMode);
+
+listBulkDeleteBtn.addEventListener('click', () => {
+  if (selectedIds.size === 0) return;
+  const remaining = sentences.length - selectedIds.size;
+  if (remaining < 1) {
+    alert('최소 1개의 문장은 있어야 합니다.');
+    return;
+  }
+  if (!confirm(`선택한 문장 ${selectedIds.size}개를 삭제하시겠습니까?`)) return;
+  selectedIds.forEach((id) => deleteSentence(id));
+  exitSelectMode();
+  renderCard();
 });
 
 sentenceListEl.addEventListener('click', (e) => {
   const item = e.target.closest('.sentence-list-item');
   if (!item) return;
   const id = item.dataset.id;
+
+  if (longPressFiredId === id) {
+    longPressFiredId = null;
+    return;
+  }
 
   if (e.target.closest('.sentence-star-btn')) {
     toggleImportant(id);
@@ -369,21 +463,43 @@ sentenceListEl.addEventListener('click', (e) => {
     return;
   }
 
-  if (e.target.closest('.sentence-delete-btn')) {
-    if (sentences.length <= 1) {
-      alert('최소 1개의 문장은 있어야 합니다.');
-      return;
+  if (selecting) {
+    if (selectedIds.has(id)) {
+      selectedIds.delete(id);
+    } else {
+      selectedIds.add(id);
     }
-    if (!confirm('이 문장을 삭제하시겠습니까?')) return;
-    deleteSentence(id);
     renderSentenceList();
-    renderCard();
+    updateListTopbar();
     return;
   }
 
   const sentence = sentences.find((s) => String(s.id) === id);
   if (sentence) openAddModal(sentence);
 });
+
+// 길게 누르기(약 0.5초) → 해당 문장만 바로 삭제 확인. 선택 모드 중에는 비활성화
+sentenceListEl.addEventListener('pointerdown', (e) => {
+  if (selecting) return;
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn')) return;
+
+  const id = item.dataset.id;
+  clearTimeout(longPressTimer);
+  longPressTimer = setTimeout(() => {
+    longPressFiredId = id;
+    confirmDeleteSingle(id);
+  }, LONG_PRESS_MS);
+});
+
+function cancelLongPress() {
+  clearTimeout(longPressTimer);
+}
+
+sentenceListEl.addEventListener('pointerup', cancelLongPress);
+sentenceListEl.addEventListener('pointerleave', cancelLongPress);
+sentenceListEl.addEventListener('pointercancel', cancelLongPress);
 
 // ==========================================================================
 // 설정 화면 (글자크기 / 화면모드 / 데이터 관리)

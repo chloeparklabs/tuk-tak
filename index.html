@@ -57,11 +57,13 @@
 
   <!-- 문장 관리 화면 (목록 보기 + 수정/삭제) -->
   <section id="list-screen" class="screen hidden">
-    <header class="screen-topbar">
+    <header id="list-topbar" class="screen-topbar">
       <button id="list-back-btn" class="screen-back-btn" aria-label="뒤로가기">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-      <span class="screen-topbar-title">문장 관리</span>
+      <span id="list-topbar-title" class="screen-topbar-title">문장 관리</span>
+      <button id="list-select-btn" class="screen-topbar-text-btn" type="button">선택</button>
+      <button id="list-bulk-delete-btn" class="screen-topbar-text-btn screen-topbar-delete-btn hidden" type="button">삭제</button>
     </header>
     <div id="sentence-list" class="sentence-list"></div>
   </section>
