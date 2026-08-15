@@ -13,13 +13,18 @@ const SEED_SENTENCES = [
 ];
 
 function makeSentence(kr, en) {
-  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString() };
+  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false };
+}
+
+// 예전 버전에서 저장된 문장에는 important 필드가 없을 수 있어 불러올 때 보정
+function normalizeSentence(s) {
+  return { important: false, ...s };
 }
 
 function loadSentences() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
-    return JSON.parse(raw);
+    return JSON.parse(raw).map(normalizeSentence);
   }
   // 저장된 데이터가 없으면 시드 데이터로 초기화
   const seeded = SEED_SENTENCES.map((s) => makeSentence(s.kr, s.en));
@@ -43,6 +48,13 @@ function updateSentence(id, kr, en) {
   if (!target) return;
   target.kr = kr;
   target.en = en;
+  saveSentences(sentences);
+}
+
+function toggleImportant(id) {
+  const target = sentences.find((s) => String(s.id) === String(id));
+  if (!target) return;
+  target.important = !target.important;
   saveSentences(sentences);
 }
 
@@ -134,6 +146,7 @@ const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
+const cardStarBtn = document.getElementById('card-star-btn');
 
 // ==========================================================================
 // 렌더링
@@ -146,6 +159,7 @@ function renderCard() {
   prevBtn.disabled = isEmpty;
   checkBtn.disabled = isEmpty;
   nextBtn.disabled = isEmpty;
+  cardStarBtn.classList.toggle('hidden', isEmpty);
 
   if (isEmpty) {
     enTextEl.classList.add('hidden');
@@ -159,6 +173,7 @@ function renderCard() {
 
   enTextEl.classList.toggle('hidden', !revealed);
   cardEl.classList.toggle('revealed', revealed);
+  cardStarBtn.classList.toggle('active', sentence.important);
 }
 
 // ==========================================================================
@@ -192,6 +207,15 @@ prevBtn.addEventListener('click', () => {
 
 nextBtn.addEventListener('click', () => {
   goToSentence(currentIndex + 1);
+});
+
+cardStarBtn.addEventListener('click', () => {
+  if (sentences.length === 0) return;
+  toggleImportant(sentences[currentIndex].id);
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
 });
 
 // ==========================================================================
@@ -288,14 +312,27 @@ function renderSentenceList() {
     textWrap.appendChild(krEl);
     textWrap.appendChild(enEl);
 
+    const actions = document.createElement('div');
+    actions.className = 'sentence-list-actions';
+
+    const starBtn = document.createElement('button');
+    starBtn.type = 'button';
+    starBtn.className = 'sentence-star-btn';
+    starBtn.classList.toggle('active', s.important);
+    starBtn.setAttribute('aria-label', '중요 표시');
+    starBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'sentence-delete-btn';
     deleteBtn.setAttribute('aria-label', '삭제');
     deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
 
+    actions.appendChild(starBtn);
+    actions.appendChild(deleteBtn);
+
     item.appendChild(textWrap);
-    item.appendChild(deleteBtn);
+    item.appendChild(actions);
     sentenceListEl.appendChild(item);
   });
 }
@@ -315,6 +352,13 @@ sentenceListEl.addEventListener('click', (e) => {
   const item = e.target.closest('.sentence-list-item');
   if (!item) return;
   const id = item.dataset.id;
+
+  if (e.target.closest('.sentence-star-btn')) {
+    toggleImportant(id);
+    renderSentenceList();
+    renderCard();
+    return;
+  }
 
   if (e.target.closest('.sentence-delete-btn')) {
     if (sentences.length <= 1) {

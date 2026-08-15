@@ -282,6 +282,7 @@ button {
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -289,6 +290,34 @@ button {
   gap: 16px;
   text-align: center;
   padding: 0 8px;
+}
+
+.card-star-btn {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--color-gray-300);
+  cursor: pointer;
+}
+
+.card-star-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.card-star-btn.active {
+  color: var(--color-brand);
+}
+
+.card-star-btn.active svg {
+  fill: currentColor;
 }
 
 .kr-text {
@@ -594,6 +623,14 @@ button {
   white-space: nowrap;
 }
 
+.sentence-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sentence-star-btn,
 .sentence-delete-btn {
   display: flex;
   align-items: center;
@@ -607,6 +644,7 @@ button {
   cursor: pointer;
 }
 
+.sentence-star-btn svg,
 .sentence-delete-btn svg {
   width: 18px;
   height: 18px;
@@ -614,6 +652,14 @@ button {
 
 .sentence-delete-btn:active {
   color: var(--color-gray-800);
+}
+
+.sentence-star-btn.active {
+  color: var(--color-brand);
+}
+
+.sentence-star-btn.active svg {
+  fill: currentColor;
 }
 
 /* ==========================================================================
