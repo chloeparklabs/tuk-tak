@@ -36,10 +36,22 @@ function saveSentences(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
+const SORT_KEY = 'tuktak_sort_order';
+const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important'];
+const DEFAULT_SORT_MODE = 'oldest'; // 기존(정렬 기능 도입 전) 순서와 동일해 설정을 건드리지 않은 사용자는 체감 변화 없음
+const RANDOM_ORDER_KEY = 'tuktak_random_order';
+
+let sortMode = DEFAULT_SORT_MODE;
+let randomOrder = [];
+
 const sentences = loadSentences();
+loadRandomOrder();
 
 function addSentence(kr, en) {
-  sentences.push(makeSentence(kr, en));
+  const sentence = makeSentence(kr, en);
+  sentences.push(sentence);
+  randomOrder.push(String(sentence.id));
+  saveRandomOrder();
   saveSentences(sentences);
 }
 
@@ -69,10 +81,76 @@ function deleteSentence(id) {
   const index = sentences.findIndex((s) => String(s.id) === String(id));
   if (index === -1) return;
   sentences.splice(index, 1);
+  const randIndex = randomOrder.indexOf(String(id));
+  if (randIndex !== -1) {
+    randomOrder.splice(randIndex, 1);
+    saveRandomOrder();
+  }
   if (currentIndex >= sentences.length) {
     currentIndex = sentences.length - 1;
   }
   saveSentences(sentences);
+}
+
+// ==========================================================================
+// 출제/정렬 순서 (랜덤순/최신순/오래된순/못외운것 먼저/중요한것 먼저)
+// ==========================================================================
+function saveRandomOrder() {
+  localStorage.setItem(RANDOM_ORDER_KEY, JSON.stringify(randomOrder));
+}
+
+// 저장된 랜덤 순서에서 삭제된 문장은 제거하고, 새로 추가된 문장은 뒤에 이어붙여 보정
+function loadRandomOrder() {
+  let raw = [];
+  try {
+    raw = JSON.parse(localStorage.getItem(RANDOM_ORDER_KEY) || '[]');
+  } catch {
+    raw = [];
+  }
+  const currentIds = sentences.map((s) => String(s.id));
+  const validIds = new Set(currentIds);
+  const filtered = raw.filter((id) => validIds.has(id));
+  const filteredSet = new Set(filtered);
+  const missing = currentIds.filter((id) => !filteredSet.has(id));
+  randomOrder = [...filtered, ...missing];
+  saveRandomOrder();
+}
+
+// "랜덤순" 선택 시(다시 선택할 때마다)에만 새로 섞음 — 앱을 껐다 켜도 순서 유지
+function shuffleRandomOrder() {
+  const ids = sentences.map((s) => String(s.id));
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  randomOrder = ids;
+  saveRandomOrder();
+}
+
+// 현재 정렬 기준에 따라 정렬된 새 배열을 반환 (sentences 자체는 변경하지 않음)
+function getOrderedSentences() {
+  const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+  const byOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+
+  if (sortMode === 'newest') return [...sentences].sort(byNewest);
+  if (sortMode === 'oldest') return [...sentences].sort(byOldest);
+
+  if (sortMode === 'unfamiliar' || sortMode === 'important') {
+    const key = sortMode;
+    const marked = sentences.filter((s) => s[key]).sort(byNewest);
+    const rest = sentences.filter((s) => !s[key]).sort(byNewest);
+    return [...marked, ...rest];
+  }
+
+  if (sortMode === 'random') {
+    const byId = new Map(sentences.map((s) => [String(s.id), s]));
+    const ordered = randomOrder.map((id) => byId.get(id)).filter(Boolean);
+    const orderedIds = new Set(ordered.map((s) => String(s.id)));
+    const extras = sentences.filter((s) => !orderedIds.has(String(s.id))).sort(byNewest);
+    return [...ordered, ...extras];
+  }
+
+  return [...sentences];
 }
 
 // ==========================================================================
@@ -142,6 +220,7 @@ const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
 const moreOpenBtn = document.getElementById('more-open-btn');
 const moreMenu = document.getElementById('more-menu');
 const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
+const sortOptionBtns = document.querySelectorAll('.sort-option-btn');
 const addModalTitleEl = document.getElementById('add-modal-title');
 const listOpenBtn = document.getElementById('list-open-btn');
 const listScreen = document.getElementById('list-screen');
@@ -162,7 +241,8 @@ const emptyStateMsg = document.getElementById('empty-state-msg');
 // 렌더링
 // ==========================================================================
 function renderCard() {
-  const isEmpty = sentences.length === 0;
+  const ordered = getOrderedSentences();
+  const isEmpty = ordered.length === 0;
 
   emptyStateMsg.classList.toggle('hidden', !isEmpty);
   krTextEl.classList.toggle('hidden', isEmpty);
@@ -175,7 +255,7 @@ function renderCard() {
     return;
   }
 
-  const sentence = sentences[currentIndex];
+  const sentence = ordered[currentIndex];
   krTextEl.textContent = sentence.kr;
   enTextEl.textContent = sentence.en;
 
@@ -187,12 +267,13 @@ function renderCard() {
 // 이벤트 핸들러
 // ==========================================================================
 function goToSentence(index) {
-  if (sentences.length === 0) {
+  const total = getOrderedSentences().length;
+  if (total === 0) {
     renderCard();
     return;
   }
   // 문장 목록의 처음/끝에서 순환
-  currentIndex = (index + sentences.length) % sentences.length;
+  currentIndex = (index + total) % total;
   revealed = false;
   renderCard();
 }
@@ -352,7 +433,7 @@ function confirmDeleteSingle(id) {
 function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
-  sentences.forEach((s) => {
+  getOrderedSentences().forEach((s) => {
     const id = String(s.id);
     const item = document.createElement('div');
     item.className = 'sentence-list-item' + (selecting && selectedIds.has(id) ? ' checked' : '');
@@ -537,6 +618,8 @@ resetOpenBtn.addEventListener('click', () => {
   if (!confirm('문장을 모두 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 
   sentences.length = 0;
+  randomOrder.length = 0;
+  saveRandomOrder();
   currentIndex = 0;
   saveSentences(sentences);
   renderCard();
@@ -639,6 +722,44 @@ systemDarkQuery.addEventListener('change', () => {
   if (themeMode === 'system') {
     document.documentElement.setAttribute('data-theme', resolveTheme('system'));
   }
+});
+
+// ==========================================================================
+// 출제/정렬 순서 선택 UI (설정 화면)
+// ==========================================================================
+function applySortMode(mode) {
+  sortMode = mode;
+  sortOptionBtns.forEach((btn) => {
+    const isActive = btn.dataset.sort === mode;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-checked', String(isActive));
+  });
+}
+
+function loadSortMode() {
+  const saved = localStorage.getItem(SORT_KEY);
+  const mode = SORT_MODES.includes(saved) ? saved : DEFAULT_SORT_MODE;
+  applySortMode(mode);
+}
+
+loadSortMode();
+
+sortOptionBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const mode = btn.dataset.sort;
+    // 랜덤순은 다시 선택할 때마다 새로 섞음(앱을 껐다 켜는 것만으로는 순서가 바뀌지 않음)
+    if (mode === 'random') {
+      shuffleRandomOrder();
+    }
+    localStorage.setItem(SORT_KEY, mode);
+    applySortMode(mode);
+    currentIndex = 0;
+    revealed = false;
+    renderCard();
+    if (!listScreen.classList.contains('hidden')) {
+      renderSentenceList();
+    }
+  });
 });
 
 // ==========================================================================
