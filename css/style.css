@@ -124,13 +124,13 @@ button {
   /* 카드 화면 padding(24px) 밖으로 확장해 화면 좌우 끝까지 꽉 차게 표시 */
   margin: -24px -24px 0 -24px;
   padding: 16px 24px;
-  background-color: var(--color-brand-dark);
+  background-color: var(--color-brand);
 }
 
 .topbar-logo {
   font-size: 18px;
   font-weight: 700;
-  /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
+  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
   letter-spacing: 0.5px;
 }
@@ -381,8 +381,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  /* .card의 gap(16px)에 84px을 더해 정답 문장에서 정확히 100px 떨어지도록 함 */
-  margin-top: 84px;
+  /* .card의 gap(16px)에 54px을 더해 정답 문장에서 정확히 70px 떨어지도록 함 */
+  margin-top: 54px;
 }
 
 .card-mark-btn {
@@ -620,13 +620,13 @@ button {
   align-items: center;
   gap: 8px;
   padding: 16px 20px;
-  background-color: var(--color-brand-dark);
+  background-color: var(--color-brand);
   transition: background-color 0.15s ease;
 }
 
-/* 문장관리 화면의 선택 모드(다중 삭제)일 때 브랜드 블루로 바뀌어 모드 전환을 알림 */
+/* 문장관리 화면의 선택 모드(다중 삭제)일 때 브랜드 네이비로 바뀌어 모드 전환을 알림 */
 .screen-topbar.selecting {
-  background-color: var(--color-brand);
+  background-color: var(--color-brand-dark);
 }
 
 .screen-back-btn {
@@ -637,7 +637,7 @@ button {
   height: 32px;
   background: none;
   border: none;
-  /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
+  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
   cursor: pointer;
 }
@@ -688,7 +688,7 @@ button {
 .screen-topbar-title {
   font-size: 17px;
   font-weight: 700;
-  /* 상단바는 항상 브랜드 네이비 배경이라 테마와 무관하게 흰색 고정 */
+  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
 }
 
