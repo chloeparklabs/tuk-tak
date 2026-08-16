@@ -236,6 +236,11 @@ const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
+const cardMarkBar = document.getElementById('card-mark-bar');
+const cardStarBtn = document.getElementById('card-star-btn');
+const cardFlagBtn = document.getElementById('card-flag-btn');
+const listFilterBar = document.getElementById('list-filter-bar');
+const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 
 // ==========================================================================
 // 렌더링
@@ -252,6 +257,7 @@ function renderCard() {
   if (isEmpty) {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
+    cardMarkBar.classList.add('hidden');
     return;
   }
 
@@ -261,7 +267,34 @@ function renderCard() {
 
   enTextEl.classList.toggle('hidden', !revealed);
   cardEl.classList.toggle('revealed', revealed);
+
+  // 마킹 아이콘(중요/미암기)은 정답을 확인한 뒤에만 노출
+  cardMarkBar.classList.toggle('hidden', !revealed);
+  cardStarBtn.classList.toggle('active', sentence.important);
+  cardFlagBtn.classList.toggle('active', sentence.unfamiliar);
 }
+
+// 중요/미암기 토글 시 정렬 기준에 따라 순서가 바뀔 수 있어, 같은 문장이
+// 화면에 계속 보이도록 토글 후 그 문장의 새 위치로 currentIndex를 맞춰줌
+function toggleCurrentSentenceFlag(toggleFn) {
+  const ordered = getOrderedSentences();
+  const sentence = ordered[currentIndex];
+  if (!sentence) return;
+
+  toggleFn(sentence.id);
+
+  const newOrdered = getOrderedSentences();
+  const newIndex = newOrdered.findIndex((s) => String(s.id) === String(sentence.id));
+  if (newIndex !== -1) currentIndex = newIndex;
+
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
+}
+
+cardStarBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleImportant));
+cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfamiliar));
 
 // ==========================================================================
 // 이벤트 핸들러
@@ -380,9 +413,33 @@ let selecting = false;
 let selectedIds = new Set();
 let longPressTimer = null;
 let longPressFiredId = null;
+let filterMode = 'all';
+
+// 정렬은 그대로 적용한 뒤, 필터 조건에 안 맞는 문장만 걸러냄 (정렬·필터는 독립적)
+function getFilteredSentences() {
+  const ordered = getOrderedSentences();
+  if (filterMode === 'important') return ordered.filter((s) => s.important);
+  if (filterMode === 'unfamiliar') return ordered.filter((s) => s.unfamiliar);
+  return ordered;
+}
+
+function applyFilterMode(mode) {
+  filterMode = mode;
+  listFilterBtns.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.filter === mode);
+  });
+}
+
+listFilterBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    applyFilterMode(btn.dataset.filter);
+    renderSentenceList();
+  });
+});
 
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
+  listFilterBar.classList.toggle('hidden', selecting);
 
   if (selecting) {
     const n = selectedIds.size;
@@ -433,7 +490,16 @@ function confirmDeleteSingle(id) {
 function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
-  getOrderedSentences().forEach((s) => {
+  const filtered = getFilteredSentences();
+  if (filtered.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'sentence-list-empty-msg';
+    emptyMsg.textContent = '표시할 문장이 없습니다.';
+    sentenceListEl.appendChild(emptyMsg);
+    return;
+  }
+
+  filtered.forEach((s) => {
     const id = String(s.id);
     const item = document.createElement('div');
     item.className = 'sentence-list-item' + (selecting && selectedIds.has(id) ? ' checked' : '');
@@ -493,6 +559,7 @@ listOpenBtn.addEventListener('click', () => {
   listScreen.classList.remove('hidden');
   selecting = false;
   selectedIds.clear();
+  applyFilterMode('all');
   renderSentenceList();
   updateListTopbar();
 });
