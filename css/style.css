@@ -514,6 +514,42 @@ button {
   margin-bottom: 8px;
 }
 
+.add-modal-tabs {
+  display: flex;
+  border: 1.5px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.add-modal-tab-btn {
+  flex: 1;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-gray-500);
+  background-color: var(--color-base);
+  border: none;
+  cursor: pointer;
+}
+
+.add-modal-tab-btn:not(:last-child) {
+  border-right: 1.5px solid var(--color-gray-200);
+}
+
+.add-modal-tab-btn.active {
+  background-color: var(--color-brand);
+  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
+}
+
+.add-modal-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .modal-label {
   font-size: 13px;
   font-weight: 600;

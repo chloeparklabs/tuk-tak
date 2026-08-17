@@ -208,14 +208,18 @@ const checkBtn = document.getElementById('check-btn');
 const nextBtn = document.getElementById('next-btn');
 const addOpenBtn = document.getElementById('add-open-btn');
 const addModal = document.getElementById('add-modal');
+const addModalTabsEl = document.getElementById('add-modal-tabs');
+const addModalTabBtns = document.querySelectorAll('.add-modal-tab-btn');
+const addTabForm = document.getElementById('add-tab-form');
+const addTabFile = document.getElementById('add-tab-file');
+const addTabPaste = document.getElementById('add-tab-paste');
 const addKrInput = document.getElementById('add-kr-input');
 const addEnInput = document.getElementById('add-en-input');
 const addSubmitBtn = document.getElementById('add-submit-btn');
 const addCancelBtn = document.getElementById('add-cancel-btn');
-const importOpenBtn = document.getElementById('import-open-btn');
 const importFileInput = document.getElementById('import-file-input');
-const pasteOpenBtn = document.getElementById('paste-open-btn');
-const pasteModal = document.getElementById('paste-modal');
+const importTabOpenBtn = document.getElementById('import-tab-open-btn');
+const importTabCancelBtn = document.getElementById('import-tab-cancel-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
 const pasteCancelBtn = document.getElementById('paste-cancel-btn');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
@@ -357,21 +361,34 @@ nextBtn.addEventListener('click', () => {
 
 
 // ==========================================================================
-// 문장 추가/수정 폼 (같은 모달을 재사용, editingId가 있으면 수정 모드)
+// 문장추가 모달: 새 문장을 넣는 3가지 방법(폼 입력/파일 가져오기/텍스트
+// 붙여넣기)을 탭으로 통합. 문장관리·카드 화면에서 문장을 수정할 때도
+// 같은 모달을 재사용하되(editingId가 있으면 수정 모드), 이때는 방법을
+// 고를 필요가 없으므로 탭을 숨기고 폼만 노출한다.
 // ==========================================================================
 let editingId = null;
 
+function setAddModalTab(tab) {
+  addModalTabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
+  addTabForm.classList.toggle('hidden', tab !== 'form');
+  addTabFile.classList.toggle('hidden', tab !== 'file');
+  addTabPaste.classList.toggle('hidden', tab !== 'paste');
+}
+
 function openAddModal(sentence) {
+  setAddModalTab('form');
   if (sentence) {
     editingId = sentence.id;
     addModalTitleEl.textContent = '문장 수정';
     addSubmitBtn.textContent = '저장';
     addKrInput.value = sentence.kr;
     addEnInput.value = sentence.en;
+    addModalTabsEl.classList.add('hidden');
   } else {
     editingId = null;
     addModalTitleEl.textContent = '문장 추가';
     addSubmitBtn.textContent = '추가';
+    addModalTabsEl.classList.remove('hidden');
   }
   addModal.classList.remove('hidden');
   addKrInput.focus();
@@ -381,8 +398,21 @@ function closeAddModal() {
   addModal.classList.add('hidden');
   addKrInput.value = '';
   addEnInput.value = '';
+  pasteTextarea.value = '';
+  importFileInput.value = '';
   editingId = null;
 }
+
+function refreshAfterAdd() {
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
+}
+
+addModalTabBtns.forEach((btn) => {
+  btn.addEventListener('click', () => setAddModalTab(btn.dataset.tab));
+});
 
 addOpenBtn.addEventListener('click', () => openAddModal());
 addCancelBtn.addEventListener('click', closeAddModal);
@@ -398,18 +428,15 @@ addSubmitBtn.addEventListener('click', () => {
     addSentence(kr, en);
   }
   closeAddModal();
-  renderCard();
-  if (!listScreen.classList.contains('hidden')) {
-    renderSentenceList();
-  }
+  refreshAfterAdd();
 });
 
-// ==========================================================================
-// CSV/TSV 파일 가져오기
-// ==========================================================================
-importOpenBtn.addEventListener('click', () => {
+// --- 파일 가져오기 탭 (CSV/TSV/TXT) ---
+importTabOpenBtn.addEventListener('click', () => {
   importFileInput.click();
 });
+
+importTabCancelBtn.addEventListener('click', closeAddModal);
 
 importFileInput.addEventListener('change', () => {
   const file = importFileInput.files[0];
@@ -420,32 +447,21 @@ importFileInput.addEventListener('change', () => {
     const parsed = parseSentencesText(String(reader.result));
     parsed.forEach((s) => addSentence(s.kr, s.en));
     alert(`${parsed.length}개 문장을 추가했습니다.`);
-    importFileInput.value = '';
+    closeAddModal();
+    refreshAfterAdd();
   };
   reader.readAsText(file, 'UTF-8');
 });
 
-// ==========================================================================
-// 텍스트 붙여넣기로 가져오기 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용)
-// ==========================================================================
-pasteOpenBtn.addEventListener('click', () => {
-  pasteTextarea.value = '';
-  pasteModal.classList.remove('hidden');
-});
-
-pasteCancelBtn.addEventListener('click', () => {
-  pasteModal.classList.add('hidden');
-});
+// --- 텍스트 붙여넣기 탭 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용) ---
+pasteCancelBtn.addEventListener('click', closeAddModal);
 
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = parseSentencesText(pasteTextarea.value);
   parsed.forEach((s) => addSentence(s.kr, s.en));
   alert(`${parsed.length}개 문장을 추가했습니다.`);
-  pasteModal.classList.add('hidden');
-  renderCard();
-  if (!listScreen.classList.contains('hidden')) {
-    renderSentenceList();
-  }
+  closeAddModal();
+  refreshAfterAdd();
 });
 
 // ==========================================================================
