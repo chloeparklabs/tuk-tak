@@ -214,6 +214,11 @@ const addSubmitBtn = document.getElementById('add-submit-btn');
 const addCancelBtn = document.getElementById('add-cancel-btn');
 const importOpenBtn = document.getElementById('import-open-btn');
 const importFileInput = document.getElementById('import-file-input');
+const pasteOpenBtn = document.getElementById('paste-open-btn');
+const pasteModal = document.getElementById('paste-modal');
+const pasteTextarea = document.getElementById('paste-textarea');
+const pasteCancelBtn = document.getElementById('paste-cancel-btn');
+const pasteSubmitBtn = document.getElementById('paste-submit-btn');
 const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
@@ -398,6 +403,29 @@ importFileInput.addEventListener('change', () => {
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
+});
+
+// ==========================================================================
+// 텍스트 붙여넣기로 가져오기 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용)
+// ==========================================================================
+pasteOpenBtn.addEventListener('click', () => {
+  pasteTextarea.value = '';
+  pasteModal.classList.remove('hidden');
+});
+
+pasteCancelBtn.addEventListener('click', () => {
+  pasteModal.classList.add('hidden');
+});
+
+pasteSubmitBtn.addEventListener('click', () => {
+  const parsed = parseSentencesText(pasteTextarea.value);
+  parsed.forEach((s) => addSentence(s.kr, s.en));
+  alert(`${parsed.length}개 문장을 추가했습니다.`);
+  pasteModal.classList.add('hidden');
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
 });
 
 // ==========================================================================
