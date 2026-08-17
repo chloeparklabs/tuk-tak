@@ -391,7 +391,6 @@ function openAddModal(sentence) {
     addModalTabsEl.classList.remove('hidden');
   }
   addModal.classList.remove('hidden');
-  addKrInput.focus();
 }
 
 function closeAddModal() {
