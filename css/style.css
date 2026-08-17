@@ -577,6 +577,10 @@ button {
   border-color: var(--color-brand);
 }
 
+textarea.modal-input {
+  resize: vertical;
+}
+
 .modal-desc {
   font-size: 13px;
   color: var(--color-gray-500);
