@@ -244,6 +244,8 @@ const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
 const cardFlagBtn = document.getElementById('card-flag-btn');
+const cardEditBtn = document.getElementById('card-edit-btn');
+const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterBar = document.getElementById('list-filter-bar');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 
@@ -264,6 +266,11 @@ function renderCard() {
     cardEl.classList.remove('revealed');
     cardMarkBar.classList.add('hidden');
     return;
+  }
+
+  // 카드 화면에서 삭제 후 남은 문장 수보다 currentIndex가 커질 수 있어 범위 보정
+  if (currentIndex >= ordered.length) {
+    currentIndex = ordered.length - 1;
   }
 
   const sentence = ordered[currentIndex];
@@ -300,6 +307,19 @@ function toggleCurrentSentenceFlag(toggleFn) {
 
 cardStarBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleImportant));
 cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfamiliar));
+
+// 카드 화면에서 바로 수정/삭제 (문장관리의 수정 모달·삭제 로직을 그대로 재사용)
+cardEditBtn.addEventListener('click', () => {
+  const sentence = getOrderedSentences()[currentIndex];
+  if (!sentence) return;
+  openAddModal(sentence);
+});
+
+cardDeleteBtn.addEventListener('click', () => {
+  const sentence = getOrderedSentences()[currentIndex];
+  if (!sentence) return;
+  confirmDeleteSingle(sentence.id);
+});
 
 // ==========================================================================
 // 이벤트 핸들러
