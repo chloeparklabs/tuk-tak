@@ -395,7 +395,7 @@ button {
   /* 하이라이트 칩(--color-chip-answer)이 테마와 무관하게 항상 밝은 배경이라 텍스트도 고정값 사용 */
   color: #1E2A38;
   background-color: var(--color-chip-answer);
-  padding: 40px 20px;
+  padding: 40px 14px;
   border-radius: 8px;
   word-break: keep-all;
 }
@@ -408,8 +408,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  /* .card의 gap(16px)에 54px을 더해 정답 문장에서 정확히 70px 떨어지도록 함 */
-  margin-top: 54px;
+  /* .card의 gap(16px)에 24px을 더해 영어 박스 테두리에서 정확히 40px 떨어지도록 함 */
+  margin-top: 24px;
 }
 
 .card-mark-btn {
