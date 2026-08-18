@@ -362,17 +362,20 @@ button {
   background-color: var(--gray-50);
 }
 
+/* grid의 위/아래 1fr 두 행이 항상 같은 크기로 나뉘어, 가운데(auto) 행인 영어 박스가
+   한국어 문장·마킹 아이콘 바 길이와 무관하게 항상 화면(헤더~버튼바) 정중앙에 오게 됨 */
 .card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  grid-template-columns: 1fr;
+  justify-items: center;
   text-align: center;
   padding: 0 8px;
 }
 
 .kr-text {
+  grid-row: 1;
+  align-self: center;
   font-size: var(--kr-font-size);
   font-weight: 600;
   color: var(--color-text-secondary);
@@ -380,14 +383,17 @@ button {
   word-break: keep-all;
 }
 
-/* 정답 노출 후에는 한국어 문장을 작게, 옅게 표시 */
+/* 정답 노출 후에는 한국어 문장을 작게, 옅게 표시하고 영어 박스 바로 위에 붙임 */
 .card.revealed .kr-text {
+  align-self: end;
+  margin-bottom: 16px;
   font-size: var(--kr-font-size-revealed);
   font-weight: 500;
   color: var(--color-text-muted);
 }
 
 .en-text {
+  grid-row: 2;
   display: block;
   width: 100%;
   font-size: var(--en-font-size);
@@ -404,12 +410,14 @@ button {
    카드 화면 마킹 아이콘 바 (정답 확인 후에만 노출)
    ========================================================================== */
 .card-mark-bar {
+  grid-row: 3;
+  align-self: start;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  /* .card의 gap(16px)에 24px을 더해 영어 박스 테두리에서 정확히 40px 떨어지도록 함 */
-  margin-top: 24px;
+  /* 영어 박스 테두리에서 정확히 40px 떨어지도록 함 */
+  margin-top: 40px;
 }
 
 .card-mark-btn {
@@ -1027,6 +1035,8 @@ textarea.modal-input {
    카드 학습 화면 빈 상태 (문장 0개)
    ========================================================================== */
 .empty-state-msg {
+  grid-row: 1 / -1;
+  align-self: center;
   text-align: center;
   font-size: 15px;
   font-weight: 500;
