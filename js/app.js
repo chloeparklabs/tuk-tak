@@ -283,6 +283,7 @@ function renderCard() {
 
   enTextEl.classList.toggle('hidden', !revealed);
   cardEl.classList.toggle('revealed', revealed);
+  checkBtn.classList.toggle('revealed', revealed);
 
   // 마킹 아이콘(중요/미암기)은 정답을 확인한 뒤에만 노출
   cardMarkBar.classList.toggle('hidden', !revealed);
