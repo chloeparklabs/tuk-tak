@@ -36,6 +36,9 @@ function saveSentences(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
+// 마지막으로 보던 문장 id (앱을 껐다 켜도 이어서 시작하기 위함)
+const LAST_SENTENCE_ID_KEY = 'tuktak_last_sentence_id';
+
 const SORT_KEY = 'tuktak_sort_order';
 const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important'];
 const DEFAULT_SORT_MODE = 'oldest'; // 기존(정렬 기능 도입 전) 순서와 동일해 설정을 건드리지 않은 사용자는 체감 변화 없음
@@ -240,6 +243,7 @@ const listSelectBtn = document.getElementById('list-select-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const sentenceListEl = document.getElementById('sentence-list');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
+const restartOpenBtn = document.getElementById('restart-open-btn');
 const settingsScreen = document.getElementById('settings-screen');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
@@ -278,6 +282,7 @@ function renderCard() {
   }
 
   const sentence = ordered[currentIndex];
+  localStorage.setItem(LAST_SENTENCE_ID_KEY, String(sentence.id));
   krTextEl.textContent = sentence.kr;
   enTextEl.textContent = sentence.en;
 
@@ -344,7 +349,12 @@ function goToSentence(index) {
 startBtn.addEventListener('click', () => {
   startScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
-  goToSentence(0);
+
+  // 마지막으로 보던 문장부터 이어서 시작 (그 문장이 삭제되는 등 못 찾으면 처음부터)
+  const ordered = getOrderedSentences();
+  const savedId = localStorage.getItem(LAST_SENTENCE_ID_KEY);
+  const savedIndex = savedId ? ordered.findIndex((s) => String(s.id) === savedId) : -1;
+  goToSentence(savedIndex !== -1 ? savedIndex : 0);
 });
 
 checkBtn.addEventListener('click', () => {
@@ -894,8 +904,12 @@ sortOptionBtns.forEach((btn) => {
 });
 
 // ==========================================================================
-// 상단바 더보기 메뉴 (문장추가 / 문장관리 / 설정)
+// 상단바 더보기 메뉴 (문장추가 / 문장관리 / 설정 / 처음부터)
 // ==========================================================================
+restartOpenBtn.addEventListener('click', () => {
+  goToSentence(0);
+});
+
 moreOpenBtn.addEventListener('click', () => {
   moreMenu.classList.toggle('hidden');
 });
