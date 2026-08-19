@@ -383,6 +383,12 @@ button {
   word-break: keep-all;
 }
 
+/* 정답 확인 전에는 영어 박스(auto 행)가 접혀 있어, 한국어 문장이 3개 행 전체를 차지하며
+   화면(헤더~버튼바) 정중앙에 오게 함 */
+.card:not(.revealed) .kr-text {
+  grid-row: 1 / -1;
+}
+
 /* 정답 노출 후에는 한국어 문장을 작게, 옅게 표시하고 영어 박스 바로 위에 붙임 */
 .card.revealed .kr-text {
   align-self: end;
