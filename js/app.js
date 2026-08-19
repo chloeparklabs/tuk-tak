@@ -254,7 +254,7 @@ const cardStarBtn = document.getElementById('card-star-btn');
 const cardFlagBtn = document.getElementById('card-flag-btn');
 const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
-const listFilterBar = document.getElementById('list-filter-bar');
+const listFilterSection = document.getElementById('list-filter-section');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 const listCountInfoEl = document.getElementById('list-count-info');
 
@@ -514,7 +514,7 @@ listFilterBtns.forEach((btn) => {
 
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
-  listFilterBar.classList.toggle('hidden', selecting);
+  listFilterSection.classList.toggle('hidden', selecting);
 
   if (selecting) {
     const n = selectedIds.size;
@@ -569,7 +569,7 @@ function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
   const filtered = getFilteredSentences();
-  listCountInfoEl.textContent = `${FILTER_COUNT_LABELS[filterMode]} 문장의 개수는 ${filtered.length}개 입니다.`;
+  listCountInfoEl.textContent = `${FILTER_COUNT_LABELS[filterMode]} ${filtered.length}개`;
 
   if (filtered.length === 0) {
     const emptyMsg = document.createElement('p');

@@ -247,7 +247,7 @@
   - 마킹 아이콘 바에 구분선(`.card-mark-divider`) + 연필(수정)/휴지통(삭제) 아이콘 추가. 수정은 `openAddModal`, 삭제는 `confirmDeleteSingle`을 문장관리와 그대로 공유. 카드에서 삭제 시 `currentIndex`가 범위를 벗어날 수 있어 `renderCard()`에 범위 보정 로직 포함(마지막 카드를 삭제해도 이전 카드로 자연스럽게 이동)
 - **카드 화면 빈 상태**: 문장이 0개(초기화 직후)이면 안내 문구를 보여주고 이전/확인/다음 버튼을 비활성화. 문장추가로 다시 채워지면 자동 복귀
 - **문장관리 필터 탭**: 상단바 아래에 전체/중요/미암기 세그먼트(`.list-filter-bar`). 정렬과는 독립적인 별도 축(필터는 조건에 안 맞는 문장을 목록에서 제외). 진입 시 항상 "전체"로 초기화, 선택 모드에서는 숨김
-  - 필터 탭 바로 아래에 현재 활성 탭 기준 문장 개수 안내(`#list-count-info`, 예: "전체 문장의 개수는 5개 입니다.") 표시. 작고 옅은 색으로 눈에 띄지 않게, 목록이 바뀔 때마다(`renderSentenceList()`) 함께 갱신
+  - 필터 탭과 구분선(`.list-filter-section`의 `border-bottom`) 사이에 현재 활성 탭 기준 문장 개수 안내(`#list-count-info`, 예: "전체 5개") 표시. `--color-text-secondary`/13px 사용(처음엔 `--color-text-muted`/12px로 했으나 목록 텍스트보다 흐리고 작아 오히려 눈에 거슬린다는 피드백으로 조정, 2026-08-19). 목록이 바뀔 때마다(`renderSentenceList()`) 함께 갱신, 선택 모드에서는 탭·구분선과 함께(`#list-filter-section`) 숨김
 - **브랜드색 배경 위 고정 흰색 규칙**: 시작 화면(`.start-logo`, `.btn-primary`)과 상단바처럼 배경이 항상 브랜드 블루/네이비로 고정된 요소는 `--color-base` 대신 리터럴 `#FFFFFF` 사용
 - **헤더/상태바 색상**: 카드·문장관리·설정 화면의 상단바 기본 배경은 블루, 문장관리 선택모드 강조색은 네이비. 상태바(PWA `theme-color`, `manifest.json`의 `theme_color`)는 네이비, 로딩 스플래시 배경(`manifest.json`의 `background_color`)은 블루
 

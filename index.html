@@ -84,12 +84,14 @@
       <button id="list-select-btn" class="screen-topbar-text-btn" type="button">선택</button>
       <button id="list-bulk-delete-btn" class="screen-topbar-text-btn screen-topbar-delete-btn hidden" type="button">삭제</button>
     </header>
-    <div id="list-filter-bar" class="list-filter-bar">
-      <button class="list-filter-btn active" type="button" data-filter="all">전체</button>
-      <button class="list-filter-btn" type="button" data-filter="important">중요</button>
-      <button class="list-filter-btn" type="button" data-filter="unfamiliar">미암기</button>
+    <div id="list-filter-section" class="list-filter-section">
+      <div id="list-filter-bar" class="list-filter-bar">
+        <button class="list-filter-btn active" type="button" data-filter="all">전체</button>
+        <button class="list-filter-btn" type="button" data-filter="important">중요</button>
+        <button class="list-filter-btn" type="button" data-filter="unfamiliar">미암기</button>
+      </div>
+      <p id="list-count-info" class="list-count-info"></p>
     </div>
-    <p id="list-count-info" class="list-count-info"></p>
     <div id="sentence-list" class="sentence-list"></div>
   </section>
 
