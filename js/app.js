@@ -256,6 +256,7 @@ const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterBar = document.getElementById('list-filter-bar');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
+const listCountInfoEl = document.getElementById('list-count-info');
 
 // ==========================================================================
 // 렌더링
@@ -561,10 +562,15 @@ function confirmDeleteSingle(id) {
   renderCard();
 }
 
+// 필터별 개수 안내 문구 라벨
+const FILTER_COUNT_LABELS = { all: '전체', important: '중요', unfamiliar: '미암기' };
+
 function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
   const filtered = getFilteredSentences();
+  listCountInfoEl.textContent = `${FILTER_COUNT_LABELS[filterMode]} 문장의 개수는 ${filtered.length}개 입니다.`;
+
   if (filtered.length === 0) {
     const emptyMsg = document.createElement('p');
     emptyMsg.className = 'sentence-list-empty-msg';

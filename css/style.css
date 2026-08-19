@@ -825,6 +825,13 @@ textarea.modal-input {
   color: #FFFFFF;
 }
 
+/* 현재 활성 필터 탭 기준 문장 개수 안내 — 눈에 띄지 않도록 작고 옅게 */
+.list-count-info {
+  padding: 8px 20px 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
 /* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
 .screen-back-btn.text-mode {
   width: auto;
