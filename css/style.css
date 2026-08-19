@@ -833,6 +833,7 @@ textarea.modal-input {
   padding: 0 20px 12px;
   font-size: 13px;
   color: var(--color-text-secondary);
+  text-align: center;
 }
 
 /* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
