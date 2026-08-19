@@ -799,14 +799,11 @@ textarea.modal-input {
 /* ==========================================================================
    문장관리 필터 탭 (전체 / 중요 / 미암기)
    ========================================================================== */
-.list-filter-section {
-  border-bottom: 1px solid var(--gray-100);
-}
-
 .list-filter-bar {
   display: flex;
   gap: 8px;
-  padding: 12px 20px 6px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .list-filter-btn {
@@ -830,7 +827,7 @@ textarea.modal-input {
 
 /* 현재 활성 필터 탭 기준 문장 개수 안내 — 탭과 구분선 사이, 은은하되 읽히는 정도로 */
 .list-count-info {
-  padding: 0 20px 12px;
+  padding: 8px 20px 0;
   font-size: 13px;
   color: var(--color-text-secondary);
   text-align: center;
