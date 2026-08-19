@@ -244,6 +244,9 @@ const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const sentenceListEl = document.getElementById('sentence-list');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
 const restartOpenBtn = document.getElementById('restart-open-btn');
+const helpOpenBtn = document.getElementById('help-open-btn');
+const helpScreen = document.getElementById('help-screen');
+const helpBackBtn = document.getElementById('help-back-btn');
 const settingsScreen = document.getElementById('settings-screen');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
@@ -739,6 +742,19 @@ settingsOpenBtn.addEventListener('click', () => {
 
 settingsBackBtn.addEventListener('click', () => {
   settingsScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+// ==========================================================================
+// 도움말 화면
+// ==========================================================================
+helpOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  helpScreen.classList.remove('hidden');
+});
+
+helpBackBtn.addEventListener('click', () => {
+  helpScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
 });
 

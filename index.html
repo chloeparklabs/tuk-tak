@@ -42,6 +42,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span>처음부터</span>
           </button>
+          <button id="help-open-btn" class="more-menu-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            <span>도움말</span>
+          </button>
         </div>
       </div>
     </header>
@@ -177,6 +181,105 @@
       </button>
 
       <p class="settings-footer">TukTak · 최근 업데이트 2026-08-13</p>
+    </div>
+  </section>
+
+  <!-- 도움말 화면 -->
+  <section id="help-screen" class="screen hidden">
+    <header class="screen-topbar">
+      <button id="help-back-btn" class="screen-back-btn" aria-label="뒤로가기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <span class="screen-topbar-title">도움말</span>
+    </header>
+
+    <div class="help-body">
+      <p class="help-intro">내가 직접 넣은 문장을, 완벽하게 외울 때까지 반복해서 익히는 앱입니다.</p>
+
+      <h2 class="help-section-title">카드 학습 화면</h2>
+      <ul class="help-list">
+        <li><strong>이전 / 확인 / 다음</strong>: 카드 학습의 기본 조작. "확인"을 누르면 영어 정답이 나타남</li>
+        <li><strong>정답을 확인한 뒤 나타나는 아이콘</strong>
+          <ul>
+            <li>☆ 중요 표시 (다시 봐야 할 문장 즐겨찾기)</li>
+            <li>⚑ 미암기 표시 (아직 못 외운 문장 표시)</li>
+            <li>✏ 수정 (오탈자 등을 바로 고치기)</li>
+            <li>🗑 삭제</li>
+          </ul>
+        </li>
+        <li><strong>이어보기</strong>: 앱을 껐다 켜도 마지막으로 보던 문장부터 자동으로 이어서 시작함</li>
+        <li><strong>처음부터</strong>: 앱을 끄지 않고도 첫 문장부터 다시 보고 싶으면 더보기 메뉴의 "처음부터" 사용</li>
+      </ul>
+
+      <h2 class="help-section-title">문장 추가하기</h2>
+      <p>문장추가 모달에서 3가지 방법 중 선택:</p>
+      <ol class="help-list">
+        <li><strong>폼 입력</strong>: 한국어/영어 문장을 하나씩 직접 입력</li>
+        <li><strong>파일 가져오기</strong>: 엑셀·구글시트·메모장 등에서 "한국어 [구분] 영어" 형태로 여러 줄 작성 → CSV/TSV/TXT로 저장 → 업로드
+          <ul>
+            <li>구분자는 자동 인식됨 (탭 → 쉼표 → 연속 공백 2칸 이상 순서로 시도)</li>
+            <li>첫 줄이 "한국어"/"kr"/"korean" 같은 헤더면 자동으로 건너뜀</li>
+          </ul>
+        </li>
+        <li><strong>텍스트 붙여넣기</strong>: 파일로 저장하지 않고 텍스트를 바로 붙여넣어 한 번에 여러 문장 추가 (ChatGPT 등에서 만든 문장 붙여넣을 때 유용). 구분자·헤더 규칙은 파일 가져오기와 동일</li>
+      </ol>
+      <p class="help-note">문장관리 목록을 탭하거나 카드 화면의 ✏ 아이콘을 누르면 같은 입력창이 "수정 모드"로 열립니다.</p>
+
+      <h3 class="help-subsection-title">텍스트 파일 만드는 법 (자세히)</h3>
+      <p><strong>메모장(Windows 기본 앱)으로 만들기</strong></p>
+      <ol class="help-list">
+        <li>메모장을 실행한다</li>
+        <li>한 줄에 문장 하나씩, "한국어 문장" 다음 <strong>Tab 키</strong>를 누르고 이어서 "English sentence"를 입력한다 (문장마다 줄바꿈으로 구분)
+          <pre class="help-example">오늘 날씨가 어때?	How is the weather?
+나는 커피를 좋아해.	I like coffee.</pre>
+          <span class="help-note-inline">스마트폰 메모장 등에서 탭이 스페이스로 바뀌어도 괜찮음 — 연속 공백 2칸 이상도 구분자로 자동 인식됨</span>
+        </li>
+        <li>메뉴에서 <strong>파일 &gt; 다른 이름으로 저장</strong>을 누른다</li>
+        <li>"파일 형식"을 <strong>모든 파일</strong>로 바꾼다 (기본값인 "텍스트 문서"로 두면 뒤에 .txt가 중복으로 붙을 수 있음)</li>
+        <li>파일 이름 끝에 <strong>.txt</strong>를 직접 붙인다 (예: 내문장.txt)</li>
+        <li>"인코딩"을 반드시 <strong>UTF-8</strong>로 선택한다 — 다른 인코딩으로 저장하면 한글이 깨져 보일 수 있음</li>
+        <li>저장 버튼을 누르면 완료. 이 파일을 "문장추가 &gt; 파일 가져오기"에서 선택하면 됨</li>
+      </ol>
+
+      <p><strong>엑셀/구글시트로 만들기</strong></p>
+      <ol class="help-list">
+        <li>A열에는 한국어 문장, B열에는 영어 문장을 한 줄에 하나씩 입력한다 (첫 줄에 제목을 적어도 자동으로 건너뜀)</li>
+        <li>저장할 때
+          <ul>
+            <li>엑셀: 파일 &gt; 다른 이름으로 저장 → 파일 형식에서 CSV UTF-8(쉼표로 분리)(.csv) 선택</li>
+            <li>구글시트: 파일 &gt; 다운로드 &gt; 쉼표로 구분된 값(.csv) 선택</li>
+          </ul>
+        </li>
+        <li>문장 안에 쉼표(,)가 들어가는 경우 CSV가 깨질 수 있어, 이런 문장이 많다면 위 메모장 방법(Tab 구분)을 추천</li>
+      </ol>
+
+      <p><strong>공통 주의사항</strong></p>
+      <ul class="help-list">
+        <li>파일 확장자는 .csv / .tsv / .txt 중 아무거나 상관없음 (내용 구분자만 맞으면 됨)</li>
+        <li>첫 줄이 "한국어", "kr", "korean" 같은 헤더로 보이면 자동으로 건너뜀</li>
+        <li>"N개 문장을 추가했습니다"의 개수가 0이면 대부분 구분자·인코딩 문제이니 위 순서를 다시 확인</li>
+      </ul>
+
+      <h2 class="help-section-title">문장 관리하기</h2>
+      <ul class="help-list">
+        <li>문장관리 화면에서 전체 문장 목록을 확인</li>
+        <li>항목을 탭하면 수정, 길게 누르면 해당 문장만 삭제 확인</li>
+        <li>상단 "선택" 버튼으로 여러 문장을 체크해 한 번에 삭제 가능 (최소 1개는 항상 남아 있어야 함)</li>
+        <li><strong>필터</strong>: 전체 / 중요 / 미암기 탭으로 조건에 맞는 문장만 보기. 탭 아래에 현재 보고 있는 문장 개수도 함께 표시됨</li>
+      </ul>
+
+      <h2 class="help-section-title">설정</h2>
+      <ul class="help-list">
+        <li><strong>글자크기</strong>: 카드 텍스트 크기를 5단계로 조절 (예시 글자 "가"로 실시간 확인)</li>
+        <li><strong>화면모드</strong>: 시스템 / 라이트 / 다크 중 선택. "시스템"은 기기 설정을 실시간으로 따라감</li>
+        <li><strong>출제/정렬 순서</strong>: 랜덤순 · 최신순 · 오래된순(기본값) · 못외운것 먼저 · 중요한것 먼저 중 선택</li>
+        <li><strong>데이터 관리</strong>
+          <ul>
+            <li>백업 내보내기: 현재 문장을 TSV 파일로 다운로드</li>
+            <li>초기화: 문장을 모두 삭제 (다른 설정값은 유지됨). 되돌리려면 백업 TSV 파일을 "문장추가 &gt; 파일 가져오기"로 다시 불러오면 됨</li>
+          </ul>
+        </li>
+      </ul>
     </div>
   </section>
 

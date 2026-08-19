@@ -1046,6 +1046,96 @@ textarea.modal-input {
 }
 
 /* ==========================================================================
+   도움말 화면
+   ========================================================================== */
+#help-screen {
+  padding: 0;
+}
+
+.help-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+}
+
+.help-intro {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-brand-dark);
+  padding: 16px 8px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+[data-theme="dark"] .help-intro {
+  color: var(--color-text-primary);
+}
+
+.help-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 24px 0 10px;
+}
+
+.help-subsection-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 18px 0 8px;
+}
+
+.help-body p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.help-note,
+.help-note-inline {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.help-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.help-list ul,
+.help-list ol {
+  margin-top: 6px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.help-list strong {
+  color: var(--color-text-primary);
+}
+
+.help-example {
+  background-color: var(--gray-50);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* ==========================================================================
    카드 학습 화면 빈 상태 (문장 0개)
    ========================================================================== */
 .empty-state-msg {
