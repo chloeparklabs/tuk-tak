@@ -507,40 +507,6 @@ button {
   border-color: var(--gray-200);
 }
 
-/* ==========================================================================
-   가로모드 방어적 대응 (카드 화면 한정)
-   세로 전용 레이아웃이 짧은 세로 높이(vh) 탓에 버튼이 화면 밖으로 잘리는 것을
-   막기 위한 최소 축소. 별도의 가로 전용 레이아웃을 새로 만드는 것은 아님
-   ========================================================================== */
-@media (orientation: landscape) and (max-height: 500px) {
-  #card-screen {
-    padding: 12px 24px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  }
-
-  .card-topbar {
-    margin: -12px -24px 0 -24px;
-    padding: 10px 24px;
-  }
-
-  .en-text {
-    padding: 16px 14px;
-  }
-
-  .card.revealed .kr-text {
-    margin-bottom: 8px;
-  }
-
-  .card-mark-bar {
-    margin-top: 16px;
-  }
-
-  .control-bar .btn {
-    width: clamp(44px, 12vh, 64px);
-    font-size: clamp(12px, 4vh, 16px);
-  }
-}
-
 /* 확인: 탭 전 Brand Blue 채움 → 탭 후(정답 노출) Brand Navy 채움 */
 #check-btn {
   background-color: var(--color-brand);
