@@ -758,6 +758,17 @@ helpBackBtn.addEventListener('click', () => {
   cardScreen.classList.remove('hidden');
 });
 
+// 도움말 아코디언: 대분류 헤더를 누르면 해당 항목만 펼치기/접기
+document.querySelectorAll('.help-accordion-header').forEach((header) => {
+  header.addEventListener('click', () => {
+    const item = header.closest('.help-accordion-item');
+    const content = document.getElementById(header.dataset.target);
+    const isOpen = item.classList.toggle('open');
+    content.classList.toggle('hidden', !isOpen);
+    header.setAttribute('aria-expanded', String(isOpen));
+  });
+});
+
 // 백업 내보내기: 현재 문장을 TSV로 만들어 파일 다운로드
 // (복원은 별도 기능 없이 기존 "파일가져오기"로 이 파일을 그대로 불러오면 됨)
 exportBackupBtn.addEventListener('click', () => {

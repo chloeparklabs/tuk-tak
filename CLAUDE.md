@@ -134,7 +134,7 @@
 - **문장관리**: 전체 문장 목록. 탭하면 수정 모달, 롱프레스는 단일 삭제 확인, "선택" 버튼으로 다중 선택 삭제. 상단 전체/중요/미암기 필터 탭
 - **설정**: 아래 설정 화면으로 이동
 - **처음부터**: 즉시 첫 문장으로 이동 (앱을 껐다 켤 필요 없이 바로 처음부터 다시 보고 싶을 때 사용)
-- **도움말**: 앱 소개 + 카드 화면/문장 추가/문장 관리/설정 사용법을 담은 전체화면 안내 문서로 이동 (`reference/help-content-draft.md` 초안을 화면에 그대로 반영, 2026-08-19)
+- **도움말**: 앱 소개 + 카드 화면/문장 추가/문장 관리/설정 사용법을 담은 전체화면 안내로 이동. 4개 대분류를 아코디언으로 접어두고 필요한 항목만 펼쳐 보는 구조 (`reference/help-content-draft.md` 초안 반영, 2026-08-19 스크롤형 문서로 최초 구현 → 2026-08-20 아코디언 구조로 전환)
 
 ### 설정 화면
 - **글자크기**: 카드 텍스트 크기 5단계 조절(도트+스테퍼, "가" 견본으로 실시간 미리보기)
@@ -233,13 +233,15 @@
 ### 아이콘
 - **라이브러리**: lucide
 - **구현 방식**: npm/CDN 설치 없이 필요한 아이콘만 lucide 공식 SVG를 인라인으로 직접 삽입(오프라인 PWA라 외부 로드 의존 없음)
-- **사용 중**: `circle-plus`(문장추가) · `list`(문장관리) · `settings`(설정) · `rotate-ccw`(처음부터) · `circle-help`(도움말) · `chevron-left`(뒤로가기) · `upload`(파일 가져오기) · `download`(백업 내보내기) · `trash-2`(삭제·초기화) · `ellipsis-vertical`(더보기) · `star`(중요, 카드·문장관리 공용) · `flag`(미암기, 카드·문장관리 공용) · `check`(선택모드 체크박스) · `clipboard-paste`(텍스트 붙여넣기) · `pencil`(카드 화면 수정)
+- **사용 중**: `circle-plus`(문장추가) · `list`(문장관리) · `settings`(설정) · `rotate-ccw`(처음부터) · `circle-help`(도움말) · `chevron-left`(뒤로가기) · `chevron-down`(도움말 아코디언 토글) · `upload`(파일 가져오기) · `download`(백업 내보내기) · `trash-2`(삭제·초기화) · `ellipsis-vertical`(더보기) · `star`(중요, 카드·문장관리 공용) · `flag`(미암기, 카드·문장관리 공용) · `check`(선택모드 체크박스) · `clipboard-paste`(텍스트 붙여넣기) · `pencil`(카드 화면 수정)
 
 ### UI 레이아웃 규칙
 - **카드 화면 상단바**: 화면 좌우 끝까지 꽉 찬 브랜드 블루 바에 왼쪽 로고, 오른쪽 더보기(⋮). 로고/아이콘은 항상 어두운 배경 위이므로 리터럴 `#FFFFFF` 고정 사용
 - **더보기 드롭다운**: 문장추가·문장관리·설정 3항목만 플랫하게 배치
 - **전체화면(문장관리/설정/도움말) 공용 헤더**: 브랜드 블루 바 + 왼쪽 뒤로가기(`chevron-left`) + 가운데 타이틀. `.screen-topbar`/`.screen-back-btn`/`.screen-topbar-title` 클래스를 세 화면이 공유
-- **도움말 화면**: 앱 소개 문구(`.help-intro`) + 섹션(`h2.help-section-title`)·하위 섹션(`h3.help-subsection-title`)·목록(`.help-list`)·예시 코드 블록(`.help-example`)으로 구성된 스크롤 안내 문서. 콘텐츠는 `reference/help-content-draft.md`를 그대로 옮긴 것이라 원본을 고치면 화면 쪽 HTML도 함께 갱신해야 함(자동 동기화 아님)
+- **도움말 화면**: 앱 소개 문구(`.help-intro`) + 대분류 4개(카드 학습 화면/문장 추가하기/문장 관리하기/설정)를 아코디언(`.help-accordion`/`.help-accordion-item`/`.help-accordion-header`/`.help-accordion-content`)으로 감싼 구조. 진입 시 4개 모두 접힌 상태(`hidden`)이며 헤더 클릭 시 해당 항목만 독립적으로 펼침/접힘 토글, 화살표 아이콘(`chevron-down`)이 펼침 상태에서 180도 회전(2026-08-20, 이전의 긴 스크롤형 단일 문서에서 전환). 대분류 안쪽은 기존처럼 하위 섹션(`h3.help-subsection-title`)·목록(`.help-list`)·예시 코드 블록(`.help-example`)으로 구성. 콘텐츠는 `reference/help-content-draft.md`를 그대로 옮긴 것이 출발점이며, 이후 사용자가 `reference/도움말.txt`로 세부 문구를 계속 다듬는 중이라 원본을 고치면 화면 쪽 HTML도 함께 갱신해야 함(자동 동기화 아님)
+  - **아코디언 시각 스타일** (2026-08-20): 카드형(테두리 박스)이 아닌 구분선형 — `.help-accordion` 상단 구분선 + 각 `.help-accordion-item` 하단 구분선만 사용. 제목(`.help-accordion-header`)은 18px/bold/`--color-brand-dark`(다크모드에서는 대비 문제로 `--color-text-primary`로 전환, `.modal-title`/`.stepper-btn`과 같은 다크모드 예외 규칙 공유). 본문(`.help-body p`/`.help-list`)은 16px, 펼친 콘텐츠 영역(`.help-accordion-content`)에는 `--gray-100` 배경(처음엔 `--gray-50`을 썼으나 페이지 배경과 밝기 차이가 거의 없어 육안 구분이 안 돼 교체함 — 옅은 색 대비를 다룰 땐 스크린샷이 아니라 실제 hex/RGB 값으로 검증할 것)
+  - **"텍스트 파일 만드는 법" 상세**: `<h3>`이 아니라 시맨틱 `<details>`/`<summary class="help-subsection-title">`로 구현(클릭 시에만 펼쳐짐, 기본 마커는 숨기고 ▸/▾ 커스텀 표시). "3. 파일 가져오기" `<li>` 안에 중첩시켜 인덱트를 그 항목 텍스트보다 왼쪽으로 나가지 않게 함. 내부 텍스트는 전부 14px로 통일(`.help-body .help-details p`/`.help-list`/`.help-note-inline`/`.help-example` — 셀렉터 특정도를 `.help-body p` 등 상위 규칙보다 높여야 실제로 적용됨). 전체에 왼쪽 1px 브랜드 블루 선을 둘러 "상세 정보" 블록임을 표시. 내부 소제목 3개(`.help-mini-title`: 메모장으로 만들기/엑셀·구글시트로 만들기/공통 주의사항)는 위 내용과 20px 간격을 두고 브랜드 블루 점(●, `::before`)을 붙임
   - **문장관리 선택 모드**: "선택" 버튼을 누르면 헤더가 브랜드 네이비로 전환, 뒤로가기 아이콘이 "취소" 텍스트로, 타이틀이 "N개 선택"으로 바뀌며 오른쪽에 "삭제" 버튼 노출(0개 선택 시 비활성). 목록 항목도 체크박스로 전환
 - **설정 화면 구성**: 글자크기 · 화면모드(3단 세그먼트) · 출제/정렬 순서(세로 라디오 목록, `.sort-option-list`/`.sort-option-btn`) · "데이터 관리" 섹션(백업 내보내기·초기화) 순으로 배치
 - **문장추가 모달 탭 통합**: 상단에 [폼 입력 / 파일 가져오기 / 텍스트 붙여넣기] 3탭(`#add-modal-tabs`, 화면모드 세그먼트와 같은 스타일). 수정 모드(`openAddModal(sentence)`가 있을 때)에서는 탭을 숨기고 폼만 노출, 추가 모드에서는 탭을 보여주고 "폼 입력"으로 초기화

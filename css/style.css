@@ -67,7 +67,8 @@
    쓰기 때문에 다크 배경 위에서는 시인성이 떨어짐 → 다크모드에서만 밝은 색으로 전환.
    .en-text는 자체 하이라이트 칩(--color-chip-answer, 항상 밝은 배경) 위에 있어 제외 */
 [data-theme="dark"] .modal-title,
-[data-theme="dark"] .stepper-btn {
+[data-theme="dark"] .stepper-btn,
+[data-theme="dark"] .help-accordion-header {
   color: var(--color-text-primary);
 }
 
@@ -1072,11 +1073,48 @@ textarea.modal-input {
   color: var(--color-text-primary);
 }
 
-.help-section-title {
-  font-size: 16px;
+.help-accordion {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.help-accordion-item {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.help-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 24px 0 10px;
+  color: var(--color-brand-dark);
+  text-align: left;
+  cursor: pointer;
+}
+
+.help-accordion-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.help-accordion-item.open .help-accordion-chevron {
+  transform: rotate(180deg);
+}
+
+.help-accordion-content {
+  padding: 8px 16px 16px;
+  background-color: var(--gray-100);
 }
 
 .help-subsection-title {
@@ -1086,8 +1124,60 @@ textarea.modal-input {
   margin: 18px 0 8px;
 }
 
-.help-body p {
+.help-details {
+  margin: 12px 0 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-brand);
+}
+
+.help-details .help-mini-title {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.help-details .help-mini-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-brand);
+  flex-shrink: 0;
+}
+
+.help-details summary.help-subsection-title {
+  margin: 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-details summary::after {
+  content: '▸';
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.help-details[open] summary::after {
+  content: '▾';
+}
+
+.help-body .help-details p,
+.help-body .help-details .help-list,
+.help-body .help-details .help-note-inline,
+.help-body .help-details .help-example {
   font-size: 14px;
+}
+
+.help-body p {
+  font-size: 16px;
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: 8px;
@@ -1096,7 +1186,7 @@ textarea.modal-input {
 .help-note,
 .help-note-inline {
   display: block;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--color-text-muted);
   margin-top: 4px;
 }
@@ -1106,7 +1196,7 @@ textarea.modal-input {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
@@ -1129,7 +1219,7 @@ textarea.modal-input {
   border-radius: 8px;
   padding: 10px 12px;
   margin-top: 6px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--color-text-primary);
   white-space: pre-wrap;
   overflow-x: auto;
