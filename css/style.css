@@ -1114,7 +1114,14 @@ textarea.modal-input {
 
 .help-accordion-content {
   padding: 8px 16px 16px;
+  background-color: var(--color-base);
+  border: 1px solid var(--gray-200);
+}
+
+/* 다크모드는 배경이 이미 어두워 흰색이 어울리지 않으므로 기존 어두운 배경 유지 */
+[data-theme="dark"] .help-accordion-content {
   background-color: var(--gray-100);
+  border: none;
 }
 
 .help-subsection-title {
