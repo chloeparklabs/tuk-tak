@@ -211,6 +211,7 @@ const checkBtn = document.getElementById('check-btn');
 const nextBtn = document.getElementById('next-btn');
 const addOpenBtn = document.getElementById('add-open-btn');
 const addModal = document.getElementById('add-modal');
+const addBackBtn = document.getElementById('add-back-btn');
 const addModalTabsEl = document.getElementById('add-modal-tabs');
 const addModalTabBtns = document.querySelectorAll('.add-modal-tab-btn');
 const addTabForm = document.getElementById('add-tab-form');
@@ -219,12 +220,9 @@ const addTabPaste = document.getElementById('add-tab-paste');
 const addKrInput = document.getElementById('add-kr-input');
 const addEnInput = document.getElementById('add-en-input');
 const addSubmitBtn = document.getElementById('add-submit-btn');
-const addCancelBtn = document.getElementById('add-cancel-btn');
 const importFileInput = document.getElementById('import-file-input');
 const importTabOpenBtn = document.getElementById('import-tab-open-btn');
-const importTabCancelBtn = document.getElementById('import-tab-cancel-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
-const pasteCancelBtn = document.getElementById('paste-cancel-btn');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
 const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
@@ -382,6 +380,9 @@ nextBtn.addEventListener('click', () => {
 // 고를 필요가 없으므로 탭을 숨기고 폼만 노출한다.
 // ==========================================================================
 let editingId = null;
+// 문장추가 화면은 카드 화면·문장관리 화면 양쪽에서 열릴 수 있어, 뒤로가기 시
+// 원래 있던 화면으로 돌아가기 위해 연 시점의 화면을 기억해둠
+let addModalReturnScreen = cardScreen;
 
 function setAddModalTab(tab) {
   addModalTabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
@@ -405,11 +406,14 @@ function openAddModal(sentence) {
     addSubmitBtn.textContent = '추가';
     addModalTabsEl.classList.remove('hidden');
   }
+  addModalReturnScreen = listScreen.classList.contains('hidden') ? cardScreen : listScreen;
+  addModalReturnScreen.classList.add('hidden');
   addModal.classList.remove('hidden');
 }
 
 function closeAddModal() {
   addModal.classList.add('hidden');
+  addModalReturnScreen.classList.remove('hidden');
   addKrInput.value = '';
   addEnInput.value = '';
   pasteTextarea.value = '';
@@ -429,7 +433,7 @@ addModalTabBtns.forEach((btn) => {
 });
 
 addOpenBtn.addEventListener('click', () => openAddModal());
-addCancelBtn.addEventListener('click', closeAddModal);
+addBackBtn.addEventListener('click', closeAddModal);
 
 addSubmitBtn.addEventListener('click', () => {
   const kr = addKrInput.value.trim();
@@ -450,8 +454,6 @@ importTabOpenBtn.addEventListener('click', () => {
   importFileInput.click();
 });
 
-importTabCancelBtn.addEventListener('click', closeAddModal);
-
 importFileInput.addEventListener('change', () => {
   const file = importFileInput.files[0];
   if (!file) return;
@@ -468,8 +470,6 @@ importFileInput.addEventListener('change', () => {
 });
 
 // --- 텍스트 붙여넣기 탭 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용) ---
-pasteCancelBtn.addEventListener('click', closeAddModal);
-
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = parseSentencesText(pasteTextarea.value);
   parsed.forEach((s) => addSentence(s.kr, s.en));
