@@ -761,7 +761,7 @@ button {
 .add-modal-tab-btn {
   flex: 1;
   padding: 10px 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   color: var(--gray-500);
