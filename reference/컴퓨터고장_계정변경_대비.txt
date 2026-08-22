@@ -1,0 +1,36 @@
+컴퓨터 고장 / Claude 계정 변경 대비 체크리스트 (작성 2026-08-22)
+
+[이미 안전한 것 — GitHub에 있음, 컴퓨터가 고장나도 그대로 복구 가능]
+- 코드 전체, CLAUDE.md, PROGRESS.md, reference 폴더(이 파일 포함)
+- 전부 git으로 관리되고 GitHub(https://github.com/easycodehow/tuk-tak.git)에 push되어 있음
+- 단, "커밋했지만 push 안 한 것" / "아직 커밋도 안 한 변경사항"은 컴퓨터에만 있으므로 위험함
+  → 작업이 끝날 때마다 습관적으로 커밋 + push 할 것 (지금까지도 그렇게 해왔음, 계속 유지)
+
+[위험한 것 — 컴퓨터에만 있고 GitHub과 무관함]
+- Claude(나)의 기억 파일들
+  경로: C:\Users\박지연\.claude\projects\C--PJY-Vibe-Web-tuk-tak\memory\
+- 이 폴더는 Windows 사용자 계정(박지연) 아래 로컬에만 저장되고 클라우드 동기화가 안 됨
+- 컴퓨터가 완전히 고장나면 이 폴더는 복구 불가능
+- 이게 없어지면? PROGRESS.md/CLAUDE.md(=GitHub에 있음)로 대부분의 작업 이력은 복구되지만,
+  그 사이 나눴던 미묘한 선호/피드백/브레인스토밍 맥락(예: 문장변형 아이디어 논의 과정 등)은
+  똑같이 복구되지 않음
+
+[Claude 계정 아이디가 바뀌는 경우]
+- 같은 컴퓨터 + 같은 Windows 계정을 그대로 쓰면서 Claude 로그인 이메일만 바꾸는 거라면
+  → 아무 조치 필요 없음. 위 memory 폴더는 Claude 계정이 아니라 Windows 계정 기준이라 그대로 유지됨
+- 계정이 바뀌면서 컴퓨터도 함께 바뀌는 경우 → 아래 "미리 준비해둘 것" 필요
+
+[미리 준비해둘 것 — 권장]
+1. 세션을 마무리할 때마다(또는 최소 몇 주에 한 번) 아래 폴더 전체를 구글 드라이브 등
+   클라우드에 복사해서 백업해둘 것
+   C:\Users\박지연\.claude\projects\C--PJY-Vibe-Web-tuk-tak\memory\
+2. 작업 후에는 항상 git commit + push까지 끝낸 상태로 세션을 마무리할 것 (기존 습관 유지)
+
+[컴퓨터가 고장났을 때 복구 순서]
+1. 새 컴퓨터(또는 새 계정)에서 git clone https://github.com/easycodehow/tuk-tak.git
+   → 코드, CLAUDE.md, PROGRESS.md, reference 폴더 전부 그대로 복구됨
+2. 미리 백업해둔 memory 폴더가 있다면, 새 환경에서 Claude Code로 이 프로젝트를 한 번 열어
+   memory 폴더가 자동 생성된 뒤, 백업해둔 파일들을 그 안에 복사해 넣을 것
+   (폴더 이름이 프로젝트 경로 기준으로 자동 생성되므로, 새 세션에서 "이 백업 파일들을
+   복원해줘"라고 말하면 경로를 확인해서 도와줄 수 있음)
+3. 새 세션에서 "보고"라고 말하면 PROGRESS.md를 읽고 마지막 작업 내용을 요약해서 알려줌
