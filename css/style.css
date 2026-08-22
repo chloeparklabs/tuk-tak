@@ -579,7 +579,7 @@ button {
 .add-modal-tab-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
   flex: 1;
   min-height: 0;
 }
@@ -595,7 +595,7 @@ button {
 }
 
 .add-form-field-label {
-  padding: 10px 20px;
+  padding: 10px 20px 4px;
   font-size: 13px;
   font-weight: 600;
   color: var(--gray-600);
@@ -632,8 +632,10 @@ button {
 }
 
 .modal-desc {
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--gray-600);
+  margin-top: 20px;
   margin-bottom: 4px;
 }
 
