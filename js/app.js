@@ -143,8 +143,12 @@ const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important'];
 const DEFAULT_SORT_MODE = 'oldest'; // 기존(정렬 기능 도입 전) 순서와 동일해 설정을 건드리지 않은 사용자는 체감 변화 없음
 const RANDOM_ORDER_KEY = 'tuktak_random_order';
 
+// 기본문장(source: 'default') 숨기기 설정 — 카드 학습/문장관리 양쪽에 적용(getOrderedSentences 참고)
+const HIDE_DEFAULT_KEY = 'tuktak_hide_default';
+
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
+let hideDefaultSentences = localStorage.getItem(HIDE_DEFAULT_KEY) === 'true';
 
 const sentences = loadSentences();
 loadRandomOrder();
@@ -232,29 +236,32 @@ function shuffleRandomOrder() {
 }
 
 // 현재 정렬 기준에 따라 정렬된 새 배열을 반환 (sentences 자체는 변경하지 않음)
+// "기본문장 숨기기"가 켜져 있으면 여기서 걸러낸 뒤 정렬 — 카드 학습 순서와 문장관리 목록이
+// 둘 다 이 함수를 거치므로 자동으로 같이 반영됨
 function getOrderedSentences() {
+  const visible = hideDefaultSentences ? sentences.filter((s) => s.source !== 'default') : sentences;
   const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
   const byOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
 
-  if (sortMode === 'newest') return [...sentences].sort(byNewest);
-  if (sortMode === 'oldest') return [...sentences].sort(byOldest);
+  if (sortMode === 'newest') return [...visible].sort(byNewest);
+  if (sortMode === 'oldest') return [...visible].sort(byOldest);
 
   if (sortMode === 'unfamiliar' || sortMode === 'important') {
     const key = sortMode;
-    const marked = sentences.filter((s) => s[key]).sort(byNewest);
-    const rest = sentences.filter((s) => !s[key]).sort(byNewest);
+    const marked = visible.filter((s) => s[key]).sort(byNewest);
+    const rest = visible.filter((s) => !s[key]).sort(byNewest);
     return [...marked, ...rest];
   }
 
   if (sortMode === 'random') {
-    const byId = new Map(sentences.map((s) => [String(s.id), s]));
+    const byId = new Map(visible.map((s) => [String(s.id), s]));
     const ordered = randomOrder.map((id) => byId.get(id)).filter(Boolean);
     const orderedIds = new Set(ordered.map((s) => String(s.id)));
-    const extras = sentences.filter((s) => !orderedIds.has(String(s.id))).sort(byNewest);
+    const extras = visible.filter((s) => !orderedIds.has(String(s.id))).sort(byNewest);
     return [...ordered, ...extras];
   }
 
-  return [...sentences];
+  return [...visible];
 }
 
 // ==========================================================================
@@ -350,6 +357,8 @@ const settingsScreen = document.getElementById('settings-screen');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
+const hideDefaultToggleBtn = document.getElementById('hide-default-toggle-btn');
+const deleteDefaultBtn = document.getElementById('delete-default-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -1042,6 +1051,49 @@ sortOptionBtns.forEach((btn) => {
       renderSentenceList();
     }
   });
+});
+
+// ==========================================================================
+// 기본문장 관리 (숨기기 토글 / 일괄 삭제) — 설정 화면
+// ==========================================================================
+function applyHideDefaultToggle() {
+  hideDefaultToggleBtn.classList.toggle('active', hideDefaultSentences);
+  hideDefaultToggleBtn.setAttribute('aria-checked', String(hideDefaultSentences));
+}
+
+applyHideDefaultToggle();
+
+hideDefaultToggleBtn.addEventListener('click', () => {
+  hideDefaultSentences = !hideDefaultSentences;
+  localStorage.setItem(HIDE_DEFAULT_KEY, String(hideDefaultSentences));
+  applyHideDefaultToggle();
+  currentIndex = 0;
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
+});
+
+deleteDefaultBtn.addEventListener('click', () => {
+  const defaultSentences = sentences.filter((s) => s.source === 'default');
+  if (defaultSentences.length === 0) {
+    alert('삭제할 기본문장이 없습니다.');
+    return;
+  }
+  const remaining = sentences.length - defaultSentences.length;
+  if (remaining < 1) {
+    alert('최소 1개의 문장은 있어야 합니다.');
+    return;
+  }
+  if (!confirm(`기본문장 ${defaultSentences.length}개를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+
+  defaultSentences.forEach((s) => deleteSentence(s.id));
+  currentIndex = 0;
+  renderCard();
+  if (!listScreen.classList.contains('hidden')) {
+    renderSentenceList();
+  }
+  alert(`기본문장 ${defaultSentences.length}개를 삭제했습니다.`);
 });
 
 // ==========================================================================
