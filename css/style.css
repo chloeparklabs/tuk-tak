@@ -901,6 +901,18 @@ button {
   min-width: 0;
 }
 
+/* 최초 실행 시 자동 제공되는 기본문장 표시(문장추가/파일가져오기 등으로 직접 넣은 문장에는 없음).
+   사용자가 해당 문장을 수정하면 사라짐(updateSentence()에서 source 제거) */
+.sentence-badge-default {
+  align-self: flex-start;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+  background-color: var(--gray-100);
+  border-radius: 999px;
+}
+
 .sentence-list-kr {
   font-size: 15px;
   font-weight: 600;

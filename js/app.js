@@ -3,17 +3,116 @@
 // ==========================================================================
 const STORAGE_KEY = 'tuktak_sentences';
 
-// 최초 실행 시 시드로 사용할 샘플 문장
-const SEED_SENTENCES = [
-  { kr: '오늘 날씨가 어때?', en: 'How is the weather?' },
-  { kr: '나는 커피를 좋아해.', en: 'I like coffee.' },
-  { kr: '몇 시에 만날까?', en: 'What time should we meet?' },
-  { kr: '이거 얼마예요?', en: 'How much is this?' },
-  { kr: '조심히 들어가세요.', en: 'Get home safe.' },
+// 최초 실행 시 시드로 사용할 기본 문장 100개 (2026-08-22 확정)
+// source: 'default'로 마킹해 사용자가 직접 추가한 문장과 구분(문장관리 목록에 배지 표시).
+// 사용자가 이 문장을 수정하면 updateSentence()에서 source를 제거해 "내 문장"으로 전환됨
+const DEFAULT_SENTENCES = [
+  { kr: '나는 아침에 일찍 일어나.', en: 'I wake up early in the morning.' },
+  { kr: '너는 보통 몇 시에 자?', en: 'What time do you usually go to bed?' },
+  { kr: '나는 매일 커피를 마셔.', en: 'I drink coffee every day.' },
+  { kr: '오늘 기분이 어때?', en: 'How are you feeling today?' },
+  { kr: '나는 지금 서울에 살아.', en: 'I live in Seoul right now.' },
+  { kr: '너는 어디 출신이야?', en: 'Where are you from?' },
+  { kr: '나는 집에서 일해.', en: 'I work from home.' },
+  { kr: '요즘 뭐 하고 지내?', en: 'What have you been up to lately?' },
+  { kr: '나는 아침을 잘 안 먹어.', en: "I don't usually eat breakfast." },
+  { kr: '주말에는 보통 뭐 해?', en: 'What do you usually do on weekends?' },
+  { kr: '나는 영화 보는 걸 좋아해.', en: 'I like watching movies.' },
+  { kr: '너는 어떤 음악을 들어?', en: 'What kind of music do you listen to?' },
+  { kr: '나는 요즘 그림을 그리고 있어.', en: "I've been drawing lately." },
+  { kr: '너는 취미가 뭐야?', en: "What's your hobby?" },
+  { kr: '나는 책 읽는 걸 좋아해.', en: 'I enjoy reading books.' },
+  { kr: '나는 운동을 별로 안 좋아해.', en: "I don't really like exercising." },
+  { kr: '너는 게임 좋아해?', en: 'Do you like playing games?' },
+  { kr: '나는 사진 찍는 걸 좋아해.', en: 'I love taking photos.' },
+  { kr: '나는 요리하는 걸 좋아해.', en: 'I enjoy cooking.' },
+  { kr: '너는 주로 어떤 영화를 봐?', en: 'What kind of movies do you usually watch?' },
+  { kr: '나는 오늘 좀 피곤해.', en: "I'm a bit tired today." },
+  { kr: '나는 지금 너무 신나.', en: "I'm so excited right now." },
+  { kr: '너는 왜 그렇게 화가 났어?', en: 'Why are you so angry?' },
+  { kr: '나는 걱정이 좀 돼.', en: "I'm a little worried." },
+  { kr: '나는 그 소식을 듣고 놀랐어.', en: 'I was surprised to hear the news.' },
+  { kr: '나는 요즘 스트레스를 많이 받아.', en: "I've been really stressed lately." },
+  { kr: '나는 지금 마음이 편해.', en: 'I feel relaxed right now.' },
+  { kr: '너는 긴장돼 보여.', en: 'You look nervous.' },
+  { kr: '나는 그게 좀 슬퍼.', en: 'That makes me a little sad.' },
+  { kr: '나는 지금 기분이 좋아.', en: "I'm in a good mood right now." },
+  { kr: '나는 지금 회사에 있어.', en: "I'm at work right now." },
+  { kr: '너는 무슨 일을 해?', en: 'What do you do for a living?' },
+  { kr: '나는 내일까지 이걸 끝내야 해.', en: 'I have to finish this by tomorrow.' },
+  { kr: '나는 오늘 회의가 있어.', en: 'I have a meeting today.' },
+  { kr: '너는 학교에서 뭘 공부해?', en: 'What do you study at school?' },
+  { kr: '나는 요즘 너무 바빠.', en: "I've been really busy lately." },
+  { kr: '나는 이번 주에 야근을 많이 했어.', en: 'I worked overtime a lot this week.' },
+  { kr: '너는 언제 퇴근해?', en: 'When do you get off work?' },
+  { kr: '나는 새로운 프로젝트를 시작했어.', en: 'I started a new project.' },
+  { kr: '나는 시험 준비를 하고 있어.', en: "I'm preparing for an exam." },
+  { kr: '나는 이번 주말에 여행 갈 거야.', en: "I'm going on a trip this weekend." },
+  { kr: '너는 이따가 뭐 할 거야?', en: 'What are you going to do later?' },
+  { kr: '나는 내년에 이사할 계획이야.', en: "I'm planning to move next year." },
+  { kr: '나는 곧 새 일을 시작할 거야.', en: "I'm going to start a new job soon." },
+  { kr: '너는 저녁에 시간 있어?', en: 'Are you free tonight?' },
+  { kr: '나는 나중에 유학을 가고 싶어.', en: 'I want to study abroad someday.' },
+  { kr: '우리 다음에 또 만나자.', en: "Let's meet again next time." },
+  { kr: '나는 올해 안에 그걸 끝낼 거야.', en: "I'll finish it by the end of this year." },
+  { kr: '나는 곧 운전면허를 딸 거야.', en: "I'm going to get my driver's license soon." },
+  { kr: '너는 내일 뭐 할 예정이야?', en: 'What do you plan to do tomorrow?' },
+  { kr: '나는 어제 늦게 잤어.', en: 'I went to bed late yesterday.' },
+  { kr: '너는 그 영화 봤어?', en: 'Did you watch that movie?' },
+  { kr: '나는 작년에 일본에 갔었어.', en: 'I went to Japan last year.' },
+  { kr: '나는 예전에 여기 살았었어.', en: 'I used to live here.' },
+  { kr: '너는 오늘 아침에 뭐 먹었어?', en: 'What did you eat this morning?' },
+  { kr: '나는 지난주에 감기에 걸렸었어.', en: 'I caught a cold last week.' },
+  { kr: '나는 그걸 한 번도 해본 적 없어.', en: "I've never done that before." },
+  { kr: '너는 거기 가본 적 있어?', en: 'Have you ever been there?' },
+  { kr: '나는 예전에 피아노를 배웠었어.', en: 'I used to learn piano.' },
+  { kr: '나는 어렸을 때 여기서 자랐어.', en: 'I grew up here as a kid.' },
+  { kr: '나는 매운 음식을 좋아해.', en: 'I like spicy food.' },
+  { kr: '너는 오늘 점심 뭐 먹었어?', en: 'What did you have for lunch today?' },
+  { kr: '나는 커피보다 차를 더 좋아해.', en: 'I prefer tea to coffee.' },
+  { kr: '우리 오늘 저녁에 뭐 먹을까?', en: 'What should we eat for dinner today?' },
+  { kr: '나는 단 음식을 잘 안 먹어.', en: "I don't eat sweets very often." },
+  { kr: '이 음식 정말 맛있다.', en: 'This food is really delicious.' },
+  { kr: '너는 못 먹는 음식 있어?', en: "Is there any food you can't eat?" },
+  { kr: '나는 아침에 과일을 자주 먹어.', en: 'I often eat fruit in the morning.' },
+  { kr: '나는 요즘 다이어트 중이야.', en: "I'm on a diet these days." },
+  { kr: '너는 요리 잘해?', en: 'Are you good at cooking?' },
+  { kr: '오늘 날씨 진짜 좋다.', en: 'The weather is really nice today.' },
+  { kr: '나는 여름보다 겨울을 더 좋아해.', en: 'I like winter more than summer.' },
+  { kr: '내일 비가 온대.', en: "It's going to rain tomorrow." },
+  { kr: '요즘 너무 더워.', en: "It's really hot these days." },
+  { kr: '나는 눈 오는 날을 좋아해.', en: 'I like snowy days.' },
+  { kr: '오늘 좀 쌀쌀하네.', en: "It's a bit chilly today." },
+  { kr: '이번 여름은 유난히 덥다.', en: 'This summer is unusually hot.' },
+  { kr: '나는 봄을 제일 좋아해.', en: 'Spring is my favorite season.' },
+  { kr: '밖에 바람이 많이 불어.', en: "It's really windy outside." },
+  { kr: '요즘 날씨가 계속 흐려.', en: 'The weather has been cloudy lately.' },
+  { kr: '나는 여행 가는 걸 좋아해.', en: 'I love traveling.' },
+  { kr: '너는 어디 여행 가고 싶어?', en: 'Where do you want to travel?' },
+  { kr: '나는 다음 달에 제주도에 갈 거야.', en: "I'm going to Jeju Island next month." },
+  { kr: '여기서 거기까지 얼마나 걸려?', en: 'How long does it take to get there from here?' },
+  { kr: '나는 비행기 타는 걸 무서워해.', en: "I'm afraid of flying." },
+  { kr: '우리 같이 여행 가자.', en: "Let's travel together." },
+  { kr: '나는 혼자 여행하는 걸 좋아해.', en: 'I like traveling alone.' },
+  { kr: '너는 어느 나라에 가보고 싶어?', en: 'Which country do you want to visit?' },
+  { kr: '나는 지하철을 타고 출근해.', en: 'I take the subway to work.' },
+  { kr: '여기서 역까지 걸어서 갈 수 있어.', en: 'You can walk to the station from here.' },
+  { kr: '우리 오랜만이다.', en: "It's been a while." },
+  { kr: '나는 네 생각이 궁금해.', en: "I'm curious what you think." },
+  { kr: '너 요즘 연락이 뜸했네.', en: "You haven't been in touch much lately." },
+  { kr: '나는 네 말에 동의해.', en: 'I agree with you.' },
+  { kr: '나는 그거 잘 모르겠어.', en: "I'm not really sure about that." },
+  { kr: '우리 다음에 밥 한번 먹자.', en: "Let's grab a meal together sometime." },
+  { kr: '나는 너한테 할 말이 있어.', en: 'I have something to tell you.' },
+  { kr: '너는 그거에 대해 어떻게 생각해?', en: 'What do you think about that?' },
+  { kr: '나는 네가 보고 싶었어.', en: 'I missed you.' },
+  { kr: '우리 이제 그만 얘기하자.', en: "Let's stop talking about this now." },
 ];
 
-function makeSentence(kr, en) {
-  return { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, unfamiliar: false };
+function makeSentence(kr, en, source) {
+  const sentence = { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, unfamiliar: false };
+  if (source) sentence.source = source;
+  return sentence;
 }
 
 // 예전 버전에서 저장된 문장에는 important/unfamiliar 필드가 없을 수 있어 불러올 때 보정
@@ -26,8 +125,8 @@ function loadSentences() {
   if (raw) {
     return JSON.parse(raw).map(normalizeSentence);
   }
-  // 저장된 데이터가 없으면 시드 데이터로 초기화
-  const seeded = SEED_SENTENCES.map((s) => makeSentence(s.kr, s.en));
+  // 저장된 데이터가 없으면(최초 실행) 기본문장 100개로 초기화
+  const seeded = DEFAULT_SENTENCES.map((s) => makeSentence(s.kr, s.en, 'default'));
   saveSentences(seeded);
   return seeded;
 }
@@ -63,6 +162,8 @@ function updateSentence(id, kr, en) {
   if (!target) return;
   target.kr = kr;
   target.en = en;
+  // 기본문장을 사용자가 직접 수정하면 그 순간부터 "내 문장"으로 취급(배지 해제)
+  delete target.source;
   saveSentences(sentences);
 }
 
@@ -597,6 +698,13 @@ function renderSentenceList() {
 
     const textWrap = document.createElement('div');
     textWrap.className = 'sentence-list-text';
+
+    if (s.source === 'default') {
+      const badge = document.createElement('span');
+      badge.className = 'sentence-badge-default';
+      badge.textContent = '기본';
+      textWrap.appendChild(badge);
+    }
 
     const krEl = document.createElement('p');
     krEl.className = 'sentence-list-kr';
