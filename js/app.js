@@ -1081,13 +1081,23 @@ deleteDefaultBtn.addEventListener('click', () => {
     return;
   }
   const remaining = sentences.length - defaultSentences.length;
-  if (remaining < 1) {
-    alert('최소 1개의 문장은 있어야 합니다.');
-    return;
-  }
-  if (!confirm(`기본문장 ${defaultSentences.length}개를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
+  // 개인 문장이 하나도 없어 전부 지우면 0개가 되는 경우: 막지 않고 안내용 기본문장 1개를 자동으로 남김
+  const willBeEmpty = remaining < 1;
+  const confirmMsg = willBeEmpty
+    ? `기본문장 ${defaultSentences.length}개를 삭제하시겠습니까? 남은 문장이 없어 안내용 기본문장 1개가 자동으로 추가됩니다. 이 작업은 되돌릴 수 없습니다.`
+    : `기본문장 ${defaultSentences.length}개를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`;
+  if (!confirm(confirmMsg)) return;
 
   defaultSentences.forEach((s) => deleteSentence(s.id));
+
+  if (willBeEmpty) {
+    const placeholder = makeSentence('문장이 없습니다.', 'There are no sentences.', 'default');
+    sentences.push(placeholder);
+    randomOrder.push(String(placeholder.id));
+    saveRandomOrder();
+    saveSentences(sentences);
+  }
+
   currentIndex = 0;
   renderCard();
   if (!listScreen.classList.contains('hidden')) {
