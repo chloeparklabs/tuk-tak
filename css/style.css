@@ -1026,6 +1026,38 @@ button {
   margin: 24px 4px 8px;
 }
 
+.storage-usage-info {
+  margin-bottom: 16px;
+}
+
+.storage-usage-count {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.storage-usage-bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--gray-200);
+  overflow: hidden;
+}
+
+.storage-usage-bar-fill {
+  height: 100%;
+  min-width: 3%;
+  border-radius: 3px;
+  background-color: var(--color-brand);
+}
+
+.storage-usage-detail {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 6px 0 0;
+  text-align: right;
+}
+
 .settings-action-btn {
   width: 100%;
   flex: none;

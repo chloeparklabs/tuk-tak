@@ -359,6 +359,9 @@ const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const hideDefaultToggleBtn = document.getElementById('hide-default-toggle-btn');
 const deleteDefaultBtn = document.getElementById('delete-default-btn');
+const storageUsageCountEl = document.getElementById('storage-usage-count');
+const storageUsageBarFillEl = document.getElementById('storage-usage-bar-fill');
+const storageUsageDetailEl = document.getElementById('storage-usage-detail');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -852,9 +855,23 @@ sentenceListEl.addEventListener('pointercancel', cancelLongPress);
 // ==========================================================================
 // 설정 화면 (글자크기 / 화면모드 / 데이터 관리)
 // ==========================================================================
+const STORAGE_QUOTA_BYTES = 5 * 1024 * 1024; // 브라우저 localStorage 통상 한도(5MB) 기준 안내용 참고치
+
+// 데이터 관리 섹션 상단 저장공간 안내: 설정 화면에 진입할 때마다 다시 계산
+function renderStorageUsage() {
+  const usedBytes = new Blob([JSON.stringify(sentences)]).size;
+  const usedKB = (usedBytes / 1024).toFixed(1);
+  const percent = Math.min(100, (usedBytes / STORAGE_QUOTA_BYTES) * 100);
+
+  storageUsageCountEl.textContent = `문장 ${sentences.length}개 저장 중`;
+  storageUsageBarFillEl.style.width = `${percent}%`;
+  storageUsageDetailEl.textContent = `약 ${usedKB}KB / 5MB 사용`;
+}
+
 settingsOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   settingsScreen.classList.remove('hidden');
+  renderStorageUsage();
 });
 
 settingsBackBtn.addEventListener('click', () => {
