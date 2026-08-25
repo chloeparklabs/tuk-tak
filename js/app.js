@@ -109,6 +109,253 @@ const DEFAULT_SENTENCES = [
   { kr: '우리 이제 그만 얘기하자.', en: "Let's stop talking about this now." },
 ];
 
+// ==========================================================================
+// 15-1 문장변형 체험판 데이터 (2026-08-25 콘텐츠 확정, reference/문장변형_체험판_콘텐츠_초안.md 기준)
+// 문장 10개 고정 목록 — 사용자가 직접 넣은 문장(sentences)과는 별개의 정적 콘텐츠라 DEFAULT_SENTENCES와 무관
+// 카테고리는 문장마다 자연스러운 것만 선별(전부 5종은 아님) — label 순서가 화면 노출 순서
+// ==========================================================================
+const VARIATION_SENTENCES = [
+  {
+    kr: '나 피곤해.', en: "I'm tired.",
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나 피곤해.', en: "I'm tired." },
+        { tag: '과거', kr: '나 피곤했어.', en: 'I was tired.' },
+        { tag: '미래', kr: '나 피곤할 거야.', en: 'I will be tired.' },
+        { tag: '현재완료', kr: '나 계속 피곤했어.', en: "I've been tired." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너 피곤하구나.', en: "You're tired." },
+        { tag: '3인칭 단수', kr: '그녀는 피곤해.', en: "She's tired." },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리 피곤해.', en: "We're tired." },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나 안 피곤해.', en: "I'm not tired." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 피곤해?', en: 'Are you tired?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 집에서 일해.', en: 'I work from home.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나는 집에서 일해.', en: 'I work from home.' },
+        { tag: '과거', kr: '나는 집에서 일했어.', en: 'I worked from home.' },
+        { tag: '미래', kr: '나는 집에서 일할 거야.', en: 'I will work from home.' },
+        { tag: '현재완료', kr: '나는 집에서 일해왔어.', en: "I've worked from home." },
+      ] },
+      { label: '진행형', items: [
+        { tag: '진행형', kr: '나는 오늘 집에서 일하고 있어.', en: "I'm working from home today." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너는 집에서 일하는구나.', en: 'You work from home.' },
+        { tag: '3인칭 단수', kr: '그는 집에서 일해.', en: 'He works from home.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 집에서 일해.', en: 'We work from home.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나는 집에서 일 안 해.', en: "I don't work from home." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너는 집에서 일해?', en: 'Do you work from home?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나 그거 좋아해.', en: 'I like it.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나 그거 좋아해.', en: 'I like it.' },
+        { tag: '과거', kr: '나 그거 좋아했어.', en: 'I liked it.' },
+        { tag: '미래', kr: '나 그거 좋아할 거야.', en: 'I will like it.' },
+        { tag: '현재완료', kr: '나 그거 계속 좋아했어.', en: "I've liked it." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너 그거 좋아하는구나.', en: 'You like it.' },
+        { tag: '3인칭 단수', kr: '그는 그거 좋아해.', en: 'He likes it.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리 그거 좋아해.', en: 'We like it.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나 그거 안 좋아해.', en: "I don't like it." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 그거 좋아해?', en: 'Do you like it?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 요즘 스트레스를 많이 받아.', en: "I've been really stressed lately.",
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나 스트레스 많이 받아.', en: "I'm really stressed." },
+        { tag: '과거', kr: '나 스트레스 많이 받았어.', en: 'I was really stressed.' },
+        { tag: '미래', kr: '나 스트레스 많이 받을 거야.', en: 'I will be really stressed.' },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너 요즘 스트레스 많이 받는구나.', en: "You've been really stressed lately." },
+        { tag: '3인칭 단수', kr: '그녀는 요즘 스트레스 많이 받아.', en: "She's been really stressed lately." },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리 요즘 스트레스 많이 받아.', en: "We've been really stressed lately." },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나 요즘 그렇게 스트레스 받진 않아.', en: "I haven't been that stressed lately." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 요즘 스트레스 받아?', en: 'Have you been stressed lately?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 오늘 회의가 있어.', en: 'I have a meeting today.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나는 오늘 회의가 있어.', en: 'I have a meeting today.' },
+        { tag: '과거', kr: '나는 오늘 회의가 있었어.', en: 'I had a meeting today.' },
+        { tag: '미래', kr: '나는 오늘 회의가 있을 거야.', en: 'I will have a meeting today.' },
+      ] },
+      { label: '진행형', items: [
+        { tag: '진행형', kr: '나 오늘 회의하고 있어.', en: "I'm having a meeting today." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너 오늘 회의가 있구나.', en: 'You have a meeting today.' },
+        { tag: '3인칭 단수', kr: '그녀는 오늘 회의가 있어.', en: 'She has a meeting today.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 오늘 회의가 있어.', en: 'We have a meeting today.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나는 오늘 회의가 없어.', en: "I don't have a meeting today." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 오늘 회의 있어?', en: 'Do you have a meeting today?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 네 말에 동의해.', en: 'I agree with you.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나는 네 말에 동의해.', en: 'I agree with you.' },
+        { tag: '과거', kr: '나는 네 말에 동의했어.', en: 'I agreed with you.' },
+        { tag: '미래', kr: '나는 네 말에 동의할 거야.', en: 'I will agree with you.' },
+        { tag: '현재완료', kr: '나는 네 말에 계속 동의해왔어.', en: "I've agreed with you." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너는 내 말에 동의하는구나.', en: 'You agree with me.' },
+        { tag: '3인칭 단수', kr: '그녀는 네 말에 동의해.', en: 'She agrees with you.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 네 말에 동의해.', en: 'We agree with you.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나는 네 말에 동의 안 해.', en: "I don't agree with you." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 내 말에 동의해?', en: 'Do you agree with me?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 아침에 과일을 자주 먹어.', en: 'I often eat fruit in the morning.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나는 아침에 과일을 자주 먹어.', en: 'I often eat fruit in the morning.' },
+        { tag: '과거', kr: '나는 아침에 과일을 자주 먹었어.', en: 'I often ate fruit in the morning.' },
+        { tag: '미래', kr: '나는 아침에 과일을 자주 먹을 거야.', en: 'I will often eat fruit in the morning.' },
+        { tag: '현재완료', kr: '나는 아침에 과일을 자주 먹어왔어.', en: "I've often eaten fruit in the morning." },
+      ] },
+      { label: '진행형', items: [
+        { tag: '진행형', kr: '나 지금 과일 먹고 있어.', en: "I'm eating fruit right now." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너는 아침에 과일을 자주 먹는구나.', en: 'You often eat fruit in the morning.' },
+        { tag: '3인칭 단수', kr: '그는 아침에 과일을 자주 먹어.', en: 'He often eats fruit in the morning.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 아침에 과일을 자주 먹어.', en: 'We often eat fruit in the morning.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나는 아침에 과일을 자주 먹지는 않아.', en: "I don't often eat fruit in the morning." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너는 아침에 과일을 자주 먹어?', en: 'Do you often eat fruit in the morning?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나는 비행기 타는 걸 무서워해.', en: "I'm afraid of flying.",
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나는 비행기 타는 걸 무서워해.', en: "I'm afraid of flying." },
+        { tag: '과거', kr: '나는 비행기 타는 걸 무서워했어.', en: 'I was afraid of flying.' },
+        { tag: '미래', kr: '나는 비행기 타는 걸 무서워할 거야.', en: 'I will be afraid of flying.' },
+        { tag: '현재완료', kr: '나는 비행기 타는 걸 계속 무서워했어.', en: "I've been afraid of flying." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너는 비행기 타는 걸 무서워하는구나.', en: "You're afraid of flying." },
+        { tag: '3인칭 단수', kr: '그녀는 비행기 타는 걸 무서워해.', en: "She's afraid of flying." },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 비행기 타는 걸 무서워해.', en: "We're afraid of flying." },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나는 비행기 타는 거 안 무서워해.', en: "I'm not afraid of flying." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너는 비행기 타는 거 무서워해?', en: 'Are you afraid of flying?' },
+      ] },
+    ],
+  },
+  {
+    kr: '요즘 날씨가 계속 흐려.', en: 'The weather has been cloudy lately.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '오늘 날씨가 흐려.', en: 'The weather is cloudy today.' },
+        { tag: '과거', kr: '어제 날씨가 흐렸어.', en: 'The weather was cloudy yesterday.' },
+        { tag: '미래', kr: '내일 날씨가 흐릴 거야.', en: 'The weather will be cloudy tomorrow.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '요즘 날씨가 흐리지 않았어.', en: "The weather hasn't been cloudy lately." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '요즘 날씨가 계속 흐려?', en: 'Has the weather been cloudy lately?' },
+      ] },
+    ],
+  },
+  {
+    kr: '나 어제 그를 봤어.', en: 'I saw him yesterday.',
+    categories: [
+      { label: '시제', items: [
+        { tag: '현재', kr: '나 그를 매일 봐.', en: 'I see him every day.' },
+        { tag: '과거', kr: '나 어제 그를 봤어.', en: 'I saw him yesterday.' },
+        { tag: '미래', kr: '나 내일 그를 볼 거야.', en: 'I will see him tomorrow.' },
+        { tag: '현재완료', kr: '나 그를 전에 본 적 있어.', en: "I've seen him before." },
+      ] },
+      { label: '인칭', items: [
+        { tag: '2인칭', kr: '너 어제 그를 봤구나.', en: 'You saw him yesterday.' },
+        { tag: '3인칭 단수', kr: '그녀는 어제 그를 봤어.', en: 'She saw him yesterday.' },
+      ] },
+      { label: '수', items: [
+        { tag: '복수', kr: '우리는 어제 그를 봤어.', en: 'We saw him yesterday.' },
+      ] },
+      { label: '부정문', items: [
+        { tag: '부정문', kr: '나 어제 그를 못 봤어.', en: "I didn't see him yesterday." },
+      ] },
+      { label: '의문문', items: [
+        { tag: '의문문', kr: '너 어제 그를 봤어?', en: 'Did you see him yesterday?' },
+      ] },
+    ],
+  },
+];
+
 function makeSentence(kr, en, source) {
   const sentence = { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), important: false, unfamiliar: false };
   if (source) sentence.source = source;
@@ -371,6 +618,13 @@ const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterSection = document.getElementById('list-filter-section');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 const listCountInfoEl = document.getElementById('list-count-info');
+const variationOpenBtn = document.getElementById('variation-open-btn');
+const variationListScreen = document.getElementById('variation-list-screen');
+const variationListBackBtn = document.getElementById('variation-list-back-btn');
+const variationSentenceListEl = document.getElementById('variation-sentence-list');
+const variationDetailScreen = document.getElementById('variation-detail-screen');
+const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
+const variationDetailBodyEl = document.getElementById('variation-detail-body');
 
 // ==========================================================================
 // 렌더링
@@ -851,6 +1105,114 @@ function cancelLongPress() {
 sentenceListEl.addEventListener('pointerup', cancelLongPress);
 sentenceListEl.addEventListener('pointerleave', cancelLongPress);
 sentenceListEl.addEventListener('pointercancel', cancelLongPress);
+
+// ==========================================================================
+// 문장변형 체험 화면 (목록 → 상세 열람, 읽기 전용)
+// ==========================================================================
+function renderVariationList() {
+  variationSentenceListEl.innerHTML = '';
+
+  VARIATION_SENTENCES.forEach((s, index) => {
+    const item = document.createElement('div');
+    item.className = 'sentence-list-item';
+    item.dataset.index = String(index);
+
+    const textWrap = document.createElement('div');
+    textWrap.className = 'sentence-list-text';
+
+    const krEl = document.createElement('p');
+    krEl.className = 'sentence-list-kr';
+    krEl.textContent = s.kr;
+
+    const enEl = document.createElement('p');
+    enEl.className = 'sentence-list-en';
+    enEl.textContent = s.en;
+
+    textWrap.appendChild(krEl);
+    textWrap.appendChild(enEl);
+    item.appendChild(textWrap);
+
+    variationSentenceListEl.appendChild(item);
+  });
+}
+
+function renderVariationDetail(index) {
+  const data = VARIATION_SENTENCES[index];
+  variationDetailBodyEl.innerHTML = '';
+
+  const original = document.createElement('div');
+  original.className = 'variation-original';
+
+  const originalKr = document.createElement('p');
+  originalKr.className = 'variation-original-kr';
+  originalKr.textContent = data.kr;
+
+  const originalEn = document.createElement('p');
+  originalEn.className = 'variation-original-en';
+  originalEn.textContent = data.en;
+
+  original.appendChild(originalKr);
+  original.appendChild(originalEn);
+  variationDetailBodyEl.appendChild(original);
+
+  data.categories.forEach((category) => {
+    const categoryEl = document.createElement('div');
+    categoryEl.className = 'variation-category';
+
+    const titleEl = document.createElement('p');
+    titleEl.className = 'variation-category-title';
+    titleEl.textContent = category.label;
+    categoryEl.appendChild(titleEl);
+
+    category.items.forEach((item) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'variation-item';
+
+      const tagEl = document.createElement('p');
+      tagEl.className = 'variation-item-tag';
+      tagEl.textContent = item.tag;
+
+      const enEl = document.createElement('p');
+      enEl.className = 'variation-item-en';
+      enEl.textContent = item.en;
+
+      const krEl = document.createElement('p');
+      krEl.className = 'variation-item-kr';
+      krEl.textContent = item.kr;
+
+      itemEl.appendChild(tagEl);
+      itemEl.appendChild(enEl);
+      itemEl.appendChild(krEl);
+      categoryEl.appendChild(itemEl);
+    });
+
+    variationDetailBodyEl.appendChild(categoryEl);
+  });
+}
+
+variationOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  variationListScreen.classList.remove('hidden');
+  renderVariationList();
+});
+
+variationListBackBtn.addEventListener('click', () => {
+  variationListScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+variationSentenceListEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  variationListScreen.classList.add('hidden');
+  variationDetailScreen.classList.remove('hidden');
+  renderVariationDetail(Number(item.dataset.index));
+});
+
+variationDetailBackBtn.addEventListener('click', () => {
+  variationDetailScreen.classList.add('hidden');
+  variationListScreen.classList.remove('hidden');
+});
 
 // ==========================================================================
 // 설정 화면 (글자크기 / 화면모드 / 데이터 관리)
