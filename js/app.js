@@ -1155,40 +1155,49 @@ function renderVariationDetail(index) {
   original.appendChild(originalEn);
   variationDetailBodyEl.appendChild(original);
 
+  // 카테고리(시제/진행형/인칭 등) 그룹 제목 없이 변형 항목을 하나의 목록으로 이어서 표시.
+  // 태그는 "[대괄호]"로 구분, "시제" 카테고리 태그(현재/과거/미래/현재완료)만 단독으로는 뜻이 모호해
+  // "~시제"를 붙임(예: 현재→현재시제) — 나머지(진행형/인칭/수/부정문/의문문)는 그 자체로 뜻이 분명해 그대로 둠.
+  // 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 항목을 탭하면 드러남 — 2026-08-25
   data.categories.forEach((category) => {
-    const categoryEl = document.createElement('div');
-    categoryEl.className = 'variation-category';
-
-    const titleEl = document.createElement('p');
-    titleEl.className = 'variation-category-title';
-    titleEl.textContent = category.label;
-    categoryEl.appendChild(titleEl);
-
     category.items.forEach((item) => {
+      const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
+
       const itemEl = document.createElement('div');
       itemEl.className = 'variation-item';
 
       const tagEl = document.createElement('p');
       tagEl.className = 'variation-item-tag';
-      tagEl.textContent = item.tag;
-
-      const enEl = document.createElement('p');
-      enEl.className = 'variation-item-en';
-      enEl.textContent = item.en;
+      tagEl.textContent = `[${tagText}]`;
 
       const krEl = document.createElement('p');
       krEl.className = 'variation-item-kr';
       krEl.textContent = item.kr;
 
-      itemEl.appendChild(tagEl);
-      itemEl.appendChild(enEl);
-      itemEl.appendChild(krEl);
-      categoryEl.appendChild(itemEl);
-    });
+      const hintEl = document.createElement('p');
+      hintEl.className = 'variation-item-hint';
+      hintEl.textContent = '탭해서 영어 보기';
 
-    variationDetailBodyEl.appendChild(categoryEl);
+      const enEl = document.createElement('p');
+      enEl.className = 'variation-item-en hidden';
+      enEl.textContent = item.en;
+
+      itemEl.appendChild(tagEl);
+      itemEl.appendChild(krEl);
+      itemEl.appendChild(hintEl);
+      itemEl.appendChild(enEl);
+      variationDetailBodyEl.appendChild(itemEl);
+    });
   });
 }
+
+// 변형 항목 탭 → 가려진 영어 정답 노출(카드 화면의 "확인"과 같은 개념, 한 번 열리면 계속 유지)
+variationDetailBodyEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.variation-item');
+  if (!item) return;
+  item.querySelector('.variation-item-hint').classList.add('hidden');
+  item.querySelector('.variation-item-en').classList.remove('hidden');
+});
 
 variationOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');

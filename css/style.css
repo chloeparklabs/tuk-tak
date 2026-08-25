@@ -1300,55 +1300,48 @@ button {
   margin: 0;
 }
 
-.variation-category {
-  margin-top: 24px;
-}
-
-.variation-category-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 10px;
-}
-
-.variation-category-title::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--color-brand);
-  flex-shrink: 0;
-}
-
+/* 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 탭하면 드러남(2026-08-25) */
 .variation-item {
   padding: 10px 12px;
   margin-bottom: 8px;
   background-color: var(--gray-50);
   border-radius: 10px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
+/* [대괄호] 태그 — "시제" 카테고리(현재/과거/미래/현재완료)는 "~시제"를 붙여 단독으로도 뜻이 분명하게 함 */
 .variation-item-tag {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text-muted);
   margin: 0 0 2px;
 }
 
-.variation-item-en {
+/* 한국어가 먼저 보이는 "문제"(카드 화면과 동일한 순서), 영어는 탭하기 전까지 숨김 */
+.variation-item-kr {
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
 }
 
-.variation-item-kr {
+.variation-item-hint {
   font-size: 13px;
-  color: var(--color-text-secondary);
-  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  margin: 4px 0 0;
+}
+
+.variation-item-en {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  margin: 4px 0 0;
+}
+
+[data-theme="dark"] .variation-item-en {
+  color: var(--color-text-primary);
 }
 
 /* ==========================================================================
