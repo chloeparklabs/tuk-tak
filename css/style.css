@@ -1282,7 +1282,7 @@ button {
   font-size: 15px;
   font-weight: 600;
   color: var(--color-brand-dark);
-  text-align: center;
+  text-align: left;
   word-break: keep-all;
 }
 
@@ -1361,7 +1361,7 @@ button {
 /* 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 탭하면 드러남(2026-08-25) */
 .variation-item {
   padding: 10px 12px;
-  margin-bottom: 8px;
+  margin-bottom: 20px;
   background-color: var(--gray-50);
   border-radius: 10px;
   cursor: pointer;
