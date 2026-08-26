@@ -1270,8 +1270,77 @@ button {
 }
 
 /* ==========================================================================
-   문장변형 체험 화면 (목록은 .sentence-list 계열 재사용, 상세만 신규)
+   문장변형 체험 화면
    ========================================================================== */
+/* 목록 상단 안내 문구 — "탭하면 변형을 볼 수 있다"는 직관을 문장으로 보강 */
+.variation-list-intro {
+  padding: 12px 20px 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* 세로 1열 카드 목록(2026-08-26) — 문장관리 목록(.sentence-list, 수정 진입용)과
+   시각적으로 구분해서 "이건 다른 동작(변형 보기)"이라는 것을 형태로도 드러냄.
+   글자 크기는 설정 화면의 글자크기 조절과 동일한 변수를 재사용해 카드 학습 화면과 함께 커짐 */
+.variation-card-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.variation-card {
+  padding: 16px;
+  background-color: var(--color-base);
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+[data-theme="dark"] .variation-card {
+  background-color: var(--gray-100);
+  border: none;
+  box-shadow: none;
+}
+
+.variation-card-kr {
+  font-size: var(--kr-font-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+  word-break: keep-all;
+}
+
+.variation-card-en {
+  font-size: var(--en-font-size);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin: 0;
+  word-break: keep-all;
+}
+
+.variation-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-top: 12px;
+  color: var(--color-text-muted);
+}
+
+.variation-card-count {
+  font-size: 13px;
+}
+
+.variation-card-footer svg {
+  width: 16px;
+  height: 16px;
+}
+
 .variation-detail-body {
   flex: 1;
   overflow-y: auto;

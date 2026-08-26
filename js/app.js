@@ -1113,24 +1113,42 @@ function renderVariationList() {
   variationSentenceListEl.innerHTML = '';
 
   VARIATION_SENTENCES.forEach((s, index) => {
+    const totalCount = s.categories.reduce((sum, category) => sum + category.items.length, 0);
+
     const item = document.createElement('div');
-    item.className = 'sentence-list-item';
+    item.className = 'variation-card';
     item.dataset.index = String(index);
 
-    const textWrap = document.createElement('div');
-    textWrap.className = 'sentence-list-text';
-
     const krEl = document.createElement('p');
-    krEl.className = 'sentence-list-kr';
+    krEl.className = 'variation-card-kr';
     krEl.textContent = s.kr;
 
     const enEl = document.createElement('p');
-    enEl.className = 'sentence-list-en';
+    enEl.className = 'variation-card-en';
     enEl.textContent = s.en;
 
-    textWrap.appendChild(krEl);
-    textWrap.appendChild(enEl);
-    item.appendChild(textWrap);
+    const footer = document.createElement('div');
+    footer.className = 'variation-card-footer';
+
+    const countEl = document.createElement('span');
+    countEl.className = 'variation-card-count';
+    countEl.textContent = `${totalCount}개 변형`;
+
+    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevron.setAttribute('viewBox', '0 0 24 24');
+    chevron.setAttribute('fill', 'none');
+    chevron.setAttribute('stroke', 'currentColor');
+    chevron.setAttribute('stroke-width', '2');
+    chevron.setAttribute('stroke-linecap', 'round');
+    chevron.setAttribute('stroke-linejoin', 'round');
+    chevron.innerHTML = '<path d="m9 18 6-6-6-6"/>';
+
+    footer.appendChild(countEl);
+    footer.appendChild(chevron);
+
+    item.appendChild(krEl);
+    item.appendChild(enEl);
+    item.appendChild(footer);
 
     variationSentenceListEl.appendChild(item);
   });
@@ -1211,7 +1229,7 @@ variationListBackBtn.addEventListener('click', () => {
 });
 
 variationSentenceListEl.addEventListener('click', (e) => {
-  const item = e.target.closest('.sentence-list-item');
+  const item = e.target.closest('.variation-card');
   if (!item) return;
   variationListScreen.classList.add('hidden');
   variationDetailScreen.classList.remove('hidden');
