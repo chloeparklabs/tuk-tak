@@ -1354,18 +1354,21 @@ button {
   border-radius: 12px;
 }
 
-/* 하이라이트 칩(--color-chip-answer)이 테마와 무관하게 항상 밝은 배경이라 텍스트도 고정값 사용(.en-text와 동일 규칙) */
+/* 하이라이트 칩(--color-chip-answer)이 테마와 무관하게 항상 밝은 배경이라 텍스트도 고정값 사용(.en-text와 동일 규칙).
+   글자 크기는 설정 화면 글자크기 조절과 같은 원리로 카드 학습 화면의 변수를 재사용(2026-08-26) —
+   한국어(문제)는 --kr-font-size, 영어(정답)는 카드 화면에서 정답 확인 후 한국어가 작아지는 보조 크기
+   (--kr-font-size-revealed)를 빌려써서 영어가 상대적으로 더 작게 보이도록 함 */
 .variation-original-kr {
-  font-size: 17px;
+  font-size: var(--kr-font-size);
   font-weight: 700;
   color: #1E2A38;
   margin: 0 0 4px;
 }
 
 .variation-original-en {
-  font-size: 15px;
+  font-size: var(--kr-font-size-revealed);
   font-weight: 600;
-  color: var(--color-brand-dark);
+  color: #1E2A38;
   margin: 0;
 }
 
@@ -1388,9 +1391,11 @@ button {
   margin: 0 0 2px;
 }
 
-/* 한국어가 먼저 보이는 "문제"(카드 화면과 동일한 순서), 영어는 탭하기 전까지 숨김 */
+/* 한국어가 먼저 보이는 "문제"(카드 화면과 동일한 순서), 영어는 탭하기 전까지 숨김.
+   글자 크기는 원문 강조박스와 같은 원리(카드 학습 화면 변수 재사용) — 배경이 테마에 따라 바뀌는
+   요소라 색상도 테마별로 자동 전환되는 --color-text-primary를 그대로 사용(2026-08-26) */
 .variation-item-kr {
-  font-size: 15px;
+  font-size: var(--kr-font-size);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
@@ -1403,14 +1408,10 @@ button {
 }
 
 .variation-item-en {
-  font-size: 15px;
+  font-size: var(--kr-font-size-revealed);
   font-weight: 600;
-  color: var(--color-brand-dark);
-  margin: 4px 0 0;
-}
-
-[data-theme="dark"] .variation-item-en {
   color: var(--color-text-primary);
+  margin: 4px 0 0;
 }
 
 /* ==========================================================================
