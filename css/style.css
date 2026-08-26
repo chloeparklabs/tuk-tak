@@ -1390,28 +1390,40 @@ button {
   margin: 0 0 2px;
 }
 
-/* 한국어가 먼저 보이는 "문제"(카드 화면과 동일한 순서), 영어는 탭하기 전까지 숨김.
-   글자 크기는 원문 강조박스와 같은 원리(카드 학습 화면 변수 재사용) — 배경이 테마에 따라 바뀌는
-   요소라 색상도 테마별로 자동 전환되는 --color-text-primary를 그대로 사용(2026-08-26) */
-.variation-item-kr {
+/* 탭하면 한/영이 카드 뒤집히듯 전환되는 플립 애니메이션(2026-08-26).
+   두 텍스트를 같은 grid 칸에 겹쳐 컨테이너 높이가 더 긴 쪽에 맞춰지게 하고,
+   backface-visibility로 뒷면을 숨겨 회전 각도에 따라 한쪽만 보이게 함 */
+.variation-item-flip {
+  perspective: 1000px;
+}
+
+.variation-item-flip-inner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease;
+}
+
+.variation-item-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+/* 한국어가 먼저 보이는 "문제"(카드 화면과 동일한 순서). 글자 크기는 한국어/영어 동일(2026-08-26,
+   이전엔 영어를 더 작게 뒀으나 플립 시 크기가 바뀌는 게 어색해 통일) — 배경이 테마에 따라 바뀌는
+   요소라 색상도 테마별로 자동 전환되는 --color-text-primary를 그대로 사용 */
+.variation-item-kr,
+.variation-item-en {
+  grid-area: 1 / 1;
   font-size: var(--kr-font-size);
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
-}
-
-.variation-item-hint {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin: 4px 0 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .variation-item-en {
-  font-size: var(--kr-font-size-revealed);
-  font-weight: 600;
-  color: var(--color-text-primary);
   letter-spacing: -0.3px;
-  margin: 4px 0 0;
+  transform: rotateY(180deg);
 }
 
 /* ==========================================================================

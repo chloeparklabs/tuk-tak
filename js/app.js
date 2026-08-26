@@ -1163,10 +1163,13 @@ function renderVariationDetail(index) {
   // 카테고리(시제/진행형/인칭 등) 그룹 제목 없이 변형 항목을 하나의 목록으로 이어서 표시.
   // 태그는 "[대괄호]"로 구분, "시제" 카테고리 태그(현재/과거/미래/현재완료)만 단독으로는 뜻이 모호해
   // "~시제"를 붙임(예: 현재→현재시제) — 나머지(진행형/인칭/수/부정문/의문문)는 그 자체로 뜻이 분명해 그대로 둠.
-  // 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 항목을 탭하면 드러남 — 2026-08-25.
+  // 한국어가 먼저 보이고 탭하면 영어로 플립(카드 화면의 "확인"과 같은 개념) — 2026-08-25 최초 구현,
+  // 2026-08-26 플립 애니메이션으로 전환. "탭해서 영어/한국어 보기" 안내는 처음엔 항목마다 넣었다가
+  // 매번 반복돼 번잡하다는 피드백으로 화면 상단에 한 번(.variation-list-intro)만 두는 것으로 변경.
   // 별도 "원문" 강조박스는 2026-08-26 제거 — 목록에서 방금 탭한 문장이라 기억할 거라는 판단 + 화면에
   // 변형문이 이미 다 보인다는 이유. 대신 원문과 내용이 완전히 같은 항목(대부분 "현재시제", 10번은
-  // "과거시제")에 하늘색 배경(.variation-item-original)을 입혀 원문 자리를 표시
+  // "과거시제")에 하늘색 배경(.variation-item-original)을 입혀 원문 자리를 표시 — 목록에서 이미
+  // 원문(한국어)을 보고 들어온 것이므로 이 항목만 처음부터 영어가 보이는 상태로 시작
   data.categories.forEach((category) => {
     category.items.forEach((item) => {
       const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
@@ -1179,46 +1182,37 @@ function renderVariationDetail(index) {
       tagEl.className = 'variation-item-tag';
       tagEl.textContent = `[${tagText}]`;
 
+      const flipEl = document.createElement('div');
+      flipEl.className = 'variation-item-flip';
+
+      const flipInnerEl = document.createElement('div');
+      flipInnerEl.className = isOriginal ? 'variation-item-flip-inner flipped' : 'variation-item-flip-inner';
+
       const krEl = document.createElement('p');
       krEl.className = 'variation-item-kr';
       krEl.textContent = item.kr;
 
-      const hintEl = document.createElement('p');
-      hintEl.className = 'variation-item-hint';
-      hintEl.textContent = '탭해서 영어 보기';
-
       const enEl = document.createElement('p');
-      enEl.className = 'variation-item-en hidden';
+      enEl.className = 'variation-item-en';
       enEl.textContent = item.en;
 
+      flipInnerEl.appendChild(krEl);
+      flipInnerEl.appendChild(enEl);
+      flipEl.appendChild(flipInnerEl);
+
       itemEl.appendChild(tagEl);
-      itemEl.appendChild(krEl);
-      itemEl.appendChild(hintEl);
-      itemEl.appendChild(enEl);
+      itemEl.appendChild(flipEl);
       variationDetailBodyEl.appendChild(itemEl);
     });
   });
 }
 
-// 변형 항목 탭 → 한국어/영어 전환(플립). 탭할 때마다 번갈아 보이고, 힌트 문구도 상태에 맞게 바뀜(2026-08-26)
+// 변형 항목 탭 → 한국어/영어 플립(2026-08-26)
 variationDetailBodyEl.addEventListener('click', (e) => {
   const item = e.target.closest('.variation-item');
   if (!item) return;
 
-  const krEl = item.querySelector('.variation-item-kr');
-  const enEl = item.querySelector('.variation-item-en');
-  const hintEl = item.querySelector('.variation-item-hint');
-  const showingEn = !enEl.classList.contains('hidden');
-
-  if (showingEn) {
-    enEl.classList.add('hidden');
-    krEl.classList.remove('hidden');
-    hintEl.textContent = '탭해서 영어 보기';
-  } else {
-    krEl.classList.add('hidden');
-    enEl.classList.remove('hidden');
-    hintEl.textContent = '탭해서 한국어 보기';
-  }
+  item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
 });
 
 variationOpenBtn.addEventListener('click', () => {
