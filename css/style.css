@@ -1272,12 +1272,19 @@ button {
 /* ==========================================================================
    문장변형 체험 화면
    ========================================================================== */
-/* 목록 상단 안내 문구 — "탭하면 변형을 볼 수 있다"는 직관을 문장으로 보강 */
+/* 목록 상단 안내 문구 — "탭하면 변형을 볼 수 있다"는 직관을 문장으로 보강.
+   다크모드에서 네이비가 배경과 거의 안 보이는 문제는 .list-filter-btn/.help-accordion-header와
+   같은 패턴으로 해결(라이트=브랜드 네이비, 다크=밝은 텍스트색)(2026-08-26) */
 .variation-list-intro {
   padding: 12px 20px 4px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
   text-align: center;
+}
+
+[data-theme="dark"] .variation-list-intro {
+  color: var(--color-text-primary);
 }
 
 /* 세로 1열 카드 목록(2026-08-26) — 문장관리 목록(.sentence-list, 수정 진입용)과
@@ -1319,6 +1326,7 @@ button {
   font-size: var(--en-font-size);
   font-weight: 500;
   color: var(--color-text-secondary);
+  letter-spacing: -0.3px;
   margin: 0;
   word-break: keep-all;
 }
@@ -1347,31 +1355,6 @@ button {
   padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
 }
 
-.variation-original {
-  padding: 16px;
-  margin-bottom: 24px;
-  background-color: var(--color-chip-answer);
-  border-radius: 12px;
-}
-
-/* 하이라이트 칩(--color-chip-answer)이 테마와 무관하게 항상 밝은 배경이라 텍스트도 고정값 사용(.en-text와 동일 규칙).
-   글자 크기는 설정 화면 글자크기 조절과 같은 원리로 카드 학습 화면의 변수를 재사용(2026-08-26) —
-   한국어(문제)는 --kr-font-size, 영어(정답)는 카드 화면에서 정답 확인 후 한국어가 작아지는 보조 크기
-   (--kr-font-size-revealed)를 빌려써서 영어가 상대적으로 더 작게 보이도록 함 */
-.variation-original-kr {
-  font-size: var(--kr-font-size);
-  font-weight: 700;
-  color: #1E2A38;
-  margin: 0 0 4px;
-}
-
-.variation-original-en {
-  font-size: var(--kr-font-size-revealed);
-  font-weight: 600;
-  color: #1E2A38;
-  margin: 0;
-}
-
 /* 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 탭하면 드러남(2026-08-25) */
 .variation-item {
   padding: 10px 12px;
@@ -1383,11 +1366,27 @@ button {
   user-select: none;
 }
 
-/* [대괄호] 태그 — "시제" 카테고리(현재/과거/미래/현재완료)는 "~시제"를 붙여 단독으로도 뜻이 분명하게 함 */
+/* 원문과 내용이 완전히 같은 항목(대부분 "현재시제", 10번은 "과거시제") 강조 — 별도 원문 박스를 없애는
+   대신 이 항목에 하늘색 배경을 입혀 원문 자리를 표시(2026-08-26). 배경(--color-chip-answer)이 테마와
+   무관하게 항상 밝은색이라, 안의 텍스트(태그·한국어·영어)도 .en-text와 같은 규칙으로 고정값 사용 —
+   힌트 문구(--color-text-muted)는 이미 테마 불변값이라 별도 처리 불필요 */
+.variation-item-original {
+  background-color: var(--color-chip-answer);
+}
+
+.variation-item-original .variation-item-tag,
+.variation-item-original .variation-item-kr,
+.variation-item-original .variation-item-en {
+  color: #1E2A38;
+}
+
+/* [대괄호] 태그 — "시제" 카테고리(현재/과거/미래/현재완료)는 "~시제"를 붙여 단독으로도 뜻이 분명하게 함.
+   기존 --color-text-muted(대비 3.3:1)는 컬러 가이드상 소글씨 금지 색인데 여기 쓰여있어 잘 안 보이는
+   문제가 있었음 → --color-text-secondary(대비 6.4:1, 라이트/다크 둘 다 자동 대응)로 교체(2026-08-26) */
 .variation-item-tag {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   margin: 0 0 2px;
 }
 
@@ -1411,6 +1410,7 @@ button {
   font-size: var(--kr-font-size-revealed);
   font-weight: 600;
   color: var(--color-text-primary);
+  letter-spacing: -0.3px;
   margin: 4px 0 0;
 }
 

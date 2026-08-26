@@ -197,6 +197,7 @@ const VARIATION_SENTENCES = [
         { tag: '현재', kr: '나 스트레스 많이 받아.', en: "I'm really stressed." },
         { tag: '과거', kr: '나 스트레스 많이 받았어.', en: 'I was really stressed.' },
         { tag: '미래', kr: '나 스트레스 많이 받을 거야.', en: 'I will be really stressed.' },
+        { tag: '현재완료', kr: '나는 요즘 스트레스를 많이 받아.', en: "I've been really stressed lately." },
       ] },
       { label: '인칭', items: [
         { tag: '2인칭', kr: '너 요즘 스트레스 많이 받는구나.', en: "You've been really stressed lately." },
@@ -321,6 +322,7 @@ const VARIATION_SENTENCES = [
         { tag: '현재', kr: '오늘 날씨가 흐려.', en: 'The weather is cloudy today.' },
         { tag: '과거', kr: '어제 날씨가 흐렸어.', en: 'The weather was cloudy yesterday.' },
         { tag: '미래', kr: '내일 날씨가 흐릴 거야.', en: 'The weather will be cloudy tomorrow.' },
+        { tag: '현재완료', kr: '요즘 날씨가 계속 흐려.', en: 'The weather has been cloudy lately.' },
       ] },
       { label: '부정문', items: [
         { tag: '부정문', kr: '요즘 날씨가 흐리지 않았어.', en: "The weather hasn't been cloudy lately." },
@@ -1158,31 +1160,20 @@ function renderVariationDetail(index) {
   const data = VARIATION_SENTENCES[index];
   variationDetailBodyEl.innerHTML = '';
 
-  const original = document.createElement('div');
-  original.className = 'variation-original';
-
-  const originalKr = document.createElement('p');
-  originalKr.className = 'variation-original-kr';
-  originalKr.textContent = data.kr;
-
-  const originalEn = document.createElement('p');
-  originalEn.className = 'variation-original-en';
-  originalEn.textContent = data.en;
-
-  original.appendChild(originalKr);
-  original.appendChild(originalEn);
-  variationDetailBodyEl.appendChild(original);
-
   // 카테고리(시제/진행형/인칭 등) 그룹 제목 없이 변형 항목을 하나의 목록으로 이어서 표시.
   // 태그는 "[대괄호]"로 구분, "시제" 카테고리 태그(현재/과거/미래/현재완료)만 단독으로는 뜻이 모호해
   // "~시제"를 붙임(예: 현재→현재시제) — 나머지(진행형/인칭/수/부정문/의문문)는 그 자체로 뜻이 분명해 그대로 둠.
-  // 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 항목을 탭하면 드러남 — 2026-08-25
+  // 영어는 기본으로 가려두고(카드 화면의 "확인"과 같은 개념) 항목을 탭하면 드러남 — 2026-08-25.
+  // 별도 "원문" 강조박스는 2026-08-26 제거 — 목록에서 방금 탭한 문장이라 기억할 거라는 판단 + 화면에
+  // 변형문이 이미 다 보인다는 이유. 대신 원문과 내용이 완전히 같은 항목(대부분 "현재시제", 10번은
+  // "과거시제")에 하늘색 배경(.variation-item-original)을 입혀 원문 자리를 표시
   data.categories.forEach((category) => {
     category.items.forEach((item) => {
       const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
+      const isOriginal = item.kr === data.kr && item.en === data.en;
 
       const itemEl = document.createElement('div');
-      itemEl.className = 'variation-item';
+      itemEl.className = isOriginal ? 'variation-item variation-item-original' : 'variation-item';
 
       const tagEl = document.createElement('p');
       tagEl.className = 'variation-item-tag';
@@ -1209,12 +1200,25 @@ function renderVariationDetail(index) {
   });
 }
 
-// 변형 항목 탭 → 가려진 영어 정답 노출(카드 화면의 "확인"과 같은 개념, 한 번 열리면 계속 유지)
+// 변형 항목 탭 → 한국어/영어 전환(플립). 탭할 때마다 번갈아 보이고, 힌트 문구도 상태에 맞게 바뀜(2026-08-26)
 variationDetailBodyEl.addEventListener('click', (e) => {
   const item = e.target.closest('.variation-item');
   if (!item) return;
-  item.querySelector('.variation-item-hint').classList.add('hidden');
-  item.querySelector('.variation-item-en').classList.remove('hidden');
+
+  const krEl = item.querySelector('.variation-item-kr');
+  const enEl = item.querySelector('.variation-item-en');
+  const hintEl = item.querySelector('.variation-item-hint');
+  const showingEn = !enEl.classList.contains('hidden');
+
+  if (showingEn) {
+    enEl.classList.add('hidden');
+    krEl.classList.remove('hidden');
+    hintEl.textContent = '탭해서 영어 보기';
+  } else {
+    krEl.classList.add('hidden');
+    enEl.classList.remove('hidden');
+    hintEl.textContent = '탭해서 한국어 보기';
+  }
 });
 
 variationOpenBtn.addEventListener('click', () => {
