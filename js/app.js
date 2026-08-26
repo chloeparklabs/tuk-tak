@@ -855,6 +855,8 @@ pasteSubmitBtn.addEventListener('click', () => {
 const LIST_BACK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
 const LIST_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const LONG_PRESS_MS = 550;
+// 문장변형 상세 화면의 "내 문장으로 추가" 버튼 아이콘(circle-plus), 추가 완료 시 LIST_CHECK_ICON으로 교체
+const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
 
 let selecting = false;
 let selectedIds = new Set();
@@ -1171,18 +1173,36 @@ function renderVariationDetail(index) {
   // 피드백으로 **지금 영어가 보이는(플립된) 항목**을 동적으로 강조하는 방식으로 전환(.variation-item-flipped,
   // 탭할 때마다 플립 애니메이션과 함께 토글). 원문과 내용이 같은 항목(대부분 "현재시제")은 목록에서
   // 이미 한국어 원문을 보고 들어온 것이므로 처음부터 영어가 보이는 상태로 시작 — 결과적으로 이 항목이
-  // 렌더링 직후에는 하늘색으로 보이지만, 사용자가 다른 항목을 플립하면 그쪽으로 하늘색이 옮겨감
+  // 렌더링 직후에는 하늘색으로 보이지만, 사용자가 다른 항목을 플립하면 그쪽으로 하늘색이 옮겨감.
+  // 각 항목에 "내 문장으로 추가" 버튼(circle-plus)을 붙여 카드 학습 덱에 바로 추가 가능(2026-08-26) —
+  // 이미 내 문장 목록에 똑같은 kr/en이 있으면(기본문장으로 이미 들어있는 경우 포함) 처음부터 체크 표시로
+  // 시작해 중복 추가를 막음. addSentence()를 그대로 재사용, 추가된 문장은 기본문장이 아닌 일반 "내 문장"
   data.categories.forEach((category) => {
     category.items.forEach((item) => {
       const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
       const startFlipped = item.kr === data.kr && item.en === data.en;
+      const alreadyAdded = sentences.some((s) => s.kr === item.kr && s.en === item.en);
 
       const itemEl = document.createElement('div');
       itemEl.className = startFlipped ? 'variation-item variation-item-flipped' : 'variation-item';
 
+      const headerEl = document.createElement('div');
+      headerEl.className = 'variation-item-header';
+
       const tagEl = document.createElement('p');
       tagEl.className = 'variation-item-tag';
       tagEl.textContent = `[${tagText}]`;
+
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = alreadyAdded ? 'variation-item-add-btn added' : 'variation-item-add-btn';
+      addBtn.setAttribute('aria-label', '내 문장으로 추가');
+      addBtn.dataset.kr = item.kr;
+      addBtn.dataset.en = item.en;
+      addBtn.innerHTML = alreadyAdded ? LIST_CHECK_ICON : VARIATION_ADD_ICON;
+
+      headerEl.appendChild(tagEl);
+      headerEl.appendChild(addBtn);
 
       const flipEl = document.createElement('div');
       flipEl.className = 'variation-item-flip';
@@ -1202,15 +1222,24 @@ function renderVariationDetail(index) {
       flipInnerEl.appendChild(enEl);
       flipEl.appendChild(flipInnerEl);
 
-      itemEl.appendChild(tagEl);
+      itemEl.appendChild(headerEl);
       itemEl.appendChild(flipEl);
       variationDetailBodyEl.appendChild(itemEl);
     });
   });
 }
 
-// 변형 항목 탭 → 한국어/영어 플립, 지금 영어가 보이는 항목에 하늘색 배경이 따라감(2026-08-26)
+// 추가 버튼 탭 → 내 문장 목록에 추가 + 체크 표시로 전환(플립과 별개 동작이라 이벤트 버블링 차단)
 variationDetailBodyEl.addEventListener('click', (e) => {
+  const addBtn = e.target.closest('.variation-item-add-btn');
+  if (addBtn) {
+    e.stopPropagation();
+    if (addBtn.classList.contains('added')) return;
+    addSentence(addBtn.dataset.kr, addBtn.dataset.en);
+    addBtn.classList.add('added');
+    addBtn.innerHTML = LIST_CHECK_ICON;
+    return;
+  }
   const item = e.target.closest('.variation-item');
   if (!item) return;
 

@@ -1385,6 +1385,15 @@ button {
   color: #1E2A38;
 }
 
+/* 태그 + "내 문장으로 추가" 버튼을 한 줄에 배치(2026-08-26) */
+.variation-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 2px;
+}
+
 /* [대괄호] 태그 — "시제" 카테고리(현재/과거/미래/현재완료)는 "~시제"를 붙여 단독으로도 뜻이 분명하게 함.
    기존 --color-text-muted(대비 3.3:1)는 컬러 가이드상 소글씨 금지 색인데 여기 쓰여있어 잘 안 보이는
    문제가 있었음 → --color-text-secondary(대비 6.4:1, 라이트/다크 둘 다 자동 대응)로 교체(2026-08-26) */
@@ -1392,7 +1401,43 @@ button {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-secondary);
-  margin: 0 0 2px;
+  margin: 0;
+}
+
+/* "내 문장으로 추가" 버튼 — 카드 화면 마킹 아이콘(.card-mark-btn)과 같은 원형 버튼 규칙을 축소해 재사용.
+   추가 완료 시 체크 아이콘 + 즐겨찾기 강조와 같은 accent-star 색(.card-mark-btn.active와 동일 규칙)으로
+   전환해 "표시가 남는다"는 느낌을 통일(2026-08-26) */
+.variation-item-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.variation-item-add-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.variation-item-add-btn.added {
+  color: var(--color-accent-star);
+  background-color: var(--color-accent-star-bg);
+}
+
+.variation-item-flipped .variation-item-add-btn {
+  color: #1E2A38;
+}
+
+.variation-item-flipped .variation-item-add-btn.added {
+  color: var(--color-accent-star);
+  background-color: var(--color-accent-star-bg);
 }
 
 /* 탭하면 한/영이 카드 뒤집히듯 전환되는 플립 애니메이션(2026-08-26).
