@@ -1274,13 +1274,16 @@ button {
    ========================================================================== */
 /* 목록 상단 안내 문구 — "탭하면 변형을 볼 수 있다"는 직관을 문장으로 보강.
    다크모드에서 네이비가 배경과 거의 안 보이는 문제는 .list-filter-btn/.help-accordion-header와
-   같은 패턴으로 해결(라이트=브랜드 네이비, 다크=밝은 텍스트색)(2026-08-26) */
+   같은 패턴으로 해결(라이트=브랜드 네이비, 다크=밝은 텍스트색)(2026-08-26).
+   word-break: keep-all이 빠져 있어 좁은 화면에서 단어 중간에 아무 데서나 줄바꿈되던 문제 수정 —
+   자연스러운 지점(HTML의 <br>)에서만 줄바꿈되도록 함(2026-08-26) */
 .variation-list-intro {
   padding: 12px 20px 4px;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-brand-dark);
   text-align: center;
+  word-break: keep-all;
 }
 
 [data-theme="dark"] .variation-list-intro {
@@ -1366,17 +1369,19 @@ button {
   user-select: none;
 }
 
-/* 원문과 내용이 완전히 같은 항목(대부분 "현재시제", 10번은 "과거시제") 강조 — 별도 원문 박스를 없애는
-   대신 이 항목에 하늘색 배경을 입혀 원문 자리를 표시(2026-08-26). 배경(--color-chip-answer)이 테마와
-   무관하게 항상 밝은색이라, 안의 텍스트(태그·한국어·영어)도 .en-text와 같은 규칙으로 고정값 사용 —
-   힌트 문구(--color-text-muted)는 이미 테마 불변값이라 별도 처리 불필요 */
-.variation-item-original {
+/* 지금 영어가 보이는(플립된) 항목에 하늘색 배경 — 별도 원문 박스를 없애는 대신, 처음엔 "원문과
+   내용이 같은 항목"에 고정 적용했으나 "영어로 보이는 항목을 따라가야 한다"는 피드백으로 플립
+   상태에 동적으로 연동(2026-08-26, 탭 이벤트에서 .variation-item-flip-inner의 flipped와 함께 토글).
+   배경(--color-chip-answer)이 테마와 무관하게 항상 밝은색이라, 안의 텍스트(태그·한국어·영어)도
+   .en-text와 같은 규칙으로 고정값 사용 */
+.variation-item.variation-item-flipped {
   background-color: var(--color-chip-answer);
+  transition: background-color 0.4s ease;
 }
 
-.variation-item-original .variation-item-tag,
-.variation-item-original .variation-item-kr,
-.variation-item-original .variation-item-en {
+.variation-item-flipped .variation-item-tag,
+.variation-item-flipped .variation-item-kr,
+.variation-item-flipped .variation-item-en {
   color: #1E2A38;
 }
 

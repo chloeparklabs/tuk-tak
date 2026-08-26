@@ -1166,17 +1166,19 @@ function renderVariationDetail(index) {
   // 한국어가 먼저 보이고 탭하면 영어로 플립(카드 화면의 "확인"과 같은 개념) — 2026-08-25 최초 구현,
   // 2026-08-26 플립 애니메이션으로 전환. "탭해서 영어/한국어 보기" 안내는 처음엔 항목마다 넣었다가
   // 매번 반복돼 번잡하다는 피드백으로 화면 상단에 한 번(.variation-list-intro)만 두는 것으로 변경.
-  // 별도 "원문" 강조박스는 2026-08-26 제거 — 목록에서 방금 탭한 문장이라 기억할 거라는 판단 + 화면에
-  // 변형문이 이미 다 보인다는 이유. 대신 원문과 내용이 완전히 같은 항목(대부분 "현재시제", 10번은
-  // "과거시제")에 하늘색 배경(.variation-item-original)을 입혀 원문 자리를 표시 — 목록에서 이미
-  // 원문(한국어)을 보고 들어온 것이므로 이 항목만 처음부터 영어가 보이는 상태로 시작
+  // 별도 "원문" 강조박스는 2026-08-26 제거. 하늘색 배경은 처음엔 "원문과 내용이 같은 항목"에 고정
+  // 적용했으나, "영어로 보이고 있는 항목이 하늘색이어야지 항상 현재시제만 고정되는 건 이상하다"는
+  // 피드백으로 **지금 영어가 보이는(플립된) 항목**을 동적으로 강조하는 방식으로 전환(.variation-item-flipped,
+  // 탭할 때마다 플립 애니메이션과 함께 토글). 원문과 내용이 같은 항목(대부분 "현재시제")은 목록에서
+  // 이미 한국어 원문을 보고 들어온 것이므로 처음부터 영어가 보이는 상태로 시작 — 결과적으로 이 항목이
+  // 렌더링 직후에는 하늘색으로 보이지만, 사용자가 다른 항목을 플립하면 그쪽으로 하늘색이 옮겨감
   data.categories.forEach((category) => {
     category.items.forEach((item) => {
       const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
-      const isOriginal = item.kr === data.kr && item.en === data.en;
+      const startFlipped = item.kr === data.kr && item.en === data.en;
 
       const itemEl = document.createElement('div');
-      itemEl.className = isOriginal ? 'variation-item variation-item-original' : 'variation-item';
+      itemEl.className = startFlipped ? 'variation-item variation-item-flipped' : 'variation-item';
 
       const tagEl = document.createElement('p');
       tagEl.className = 'variation-item-tag';
@@ -1186,7 +1188,7 @@ function renderVariationDetail(index) {
       flipEl.className = 'variation-item-flip';
 
       const flipInnerEl = document.createElement('div');
-      flipInnerEl.className = isOriginal ? 'variation-item-flip-inner flipped' : 'variation-item-flip-inner';
+      flipInnerEl.className = startFlipped ? 'variation-item-flip-inner flipped' : 'variation-item-flip-inner';
 
       const krEl = document.createElement('p');
       krEl.className = 'variation-item-kr';
@@ -1207,12 +1209,13 @@ function renderVariationDetail(index) {
   });
 }
 
-// 변형 항목 탭 → 한국어/영어 플립(2026-08-26)
+// 변형 항목 탭 → 한국어/영어 플립, 지금 영어가 보이는 항목에 하늘색 배경이 따라감(2026-08-26)
 variationDetailBodyEl.addEventListener('click', (e) => {
   const item = e.target.closest('.variation-item');
   if (!item) return;
 
-  item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
+  const flipped = item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
+  item.classList.toggle('variation-item-flipped', flipped);
 });
 
 variationOpenBtn.addEventListener('click', () => {
