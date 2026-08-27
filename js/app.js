@@ -642,10 +642,12 @@ const variationListBackBtn = document.getElementById('variation-list-back-btn');
 const variationSentenceListEl = document.getElementById('variation-sentence-list');
 const variationDetailScreen = document.getElementById('variation-detail-screen');
 const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
+const variationDetailHomeBtn = document.getElementById('variation-detail-home-btn');
 const variationDetailBodyEl = document.getElementById('variation-detail-body');
 const variationAddSelectedBtn = document.getElementById('variation-add-selected-btn');
 const aiVariationPromptScreen = document.getElementById('ai-variation-prompt-screen');
 const aiVariationPromptBackBtn = document.getElementById('ai-variation-prompt-back-btn');
+const aiVariationPromptHomeBtn = document.getElementById('ai-variation-prompt-home-btn');
 const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
 const aiVariationPromptTextarea = document.getElementById('ai-variation-prompt-textarea');
 const aiVariationCopyBtn = document.getElementById('ai-variation-copy-btn');
@@ -653,6 +655,7 @@ const aiVariationPasteTextarea = document.getElementById('ai-variation-paste-tex
 const aiVariationPreviewBtn = document.getElementById('ai-variation-preview-btn');
 const aiVariationPreviewScreen = document.getElementById('ai-variation-preview-screen');
 const aiVariationPreviewBackBtn = document.getElementById('ai-variation-preview-back-btn');
+const aiVariationPreviewHomeBtn = document.getElementById('ai-variation-preview-home-btn');
 const aiVariationPreviewCountEl = document.getElementById('ai-variation-preview-count');
 const aiVariationSelectAllBtn = document.getElementById('ai-variation-select-all-btn');
 const aiVariationPreviewListEl = document.getElementById('ai-variation-preview-list');
@@ -660,6 +663,17 @@ const aiVariationAddBtn = document.getElementById('ai-variation-add-btn');
 const miniSessionBanner = document.getElementById('mini-session-banner');
 const miniSessionBannerText = document.getElementById('mini-session-banner-text');
 const miniSessionExitBtn = document.getElementById('mini-session-exit-btn');
+
+// 뒤로가기를 2번 이상 눌러야 메인(카드) 화면에 닿는 화면(문장변형 상세, AI 변형 프롬프트/미리보기)에
+// "홈" 버튼으로 탐색 단계를 건너뛸 수 있게 함 — 뒤로가기 체인을 그대로 두고 지름길만 추가(2026-08-27)
+function goToCardScreen() {
+  document.querySelectorAll('.screen').forEach((el) => el.classList.add('hidden'));
+  cardScreen.classList.remove('hidden');
+}
+
+variationDetailHomeBtn.addEventListener('click', goToCardScreen);
+aiVariationPromptHomeBtn.addEventListener('click', goToCardScreen);
+aiVariationPreviewHomeBtn.addEventListener('click', goToCardScreen);
 
 // ==========================================================================
 // 렌더링

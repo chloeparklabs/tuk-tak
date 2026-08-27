@@ -800,7 +800,9 @@ button {
 .screen-topbar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  /* 뒤로가기 화살표와 화면 제목 사이 간격 — 8px이면 둘이 붙어 보여 "< 문장변형"이 하나의
+     버튼(예: 문장변형으로 이동)처럼 오해될 수 있다는 피드백으로 확대(2026-08-27) */
+  gap: 14px;
   padding: 16px 20px;
   background-color: var(--color-brand);
   transition: background-color 0.15s ease;
@@ -825,6 +827,26 @@ button {
 }
 
 .screen-back-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* "홈" 버튼 — 뒤로가기를 2번 이상 눌러야 메인(카드) 화면으로 돌아갈 수 있는 화면에만 배치
+   (문장변형 상세, AI 변형 프롬프트/미리보기). 한 번에 메인으로 이동해 탐색 깊이를 우회함(2026-08-27) */
+.screen-home-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.screen-home-btn svg {
   width: 22px;
   height: 22px;
 }
