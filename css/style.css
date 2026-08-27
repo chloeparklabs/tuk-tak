@@ -143,6 +143,9 @@ button {
    카드 화면 상단바 (로고 + 더보기 메뉴)
    ========================================================================== */
 .card-topbar {
+  /* #card-screen 4행 grid에서 항상 1행 고정 — 명시하지 않으면 미니 학습 배너가
+     display:none일 때 자동 배치가 한 칸씩 당겨져 카드 영역이 밀려 올라가는 문제가 있었음(2026-08-27) */
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -397,6 +400,8 @@ button {
 /* grid의 위/아래 1fr 두 행이 항상 같은 크기로 나뉘어, 가운데(auto) 행인 영어 박스가
    한국어 문장·마킹 아이콘 바 길이와 무관하게 항상 화면(헤더~버튼바) 정중앙에 오게 됨 */
 .card {
+  /* #card-screen 4행 grid에서 항상 3행(1fr) 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 3;
   display: grid;
   grid-template-rows: 1fr auto 1fr;
   grid-template-columns: 1fr;
@@ -495,6 +500,8 @@ button {
    미니 학습 배너 (15-2 AI 변형으로 추가한 문장만 임시로 학습할 때 노출)
    ========================================================================== */
 .mini-session-banner {
+  /* #card-screen 4행 grid에서 항상 2행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -527,6 +534,8 @@ button {
    하단 버튼 바
    ========================================================================== */
 .control-bar {
+  /* #card-screen 4행 grid에서 항상 4행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 4;
   display: flex;
   align-items: center;
   justify-content: center;
