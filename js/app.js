@@ -1538,19 +1538,38 @@ document.querySelectorAll('.help-accordion-header').forEach((header) => {
   });
 });
 
-// 백업 내보내기: 현재 문장을 TSV로 만들어 파일 다운로드
+// 백업 내보내기: 현재 문장을 TSV로 만들어 파일 저장
 // (복원은 별도 기능 없이 기존 "파일가져오기"로 이 파일을 그대로 불러오면 됨)
-exportBackupBtn.addEventListener('click', () => {
+// 저장 위치/파일명을 직접 고를 수 있도록 File System Access API(showSaveFilePicker)를 우선 사용하고,
+// 지원하지 않는 브라우저(iOS 사파리 등)나 사용자가 대화상자를 취소한 경우엔 기존 자동 다운로드로 대체(2026-08-27)
+exportBackupBtn.addEventListener('click', async () => {
   const tsvText = sentences.map((s) => `${s.kr}\t${s.en}`).join('\n');
+  const today = new Date();
+  const dateStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('');
+  const fileName = `tuktak_backup_${dateStr}.tsv`;
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: 'TSV 파일', accept: { 'text/tab-separated-values': ['.tsv'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(tsvText);
+      await writable.close();
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // 사용자가 저장 대화상자를 취소함
+      // 그 외 에러는 아래 자동 다운로드 방식으로 폴백
+    }
+  }
+
   const blob = new Blob([tsvText], { type: 'text/tab-separated-values' });
   const url = URL.createObjectURL(blob);
 
-  const today = new Date();
-  const dateStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('');
-
   const link = document.createElement('a');
   link.href = url;
-  link.download = `tuktak_backup_${dateStr}.tsv`;
+  link.download = fileName;
   link.click();
 
   URL.revokeObjectURL(url);
