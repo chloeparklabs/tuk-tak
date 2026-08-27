@@ -38,10 +38,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.7l-.359-.5"/><path d="m18 14 4 4-4 4"/></svg>
             <span>문장변형</span>
           </button>
-          <button id="ai-variation-open-btn" class="more-menu-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>
-            <span>AI로 변형하기</span>
-          </button>
           <button id="settings-open-btn" class="more-menu-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
             <span>설정</span>
@@ -136,19 +132,7 @@
     <div id="variation-detail-body" class="variation-detail-body"></div>
   </section>
 
-  <!-- 15-2 AI 변형(무료판 안내형) 1단계: 변형할 문장 선택 -->
-  <section id="ai-variation-select-screen" class="screen hidden">
-    <header class="screen-topbar">
-      <button id="ai-variation-select-back-btn" class="screen-back-btn" aria-label="뒤로가기">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <span class="screen-topbar-title">변형할 문장 선택</span>
-    </header>
-    <p class="variation-list-intro">변형하고 싶은 문장을 선택하세요</p>
-    <div id="ai-variation-select-list" class="sentence-list"></div>
-  </section>
-
-  <!-- 15-2 AI 변형 2단계: 프롬프트 복사 + 결과 붙여넣기 -->
+  <!-- 15-2 AI 변형(무료판 안내형): 프롬프트 복사 + 결과 붙여넣기 (문장관리 항목의 AI 아이콘에서 바로 진입) -->
   <section id="ai-variation-prompt-screen" class="screen hidden">
     <header class="screen-topbar">
       <button id="ai-variation-prompt-back-btn" class="screen-back-btn" aria-label="뒤로가기">
@@ -173,7 +157,7 @@
     </div>
   </section>
 
-  <!-- 15-2 AI 변형 3단계: 파싱 결과 미리보기 + 선택 추가 -->
+  <!-- 15-2 AI 변형: 파싱 결과 미리보기 + 선택 추가 -->
   <section id="ai-variation-preview-screen" class="screen hidden">
     <header class="screen-topbar">
       <button id="ai-variation-preview-back-btn" class="screen-back-btn" aria-label="뒤로가기">

@@ -1014,13 +1014,16 @@ button {
   flex-shrink: 0;
 }
 
+/* 별/깃발/AI 아이콘 3개가 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
+   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용) */
 .sentence-star-btn,
-.sentence-unfamiliar-btn {
+.sentence-unfamiliar-btn,
+.sentence-ai-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   background: none;
   border: none;
@@ -1030,7 +1033,8 @@ button {
 }
 
 .sentence-star-btn svg,
-.sentence-unfamiliar-btn svg {
+.sentence-unfamiliar-btn svg,
+.sentence-ai-btn svg {
   width: 18px;
   height: 18px;
 }
@@ -1044,6 +1048,16 @@ button {
 .sentence-star-btn.active svg,
 .sentence-unfamiliar-btn.active svg {
   fill: currentColor;
+}
+
+/* AI 변형 아이콘은 별/깃발과 달리 즉시 토글되는 상태가 아니라 새 화면으로 이동하는
+   동작이라 항상 같은 모양(활성/비활성 구분 없음), 구분선으로 두 그룹을 시각적으로 분리 */
+.sentence-list-actions-divider {
+  width: 1px;
+  height: 18px;
+  flex-shrink: 0;
+  background-color: var(--gray-200);
+  margin: 0 2px;
 }
 
 /* ==========================================================================

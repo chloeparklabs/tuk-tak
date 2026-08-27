@@ -642,10 +642,6 @@ const variationSentenceListEl = document.getElementById('variation-sentence-list
 const variationDetailScreen = document.getElementById('variation-detail-screen');
 const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
 const variationDetailBodyEl = document.getElementById('variation-detail-body');
-const aiVariationOpenBtn = document.getElementById('ai-variation-open-btn');
-const aiVariationSelectScreen = document.getElementById('ai-variation-select-screen');
-const aiVariationSelectBackBtn = document.getElementById('ai-variation-select-back-btn');
-const aiVariationSelectListEl = document.getElementById('ai-variation-select-list');
 const aiVariationPromptScreen = document.getElementById('ai-variation-prompt-screen');
 const aiVariationPromptBackBtn = document.getElementById('ai-variation-prompt-back-btn');
 const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
@@ -892,6 +888,9 @@ const LIST_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const LONG_PRESS_MS = 550;
 // 문장변형 상세 화면의 "내 문장으로 추가" 버튼 아이콘(circle-plus), 추가 완료 시 LIST_CHECK_ICON으로 교체
 const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
+// 문장관리 목록 항목의 "AI로 변형하기" 아이콘(sparkles) — 15-2, 별표/깃발과 달리 즉시 토글이 아니라
+// 새 화면(프롬프트 생성)으로 이동하는 무거운 동작이라 시각적으로 확실히 구분되는 모양을 사용
+const AI_VARIATION_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
 
 let selecting = false;
 let selectedIds = new Set();
@@ -1041,8 +1040,19 @@ function renderSentenceList() {
       unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
       unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
 
+      const divider = document.createElement('span');
+      divider.className = 'sentence-list-actions-divider';
+
+      const aiBtn = document.createElement('button');
+      aiBtn.type = 'button';
+      aiBtn.className = 'sentence-ai-btn';
+      aiBtn.setAttribute('aria-label', 'AI로 변형하기');
+      aiBtn.innerHTML = AI_VARIATION_ICON;
+
       actions.appendChild(starBtn);
       actions.appendChild(unfamiliarBtn);
+      actions.appendChild(divider);
+      actions.appendChild(aiBtn);
       item.appendChild(actions);
     }
 
@@ -1107,6 +1117,12 @@ sentenceListEl.addEventListener('click', (e) => {
     return;
   }
 
+  if (e.target.closest('.sentence-ai-btn')) {
+    const sentence = sentences.find((s) => String(s.id) === id);
+    if (sentence) openAiVariationPromptFor(sentence);
+    return;
+  }
+
   if (selecting) {
     if (selectedIds.has(id)) {
       selectedIds.delete(id);
@@ -1127,7 +1143,7 @@ sentenceListEl.addEventListener('pointerdown', (e) => {
   if (selecting) return;
   const item = e.target.closest('.sentence-list-item');
   if (!item) return;
-  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn')) return;
+  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn') || e.target.closest('.sentence-ai-btn')) return;
 
   const id = item.dataset.id;
   clearTimeout(longPressTimer);
@@ -1308,9 +1324,11 @@ variationDetailBackBtn.addEventListener('click', () => {
 
 // ==========================================================================
 // 15-2 AI 변형(무료판 안내형 파이프라인)
-// ① 원문 선택 ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아 붙여넣기(기존 parseSentencesText
-// 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택) ④ 선택 항목만 addSentence()로
-// 추가한 뒤, 그 항목들만 임시로(miniSessionActive) 카드 화면에서 즉석 학습
+// ① 문장관리 목록 각 항목의 AI 아이콘으로 바로 진입(원문 선택 화면 없음 — 문장관리 목록 자체가
+// 그 역할을 겸함, 2026-08-27 재설계) ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아 붙여넣기
+// (기존 parseSentencesText 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택)
+// ④ 선택 항목만 addSentence()로 추가한 뒤, 그 항목들만 임시로(miniSessionActive) 카드 화면에서
+// 즉석 학습
 // ==========================================================================
 let aiVariationSelectedSentence = null;
 let aiVariationParsedItems = [];
@@ -1324,73 +1342,21 @@ function buildAiVariationPrompt(sentence) {
 변형 요청: 시제(현재/과거/미래/현재완료), 인칭(2인칭/3인칭), 수(복수), 부정문, 의문문`;
 }
 
-// --- 1단계: 변형할 문장 선택 (전체 문장 목록, 문장관리와 무관하게 항상 전체 표시) ---
-function renderAiVariationSelectList() {
-  aiVariationSelectListEl.innerHTML = '';
-  const ordered = getOrderedSentences();
-
-  if (ordered.length === 0) {
-    const emptyMsg = document.createElement('p');
-    emptyMsg.className = 'sentence-list-empty-msg';
-    emptyMsg.textContent = '변형할 문장이 없습니다. 먼저 문장을 추가해주세요.';
-    aiVariationSelectListEl.appendChild(emptyMsg);
-    return;
-  }
-
-  ordered.forEach((s) => {
-    const item = document.createElement('div');
-    item.className = 'sentence-list-item';
-    item.dataset.id = String(s.id);
-
-    const textWrap = document.createElement('div');
-    textWrap.className = 'sentence-list-text';
-
-    const krEl = document.createElement('p');
-    krEl.className = 'sentence-list-kr';
-    krEl.textContent = s.kr;
-
-    const enEl = document.createElement('p');
-    enEl.className = 'sentence-list-en';
-    enEl.textContent = s.en;
-
-    textWrap.appendChild(krEl);
-    textWrap.appendChild(enEl);
-    item.appendChild(textWrap);
-
-    aiVariationSelectListEl.appendChild(item);
-  });
-}
-
-aiVariationOpenBtn.addEventListener('click', () => {
-  cardScreen.classList.add('hidden');
-  aiVariationSelectScreen.classList.remove('hidden');
-  renderAiVariationSelectList();
-});
-
-aiVariationSelectBackBtn.addEventListener('click', () => {
-  aiVariationSelectScreen.classList.add('hidden');
-  cardScreen.classList.remove('hidden');
-});
-
-aiVariationSelectListEl.addEventListener('click', (e) => {
-  const item = e.target.closest('.sentence-list-item');
-  if (!item) return;
-  const sentence = sentences.find((s) => String(s.id) === item.dataset.id);
-  if (!sentence) return;
-
+// 문장관리 목록 항목의 AI 아이콘 탭 → 그 문장으로 바로 프롬프트 화면 진입
+function openAiVariationPromptFor(sentence) {
   aiVariationSelectedSentence = { kr: sentence.kr, en: sentence.en };
   aiVariationSelectedKrEl.textContent = sentence.kr;
   aiVariationPromptTextarea.value = buildAiVariationPrompt(sentence);
   aiVariationPasteTextarea.value = '';
 
-  aiVariationSelectScreen.classList.add('hidden');
+  listScreen.classList.add('hidden');
   aiVariationPromptScreen.classList.remove('hidden');
-});
+}
 
-// --- 2단계: 프롬프트 복사 + 결과 붙여넣기 ---
+// --- 프롬프트 복사 + 결과 붙여넣기 ---
 aiVariationPromptBackBtn.addEventListener('click', () => {
   aiVariationPromptScreen.classList.add('hidden');
-  aiVariationSelectScreen.classList.remove('hidden');
+  listScreen.classList.remove('hidden');
 });
 
 aiVariationCopyBtn.addEventListener('click', async () => {
