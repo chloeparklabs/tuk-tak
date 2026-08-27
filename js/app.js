@@ -642,6 +642,7 @@ const variationSentenceListEl = document.getElementById('variation-sentence-list
 const variationDetailScreen = document.getElementById('variation-detail-screen');
 const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
 const variationDetailBodyEl = document.getElementById('variation-detail-body');
+const variationAddSelectedBtn = document.getElementById('variation-add-selected-btn');
 const aiVariationPromptScreen = document.getElementById('ai-variation-prompt-screen');
 const aiVariationPromptBackBtn = document.getElementById('ai-variation-prompt-back-btn');
 const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
@@ -1209,9 +1210,24 @@ function renderVariationList() {
   });
 }
 
+// 상세 화면에 진입할 때마다 초기화되는 "선택 후 한 번에 추가" 상태.
+// flatIndex(항목 순서)를 key로 써서 어떤 항목이 선택됐는지 추적, 실제 추가는
+// 하단 "선택한 문장 추가하기" 버튼을 눌러야 일어남(2026-08-27, 기존 탭-즉시-추가에서 변경)
+let variationSelectedIndexes = new Set();
+let variationDetailFlatItems = [];
+
+function updateVariationDetailFooter() {
+  const n = variationSelectedIndexes.size;
+  variationAddSelectedBtn.disabled = n === 0;
+  variationAddSelectedBtn.textContent = n > 0 ? `선택한 문장 추가하기 (${n}개)` : '선택한 문장 추가하기';
+}
+
 function renderVariationDetail(index) {
   const data = VARIATION_SENTENCES[index];
   variationDetailBodyEl.innerHTML = '';
+  variationSelectedIndexes = new Set();
+  variationDetailFlatItems = [];
+  let flatIndex = 0;
 
   // 카테고리(시제/진행형/인칭 등) 그룹 제목 없이 변형 항목을 하나의 목록으로 이어서 표시.
   // 태그는 "[대괄호]"로 구분, "시제" 카테고리 태그(현재/과거/미래/현재완료)만 단독으로는 뜻이 모호해
@@ -1244,13 +1260,15 @@ function renderVariationDetail(index) {
       tagEl.className = 'variation-item-tag';
       tagEl.textContent = `[${tagText}]`;
 
+      variationDetailFlatItems.push({ kr: item.kr, en: item.en });
+
       const addBtn = document.createElement('button');
       addBtn.type = 'button';
       addBtn.className = alreadyAdded ? 'variation-item-add-btn added' : 'variation-item-add-btn';
-      addBtn.setAttribute('aria-label', '내 문장으로 추가');
-      addBtn.dataset.kr = item.kr;
-      addBtn.dataset.en = item.en;
+      addBtn.setAttribute('aria-label', alreadyAdded ? '이미 추가된 문장' : '추가할 문장으로 선택');
+      addBtn.dataset.flatIndex = String(flatIndex);
       addBtn.innerHTML = alreadyAdded ? LIST_CHECK_ICON : VARIATION_ADD_ICON;
+      flatIndex++;
 
       headerEl.appendChild(tagEl);
       headerEl.appendChild(addBtn);
@@ -1278,17 +1296,26 @@ function renderVariationDetail(index) {
       variationDetailBodyEl.appendChild(itemEl);
     });
   });
+
+  updateVariationDetailFooter();
 }
 
-// 추가 버튼 탭 → 내 문장 목록에 추가 + 체크 표시로 전환(플립과 별개 동작이라 이벤트 버블링 차단)
+// 추가 버튼 탭 → 즉시 추가하지 않고 "선택됨" 상태로만 토글(플립과 별개 동작이라 이벤트 버블링 차단).
+// 실제 추가는 하단 "선택한 문장 추가하기" 버튼을 눌러야 일어남(2026-08-27)
 variationDetailBodyEl.addEventListener('click', (e) => {
   const addBtn = e.target.closest('.variation-item-add-btn');
   if (addBtn) {
     e.stopPropagation();
     if (addBtn.classList.contains('added')) return;
-    addSentence(addBtn.dataset.kr, addBtn.dataset.en);
-    addBtn.classList.add('added');
-    addBtn.innerHTML = LIST_CHECK_ICON;
+    const flatIndex = Number(addBtn.dataset.flatIndex);
+    if (variationSelectedIndexes.has(flatIndex)) {
+      variationSelectedIndexes.delete(flatIndex);
+      addBtn.classList.remove('selected');
+    } else {
+      variationSelectedIndexes.add(flatIndex);
+      addBtn.classList.add('selected');
+    }
+    updateVariationDetailFooter();
     return;
   }
   const item = e.target.closest('.variation-item');
@@ -1296,6 +1323,29 @@ variationDetailBodyEl.addEventListener('click', (e) => {
 
   const flipped = item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
   item.classList.toggle('variation-item-flipped', flipped);
+});
+
+// 하단 "선택한 문장 추가하기" 버튼 → 선택된 항목을 한 번에 addSentence()로 추가하고,
+// 해당 버튼들을 전부 최종 "추가됨"(체크) 상태로 전환
+variationAddSelectedBtn.addEventListener('click', () => {
+  if (variationSelectedIndexes.size === 0) return;
+
+  variationSelectedIndexes.forEach((flatIndex) => {
+    const item = variationDetailFlatItems[flatIndex];
+    if (item) addSentence(item.kr, item.en);
+  });
+
+  const addedCount = variationSelectedIndexes.size;
+  variationDetailBodyEl.querySelectorAll('.variation-item-add-btn.selected').forEach((btn) => {
+    btn.classList.remove('selected');
+    btn.classList.add('added');
+    btn.setAttribute('aria-label', '이미 추가된 문장');
+    btn.innerHTML = LIST_CHECK_ICON;
+  });
+
+  variationSelectedIndexes.clear();
+  updateVariationDetailFooter();
+  alert(`${addedCount}개 문장을 추가했습니다.`);
 });
 
 variationOpenBtn.addEventListener('click', () => {
