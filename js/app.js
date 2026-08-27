@@ -611,6 +611,7 @@ const listBackBtn = document.getElementById('list-back-btn');
 const listTopbarTitleEl = document.getElementById('list-topbar-title');
 const listSelectBtn = document.getElementById('list-select-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
+const listBulkDeleteFooterEl = document.getElementById('list-bulk-delete-footer');
 const sentenceListEl = document.getElementById('sentence-list');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
 const restartOpenBtn = document.getElementById('restart-open-btn');
@@ -924,6 +925,7 @@ listFilterBtns.forEach((btn) => {
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
   listFilterSection.classList.toggle('hidden', selecting);
+  listBulkDeleteFooterEl.classList.toggle('hidden', !selecting);
 
   if (selecting) {
     const n = selectedIds.size;
@@ -932,15 +934,14 @@ function updateListTopbar() {
     listBackBtn.setAttribute('aria-label', '선택 취소');
     listTopbarTitleEl.textContent = n > 0 ? `${n}개 선택` : '문장 선택';
     listSelectBtn.classList.add('hidden');
-    listBulkDeleteBtn.classList.remove('hidden');
-    listBulkDeleteBtn.classList.toggle('enabled', n > 0);
+    listBulkDeleteBtn.disabled = n === 0;
+    listBulkDeleteBtn.textContent = n > 0 ? `삭제 (${n}개)` : '삭제';
   } else {
     listBackBtn.classList.remove('text-mode');
     listBackBtn.innerHTML = LIST_BACK_ICON;
     listBackBtn.setAttribute('aria-label', '뒤로가기');
     listTopbarTitleEl.textContent = '문장 관리';
     listSelectBtn.classList.remove('hidden');
-    listBulkDeleteBtn.classList.add('hidden');
   }
 }
 

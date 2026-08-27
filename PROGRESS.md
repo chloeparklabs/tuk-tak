@@ -2200,3 +2200,23 @@ Claude가 "장점이 더 뚜렷하다"고 판단해 재설계 권유 → 사용�
 
 ### 2차 확인 완료 (2026-08-27)
 - 사용자가 "확인 완료"로 실기기 정상 동작 확인
+
+---
+
+## 2026-08-27 (이어서 — 문장관리 선택모드 "삭제" 버튼을 하단 고정으로 이동)
+
+### 진행 내용
+사용자가 스크린샷과 함께 "이 화면에서 취소와 삭제 버튼위치가 애매해. 사용하기 편하지 않아"라고 제보(선택모드 헤더의 좌측 "취소"·우측 "삭제" 배치). AskUserQuestion으로 방향 확인 — "삭제만 하단 고정 버튼으로 이동(추천)" vs "둘 다 상단 유지, 크기/간격만 개선" vs "직접 설명" 중 사용자가 첫 번째(추천안) 선택.
+
+### 구현
+- `index.html`: 헤더의 `#list-bulk-delete-btn`을 제거하고, `#sentence-list` 다음에 `#list-bulk-delete-footer`(하단 고정 바) + 그 안에 `#list-bulk-delete-btn`(`.btn.btn-outline.modal-btn`, 기본 `disabled`) 추가. 헤더에는 "취소"만 남음(일반적인 뒤로가기 위치라 그대로 유지)
+- `js/app.js`: `listBulkDeleteFooterEl` 참조 추가, `updateListTopbar()`에서 `.screen-topbar-delete-btn`/`.enabled` 클래스 토글 대신 `listBulkDeleteFooterEl`의 `.hidden` 토글 + 버튼 `disabled` 속성 + 라벨을 "삭제 (N개)"로 실시간 갱신
+- `css/style.css`: 이제 안 쓰는 `.screen-topbar-delete-btn`/`.screen-topbar-delete-btn.enabled` 삭제, `.list-bulk-delete-footer`(15-1/15-2에서 이미 쓴 하단 고정 바와 동일한 padding/border-top) 신설. 비활성 스타일은 기존 `.btn-outline:disabled`를 그대로 재사용해 새 CSS 없이 해결
+
+### 1차 확인 (Claude, 자동화)
+- Playwright로 검증: 평소엔 하단 바 숨김 → 선택모드 진입 시 노출+버튼 비활성 → 0개 선택 시 비활성+라벨 "삭제" → 2개 선택 시 활성화+라벨 "삭제 (2개)" → 삭제 확정 시 정확히 2개 감소 후 선택모드 자동 종료(하단 바 다시 숨김) → "취소"는 헤더에서 여전히 정상 동작(선택모드만 종료, 삭제 없음) 확인
+- 라이트/다크 스크린샷으로 헤더가 훨씬 단순해지고("취소"·"N개 선택"만 남음), 하단에 큰 "삭제 (N개)" 버튼이 명확하게 보이는 것 확인. 콘솔 에러 없음
+- CLAUDE.md의 "문장관리 선택 모드" 설명 갱신
+
+### 다음 작업 제안
+- **사용자 2차 확인 필요**: push 후 실기기에서 선택모드 진입 → 여러 개 선택 → 하단 삭제 버튼으로 삭제까지 엄지로 편하게 되는지 확인

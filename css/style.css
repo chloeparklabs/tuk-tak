@@ -903,17 +903,12 @@ button {
   cursor: pointer;
 }
 
-.screen-topbar-delete-btn {
-  background: none;
-  padding: 8px 6px;
-  opacity: 0.5;
-  pointer-events: none;
-  transition: opacity 0.12s ease;
-}
-
-.screen-topbar-delete-btn.enabled {
-  opacity: 1;
-  pointer-events: auto;
+/* 문장관리 선택 모드 전용 하단 고정 삭제 버튼 — 상단 구석(취소 옆)에 있던 것보다 엄지로
+   누르기 쉬운 위치로 이동(2026-08-27). .ai-variation-preview-footer/.variation-detail-footer와
+   같은 개념, 비활성 스타일은 기존 .btn-outline:disabled를 그대로 재사용 */
+.list-bulk-delete-footer {
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gray-100);
 }
 
 .sentence-list {
