@@ -133,8 +133,8 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 상단바가 맨 위, 카드 영역이 남은 공간을 채우고, 이전/확인/다음 버튼이 맨 아래에 위치 */
-  grid-template-rows: auto 1fr auto;
+  /* 상단바 - 미니 학습 배너(평소엔 숨김 처리로 0높이) - 카드 영역(남는 공간) - 이전/확인/다음 버튼 순서 */
+  grid-template-rows: auto auto 1fr auto;
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
@@ -492,6 +492,38 @@ button {
 }
 
 /* ==========================================================================
+   미니 학습 배너 (15-2 AI 변형으로 추가한 문장만 임시로 학습할 때 노출)
+   ========================================================================== */
+.mini-session-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background-color: var(--color-accent-star-bg);
+  border-radius: 10px;
+}
+
+.mini-session-banner-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-star);
+}
+
+.mini-session-exit-btn {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-accent-star);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ==========================================================================
    하단 버튼 바
    ========================================================================== */
 .control-bar {
@@ -737,6 +769,12 @@ button {
   background-color: var(--color-brand);
   /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
+}
+
+.modal-btn-submit:disabled {
+  background-color: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -1474,6 +1512,71 @@ button {
 .variation-item-en {
   letter-spacing: -0.3px;
   transform: rotateY(180deg);
+}
+
+/* ==========================================================================
+   15-2 AI 변형(무료판 안내형) 화면 — 원문 선택 → 프롬프트 복사/붙여넣기 → 미리보기
+   ========================================================================== */
+.ai-variation-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 20px calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ai-variation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* .add-form-textarea의 edge-to-edge 스타일(테두리 없음, 음수 margin 전제)은 이 화면과
+   안 맞아 자체 테두리를 가진 독립 필드로 재정의 */
+.ai-variation-textarea {
+  flex: none;
+  min-height: 110px;
+  padding: 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+#ai-variation-prompt-textarea {
+  background-color: var(--gray-50);
+  color: var(--color-text-secondary);
+}
+
+.ai-variation-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.ai-variation-toolbar .list-count-info {
+  padding: 0;
+  text-align: left;
+}
+
+.ai-variation-toolbar-btn {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-brand-dark);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .ai-variation-toolbar-btn {
+  color: var(--color-text-primary);
+}
+
+.ai-variation-preview-footer {
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--gray-100);
 }
 
 /* ==========================================================================

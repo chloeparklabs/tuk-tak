@@ -513,6 +513,16 @@ function getOrderedSentences() {
   return [...visible];
 }
 
+// 카드 화면 전용 순서 — 미니 학습 중에는 방금 추가한 문장들로만 한정. 문장관리 목록 등
+// 다른 화면은 getOrderedSentences()를 그대로 쓰므로 미니 학습과 무관하게 항상 전체를 보여줌
+function getCardOrderedSentences() {
+  if (miniSessionActive) {
+    const byId = new Map(sentences.map((s) => [String(s.id), s]));
+    return miniSessionIds.map((id) => byId.get(id)).filter(Boolean);
+  }
+  return getOrderedSentences();
+}
+
 // ==========================================================================
 // 공통 파서 (TSV/CSV → {kr, en}[])
 // 파일 가져오기(엑셀/메모장 등에서 작성한 CSV/TSV/TXT)에서 사용
@@ -553,6 +563,11 @@ function parseSentencesText(text) {
 // ==========================================================================
 let currentIndex = 0;
 let revealed = false;
+
+// 15-2 AI 변형(무료판)으로 방금 추가한 문장만 임시로 학습하는 "미니 학습" 상태.
+// localStorage에 저장하지 않는 즉석 상태 — 앱을 껐다 켜면 항상 꺼져 있음
+let miniSessionActive = false;
+let miniSessionIds = [];
 
 // ==========================================================================
 // DOM 요소
@@ -627,12 +642,32 @@ const variationSentenceListEl = document.getElementById('variation-sentence-list
 const variationDetailScreen = document.getElementById('variation-detail-screen');
 const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
 const variationDetailBodyEl = document.getElementById('variation-detail-body');
+const aiVariationOpenBtn = document.getElementById('ai-variation-open-btn');
+const aiVariationSelectScreen = document.getElementById('ai-variation-select-screen');
+const aiVariationSelectBackBtn = document.getElementById('ai-variation-select-back-btn');
+const aiVariationSelectListEl = document.getElementById('ai-variation-select-list');
+const aiVariationPromptScreen = document.getElementById('ai-variation-prompt-screen');
+const aiVariationPromptBackBtn = document.getElementById('ai-variation-prompt-back-btn');
+const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
+const aiVariationPromptTextarea = document.getElementById('ai-variation-prompt-textarea');
+const aiVariationCopyBtn = document.getElementById('ai-variation-copy-btn');
+const aiVariationPasteTextarea = document.getElementById('ai-variation-paste-textarea');
+const aiVariationPreviewBtn = document.getElementById('ai-variation-preview-btn');
+const aiVariationPreviewScreen = document.getElementById('ai-variation-preview-screen');
+const aiVariationPreviewBackBtn = document.getElementById('ai-variation-preview-back-btn');
+const aiVariationPreviewCountEl = document.getElementById('ai-variation-preview-count');
+const aiVariationSelectAllBtn = document.getElementById('ai-variation-select-all-btn');
+const aiVariationPreviewListEl = document.getElementById('ai-variation-preview-list');
+const aiVariationAddBtn = document.getElementById('ai-variation-add-btn');
+const miniSessionBanner = document.getElementById('mini-session-banner');
+const miniSessionBannerText = document.getElementById('mini-session-banner-text');
+const miniSessionExitBtn = document.getElementById('mini-session-exit-btn');
 
 // ==========================================================================
 // 렌더링
 // ==========================================================================
 function renderCard() {
-  const ordered = getOrderedSentences();
+  const ordered = getCardOrderedSentences();
   const isEmpty = ordered.length === 0;
 
   emptyStateMsg.classList.toggle('hidden', !isEmpty);
@@ -670,13 +705,13 @@ function renderCard() {
 // 중요/미암기 토글 시 정렬 기준에 따라 순서가 바뀔 수 있어, 같은 문장이
 // 화면에 계속 보이도록 토글 후 그 문장의 새 위치로 currentIndex를 맞춰줌
 function toggleCurrentSentenceFlag(toggleFn) {
-  const ordered = getOrderedSentences();
+  const ordered = getCardOrderedSentences();
   const sentence = ordered[currentIndex];
   if (!sentence) return;
 
   toggleFn(sentence.id);
 
-  const newOrdered = getOrderedSentences();
+  const newOrdered = getCardOrderedSentences();
   const newIndex = newOrdered.findIndex((s) => String(s.id) === String(sentence.id));
   if (newIndex !== -1) currentIndex = newIndex;
 
@@ -691,13 +726,13 @@ cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfa
 
 // 카드 화면에서 바로 수정/삭제 (문장관리의 수정 모달·삭제 로직을 그대로 재사용)
 cardEditBtn.addEventListener('click', () => {
-  const sentence = getOrderedSentences()[currentIndex];
+  const sentence = getCardOrderedSentences()[currentIndex];
   if (!sentence) return;
   openAddModal(sentence);
 });
 
 cardDeleteBtn.addEventListener('click', () => {
-  const sentence = getOrderedSentences()[currentIndex];
+  const sentence = getCardOrderedSentences()[currentIndex];
   if (!sentence) return;
   confirmDeleteSingle(sentence.id);
 });
@@ -706,7 +741,7 @@ cardDeleteBtn.addEventListener('click', () => {
 // 이벤트 핸들러
 // ==========================================================================
 function goToSentence(index) {
-  const total = getOrderedSentences().length;
+  const total = getCardOrderedSentences().length;
   if (total === 0) {
     renderCard();
     return;
@@ -722,7 +757,7 @@ startBtn.addEventListener('click', () => {
   cardScreen.classList.remove('hidden');
 
   // 마지막으로 보던 문장부터 이어서 시작 (그 문장이 삭제되는 등 못 찾으면 처음부터)
-  const ordered = getOrderedSentences();
+  const ordered = getCardOrderedSentences();
   const savedId = localStorage.getItem(LAST_SENTENCE_ID_KEY);
   const savedIndex = savedId ? ordered.findIndex((s) => String(s.id) === savedId) : -1;
   goToSentence(savedIndex !== -1 ? savedIndex : 0);
@@ -1269,6 +1304,221 @@ variationSentenceListEl.addEventListener('click', (e) => {
 variationDetailBackBtn.addEventListener('click', () => {
   variationDetailScreen.classList.add('hidden');
   variationListScreen.classList.remove('hidden');
+});
+
+// ==========================================================================
+// 15-2 AI 변형(무료판 안내형 파이프라인)
+// ① 원문 선택 ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아 붙여넣기(기존 parseSentencesText
+// 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택) ④ 선택 항목만 addSentence()로
+// 추가한 뒤, 그 항목들만 임시로(miniSessionActive) 카드 화면에서 즉석 학습
+// ==========================================================================
+let aiVariationSelectedSentence = null;
+let aiVariationParsedItems = [];
+let aiVariationSelectedIndexes = new Set();
+
+function buildAiVariationPrompt(sentence) {
+  return `다음 한국어-영어 문장을 아래 5가지 방식으로 변형해줘. 문장 의미상 부자연스럽거나 실제로 잘 쓰지 않는 조합(예: 인사말의 의문문, 날씨 표현의 인칭 변화 등)은 억지로 만들지 말고 자연스러운 것만 골라서 답해줘. 각 줄에 "한국어 문장" 다음 탭(Tab)을 하나 넣고 이어서 "English sentence"를 쓰는 형식으로, 결과를 코드블록 안에 한 줄에 하나씩만 적어줘(설명 없이 결과만).
+
+원문: ${sentence.kr} / ${sentence.en}
+
+변형 요청: 시제(현재/과거/미래/현재완료), 인칭(2인칭/3인칭), 수(복수), 부정문, 의문문`;
+}
+
+// --- 1단계: 변형할 문장 선택 (전체 문장 목록, 문장관리와 무관하게 항상 전체 표시) ---
+function renderAiVariationSelectList() {
+  aiVariationSelectListEl.innerHTML = '';
+  const ordered = getOrderedSentences();
+
+  if (ordered.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'sentence-list-empty-msg';
+    emptyMsg.textContent = '변형할 문장이 없습니다. 먼저 문장을 추가해주세요.';
+    aiVariationSelectListEl.appendChild(emptyMsg);
+    return;
+  }
+
+  ordered.forEach((s) => {
+    const item = document.createElement('div');
+    item.className = 'sentence-list-item';
+    item.dataset.id = String(s.id);
+
+    const textWrap = document.createElement('div');
+    textWrap.className = 'sentence-list-text';
+
+    const krEl = document.createElement('p');
+    krEl.className = 'sentence-list-kr';
+    krEl.textContent = s.kr;
+
+    const enEl = document.createElement('p');
+    enEl.className = 'sentence-list-en';
+    enEl.textContent = s.en;
+
+    textWrap.appendChild(krEl);
+    textWrap.appendChild(enEl);
+    item.appendChild(textWrap);
+
+    aiVariationSelectListEl.appendChild(item);
+  });
+}
+
+aiVariationOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  aiVariationSelectScreen.classList.remove('hidden');
+  renderAiVariationSelectList();
+});
+
+aiVariationSelectBackBtn.addEventListener('click', () => {
+  aiVariationSelectScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+aiVariationSelectListEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  const sentence = sentences.find((s) => String(s.id) === item.dataset.id);
+  if (!sentence) return;
+
+  aiVariationSelectedSentence = { kr: sentence.kr, en: sentence.en };
+  aiVariationSelectedKrEl.textContent = sentence.kr;
+  aiVariationPromptTextarea.value = buildAiVariationPrompt(sentence);
+  aiVariationPasteTextarea.value = '';
+
+  aiVariationSelectScreen.classList.add('hidden');
+  aiVariationPromptScreen.classList.remove('hidden');
+});
+
+// --- 2단계: 프롬프트 복사 + 결과 붙여넣기 ---
+aiVariationPromptBackBtn.addEventListener('click', () => {
+  aiVariationPromptScreen.classList.add('hidden');
+  aiVariationSelectScreen.classList.remove('hidden');
+});
+
+aiVariationCopyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(aiVariationPromptTextarea.value);
+    aiVariationCopyBtn.textContent = '복사됨';
+    setTimeout(() => {
+      aiVariationCopyBtn.textContent = '복사하기';
+    }, 1500);
+  } catch {
+    // 클립보드 API를 쓸 수 없는 환경(권한 거부 등) 대비 — 직접 선택해서 복사하도록 안내
+    aiVariationPromptTextarea.select();
+    alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해주세요.');
+  }
+});
+
+aiVariationPreviewBtn.addEventListener('click', () => {
+  const parsed = parseSentencesText(aiVariationPasteTextarea.value);
+  if (parsed.length === 0) {
+    alert('붙여넣은 텍스트에서 문장을 찾지 못했습니다. 형식을 확인해주세요.');
+    return;
+  }
+  aiVariationParsedItems = parsed;
+  aiVariationSelectedIndexes = new Set(parsed.map((_, i) => i)); // 기본값: 전체 선택
+
+  aiVariationPromptScreen.classList.add('hidden');
+  aiVariationPreviewScreen.classList.remove('hidden');
+  renderAiVariationPreview();
+});
+
+// --- 3단계: 파싱 결과 미리보기 (체크박스 다중선택, 한/영 동시 노출) ---
+function renderAiVariationPreview() {
+  aiVariationPreviewListEl.innerHTML = '';
+  aiVariationPreviewCountEl.textContent = `${aiVariationSelectedIndexes.size}/${aiVariationParsedItems.length}개 선택`;
+  aiVariationAddBtn.disabled = aiVariationSelectedIndexes.size === 0;
+  aiVariationSelectAllBtn.textContent =
+    aiVariationSelectedIndexes.size === aiVariationParsedItems.length ? '전체 해제' : '전체 선택';
+
+  aiVariationParsedItems.forEach((item, index) => {
+    const checked = aiVariationSelectedIndexes.has(index);
+
+    const el = document.createElement('div');
+    el.className = checked ? 'sentence-list-item checked' : 'sentence-list-item';
+    el.dataset.index = String(index);
+
+    const checkbox = document.createElement('span');
+    checkbox.className = 'sentence-checkbox';
+    checkbox.innerHTML = LIST_CHECK_ICON;
+    el.appendChild(checkbox);
+
+    const textWrap = document.createElement('div');
+    textWrap.className = 'sentence-list-text';
+
+    const krEl = document.createElement('p');
+    krEl.className = 'sentence-list-kr';
+    krEl.textContent = item.kr;
+
+    const enEl = document.createElement('p');
+    enEl.className = 'sentence-list-en';
+    enEl.textContent = item.en;
+
+    textWrap.appendChild(krEl);
+    textWrap.appendChild(enEl);
+    el.appendChild(textWrap);
+
+    aiVariationPreviewListEl.appendChild(el);
+  });
+}
+
+aiVariationPreviewBackBtn.addEventListener('click', () => {
+  aiVariationPreviewScreen.classList.add('hidden');
+  aiVariationPromptScreen.classList.remove('hidden');
+});
+
+aiVariationPreviewListEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  const index = Number(item.dataset.index);
+  if (aiVariationSelectedIndexes.has(index)) {
+    aiVariationSelectedIndexes.delete(index);
+  } else {
+    aiVariationSelectedIndexes.add(index);
+  }
+  renderAiVariationPreview();
+});
+
+aiVariationSelectAllBtn.addEventListener('click', () => {
+  if (aiVariationSelectedIndexes.size === aiVariationParsedItems.length) {
+    aiVariationSelectedIndexes.clear();
+  } else {
+    aiVariationSelectedIndexes = new Set(aiVariationParsedItems.map((_, i) => i));
+  }
+  renderAiVariationPreview();
+});
+
+// --- 4단계: 선택 항목 추가 + 미니 학습 시작 ---
+function startMiniSession(ids) {
+  miniSessionActive = true;
+  miniSessionIds = ids;
+  currentIndex = 0;
+  revealed = false;
+  miniSessionBanner.classList.remove('hidden');
+  miniSessionBannerText.textContent = `미니 학습 중 · ${ids.length}개`;
+  renderCard();
+}
+
+function endMiniSession() {
+  miniSessionActive = false;
+  miniSessionIds = [];
+  currentIndex = 0;
+  revealed = false;
+  miniSessionBanner.classList.add('hidden');
+  renderCard();
+}
+
+miniSessionExitBtn.addEventListener('click', endMiniSession);
+
+aiVariationAddBtn.addEventListener('click', () => {
+  if (aiVariationSelectedIndexes.size === 0) return;
+
+  const toAdd = aiVariationParsedItems.filter((_, i) => aiVariationSelectedIndexes.has(i));
+  const beforeIds = new Set(sentences.map((s) => String(s.id)));
+  toAdd.forEach((item) => addSentence(item.kr, item.en));
+  const addedIds = sentences.map((s) => String(s.id)).filter((id) => !beforeIds.has(id));
+
+  aiVariationPreviewScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+  startMiniSession(addedIds);
 });
 
 // ==========================================================================
