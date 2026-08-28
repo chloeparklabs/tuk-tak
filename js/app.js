@@ -400,8 +400,7 @@ const HIDE_DEFAULT_KEY = 'tuktak_hide_default';
 // 귀찮다"는 이유로 100개 확정). {at, count} 형태로 localStorage에 저장
 const BACKUP_CHECKPOINT_KEY = 'tuktak_backup_checkpoint';
 const BACKUP_REMINDER_DAYS = 7;
-// TEMP(2026-08-28): 실기기 2차 확인용으로 100 -> 3 임시 적용, 확인 끝나면 100으로 되돌릴 것
-const BACKUP_REMINDER_SENTENCE_COUNT = 3;
+const BACKUP_REMINDER_SENTENCE_COUNT = 100;
 
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
