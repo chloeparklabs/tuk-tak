@@ -396,10 +396,12 @@ const RANDOM_ORDER_KEY = 'tuktak_random_order';
 const HIDE_DEFAULT_KEY = 'tuktak_hide_default';
 
 // 로컬 백업 리마인더 — 마지막 백업(또는 배너 닫기) 시점 이후 7일 경과 OR 그 이후 내 문장(기본문장 제외)
-// 10개 이상 추가 시 카드 화면 상단 배너로 노출(2026-08-28). {at, count} 형태로 localStorage에 저장
+// 100개 이상 추가 시 카드 화면 상단 배너로 노출(2026-08-28, 최초엔 10개로 논의했으나 "너무 자주 뜨면
+// 귀찮다"는 이유로 100개 확정). {at, count} 형태로 localStorage에 저장
 const BACKUP_CHECKPOINT_KEY = 'tuktak_backup_checkpoint';
 const BACKUP_REMINDER_DAYS = 7;
-const BACKUP_REMINDER_SENTENCE_COUNT = 10;
+// TEMP(2026-08-28): 실기기 2차 확인용으로 100 -> 3 임시 적용, 확인 끝나면 100으로 되돌릴 것
+const BACKUP_REMINDER_SENTENCE_COUNT = 3;
 
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
