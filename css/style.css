@@ -136,8 +136,8 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 상단바 - 미니 학습 배너(평소엔 숨김 처리로 0높이) - 카드 영역(남는 공간) - 이전/확인/다음 버튼 순서 */
-  grid-template-rows: auto auto 1fr auto;
+  /* 상단바 - 백업 리마인더 배너 - 미니 학습 배너(둘 다 평소엔 숨김 처리로 0높이) - 카드 영역(남는 공간) - 이전/확인/다음 버튼 순서 */
+  grid-template-rows: auto auto auto 1fr auto;
   padding: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
@@ -146,7 +146,7 @@ button {
    카드 화면 상단바 (로고 + 더보기 메뉴)
    ========================================================================== */
 .card-topbar {
-  /* #card-screen 4행 grid에서 항상 1행 고정 — 명시하지 않으면 미니 학습 배너가
+  /* #card-screen 5행 grid에서 항상 1행 고정 — 명시하지 않으면 배너들이
      display:none일 때 자동 배치가 한 칸씩 당겨져 카드 영역이 밀려 올라가는 문제가 있었음(2026-08-27) */
   grid-row: 1;
   display: flex;
@@ -403,8 +403,8 @@ button {
 /* grid의 위/아래 1fr 두 행이 항상 같은 크기로 나뉘어, 가운데(auto) 행인 영어 박스가
    한국어 문장·마킹 아이콘 바 길이와 무관하게 항상 화면(헤더~버튼바) 정중앙에 오게 됨 */
 .card {
-  /* #card-screen 4행 grid에서 항상 3행(1fr) 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
-  grid-row: 3;
+  /* #card-screen 5행 grid에서 항상 4행(1fr) 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 4;
   display: grid;
   grid-template-rows: 1fr auto 1fr;
   grid-template-columns: 1fr;
@@ -500,11 +500,82 @@ button {
 }
 
 /* ==========================================================================
+   백업 리마인더 배너 (마지막 백업/닫기 이후 7일 경과 또는 내 문장 10개 이상 추가 시 노출)
+   ========================================================================== */
+.backup-reminder-banner {
+  /* #card-screen 5행 grid에서 항상 2행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-28) */
+  grid-row: 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 14px 36px 14px 14px;
+  background-color: var(--color-chip-answer);
+  border-radius: 10px;
+}
+
+.backup-reminder-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+}
+
+.backup-reminder-desc {
+  /* 배경(--color-chip-answer)이 테마와 무관하게 항상 밝은색이라 .en-text와 같은 규칙으로 고정값 사용
+     (--color-text-secondary를 그대로 쓰면 다크모드에서 밝은 색으로 바뀌어 안 보임) */
+  font-size: 13px;
+  color: #4B5D6B;
+}
+
+.backup-reminder-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #FFFFFF;
+  background-color: var(--color-brand);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.backup-reminder-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.backup-reminder-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: #4B5D6B; /* 위 .backup-reminder-desc와 같은 이유로 고정값 사용 */
+  cursor: pointer;
+}
+
+.backup-reminder-close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==========================================================================
    미니 학습 배너 (15-2 AI 변형으로 추가한 문장만 임시로 학습할 때 노출)
    ========================================================================== */
 .mini-session-banner {
-  /* #card-screen 4행 grid에서 항상 2행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
-  grid-row: 2;
+  /* #card-screen 5행 grid에서 항상 3행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -537,8 +608,8 @@ button {
    하단 버튼 바
    ========================================================================== */
 .control-bar {
-  /* #card-screen 4행 grid에서 항상 4행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
-  grid-row: 4;
+  /* #card-screen 5행 grid에서 항상 5행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  grid-row: 5;
   display: flex;
   align-items: center;
   justify-content: center;

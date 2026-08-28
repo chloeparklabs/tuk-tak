@@ -395,6 +395,12 @@ const RANDOM_ORDER_KEY = 'tuktak_random_order';
 // 기본문장(source: 'default') 숨기기 설정 — 카드 학습/문장관리 양쪽에 적용(getOrderedSentences 참고)
 const HIDE_DEFAULT_KEY = 'tuktak_hide_default';
 
+// 로컬 백업 리마인더 — 마지막 백업(또는 배너 닫기) 시점 이후 7일 경과 OR 그 이후 내 문장(기본문장 제외)
+// 10개 이상 추가 시 카드 화면 상단 배너로 노출(2026-08-28). {at, count} 형태로 localStorage에 저장
+const BACKUP_CHECKPOINT_KEY = 'tuktak_backup_checkpoint';
+const BACKUP_REMINDER_DAYS = 7;
+const BACKUP_REMINDER_SENTENCE_COUNT = 10;
+
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
 let hideDefaultSentences = localStorage.getItem(HIDE_DEFAULT_KEY) === 'true';
@@ -664,6 +670,10 @@ const miniSessionBanner = document.getElementById('mini-session-banner');
 const miniSessionBannerText = document.getElementById('mini-session-banner-text');
 const miniSessionExitBtn = document.getElementById('mini-session-exit-btn');
 
+const backupReminderBanner = document.getElementById('backup-reminder-banner');
+const backupReminderCloseBtn = document.getElementById('backup-reminder-close-btn');
+const backupReminderBtn = document.getElementById('backup-reminder-btn');
+
 // 뒤로가기를 2번 이상 눌러야 메인(카드) 화면에 닿는 화면(문장변형 상세, AI 변형 프롬프트/미리보기)에
 // "홈" 버튼으로 탐색 단계를 건너뛸 수 있게 함 — 뒤로가기 체인을 그대로 두고 지름길만 추가(2026-08-27)
 function goToCardScreen() {
@@ -676,9 +686,55 @@ aiVariationPromptHomeBtn.addEventListener('click', goToCardScreen);
 aiVariationPreviewHomeBtn.addEventListener('click', goToCardScreen);
 
 // ==========================================================================
+// 로컬 백업 리마인더
+// ==========================================================================
+function getUserSentenceCount() {
+  return sentences.filter((s) => s.source !== 'default').length;
+}
+
+function loadBackupCheckpoint() {
+  const raw = localStorage.getItem(BACKUP_CHECKPOINT_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+// 백업 성공 시, 그리고 배너를 닫을 때 모두 이 함수로 "지금 시점"을 새 기준점으로 저장
+// (백업하든 닫기만 하든 다음 노출까지 다시 7일/10개 조건을 채워야 함)
+function saveBackupCheckpoint() {
+  const checkpoint = { at: Date.now(), count: getUserSentenceCount() };
+  localStorage.setItem(BACKUP_CHECKPOINT_KEY, JSON.stringify(checkpoint));
+}
+
+function shouldShowBackupReminder() {
+  if (getUserSentenceCount() === 0) return false;
+
+  const checkpoint = loadBackupCheckpoint();
+  if (!checkpoint) {
+    // 이 기능이 배포되기 전부터 쌓여있던 문장 때문에 곧바로 뜨지 않도록,
+    // 최초 판정 시점을 기준점으로 저장만 하고 이번엔 노출하지 않음
+    saveBackupCheckpoint();
+    return false;
+  }
+
+  const daysSince = (Date.now() - checkpoint.at) / (1000 * 60 * 60 * 24);
+  const newSentenceCount = getUserSentenceCount() - checkpoint.count;
+  return daysSince >= BACKUP_REMINDER_DAYS || newSentenceCount >= BACKUP_REMINDER_SENTENCE_COUNT;
+}
+
+function renderBackupReminder() {
+  backupReminderBanner.classList.toggle('hidden', !shouldShowBackupReminder());
+}
+
+backupReminderCloseBtn.addEventListener('click', () => {
+  saveBackupCheckpoint();
+  renderBackupReminder();
+});
+
+// ==========================================================================
 // 렌더링
 // ==========================================================================
 function renderCard() {
+  renderBackupReminder();
+
   const ordered = getCardOrderedSentences();
   const isEmpty = ordered.length === 0;
 
@@ -1607,7 +1663,9 @@ document.querySelectorAll('.help-accordion-header').forEach((header) => {
 // (복원은 별도 기능 없이 기존 "파일가져오기"로 이 파일을 그대로 불러오면 됨)
 // 저장 위치/파일명을 직접 고를 수 있도록 File System Access API(showSaveFilePicker)를 우선 사용하고,
 // 지원하지 않는 브라우저(iOS 사파리 등)나 사용자가 대화상자를 취소한 경우엔 기존 자동 다운로드로 대체(2026-08-27)
-exportBackupBtn.addEventListener('click', async () => {
+// 설정 화면의 백업 버튼과 카드 화면 백업 리마인더 배너 버튼이 이 함수를 공유(2026-08-28).
+// 반환값(true/false)으로 실제 백업이 이뤄졌는지 알려줘 리마인더 체크포인트 갱신 여부를 판단
+async function exportBackup() {
   const tsvText = sentences.map((s) => `${s.kr}\t${s.en}`).join('\n');
   const today = new Date();
   const dateStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('');
@@ -1622,9 +1680,9 @@ exportBackupBtn.addEventListener('click', async () => {
       const writable = await handle.createWritable();
       await writable.write(tsvText);
       await writable.close();
-      return;
+      return true;
     } catch (err) {
-      if (err.name === 'AbortError') return; // 사용자가 저장 대화상자를 취소함
+      if (err.name === 'AbortError') return false; // 사용자가 저장 대화상자를 취소함
       // 그 외 에러는 아래 자동 다운로드 방식으로 폴백
     }
   }
@@ -1638,6 +1696,23 @@ exportBackupBtn.addEventListener('click', async () => {
   link.click();
 
   URL.revokeObjectURL(url);
+  return true;
+}
+
+exportBackupBtn.addEventListener('click', async () => {
+  const success = await exportBackup();
+  if (success) {
+    saveBackupCheckpoint();
+    renderBackupReminder();
+  }
+});
+
+backupReminderBtn.addEventListener('click', async () => {
+  const success = await exportBackup();
+  if (success) {
+    saveBackupCheckpoint();
+    renderBackupReminder();
+  }
 });
 
 // 초기화: 문장 전체 삭제(글자크기/화면모드 등 설정값은 유지)
