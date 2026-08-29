@@ -1,0 +1,220 @@
+/* PC 빠른 문장 입력 전용 페이지 스타일 — 카드 앱(css/style.css)과 독립적, 공유 클래스 없음 */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #F4F6F8;
+  color: #1E2A38;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.page-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0C447C;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #4B5D6B;
+}
+
+.panel {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(20, 23, 28, 0.08);
+}
+
+.panel-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4B5D6B;
+  margin: 0 0 20px;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: none;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1E2A38;
+  cursor: pointer;
+}
+
+.btn-google svg {
+  width: 20px;
+  height: 20px;
+}
+
+.panel-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #4B5D6B;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: #378ADD;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.cloud-count {
+  font-size: 13px;
+  color: #7C8A96;
+  margin: 0 0 20px;
+}
+
+.input-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.input-kr,
+.input-en {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  background-color: #FFFFFF;
+  color: #1E2A38;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+}
+
+.input-kr::placeholder,
+.input-en::placeholder {
+  color: #C2C2C2;
+}
+
+.input-kr:focus,
+.input-en:focus {
+  outline: none;
+  border-color: #378ADD;
+}
+
+.input-row-delete {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #A6A6A6;
+  cursor: pointer;
+}
+
+.input-row-delete svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background-color: #378ADD;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.status-text {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #0C447C;
+  text-align: center;
+  min-height: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #14171C;
+    color: #F4F6F8;
+  }
+
+  .page-subtitle {
+    color: #A6A6A6;
+  }
+
+  .panel {
+    background-color: #1E222A;
+    box-shadow: none;
+    border: 1px solid #333944;
+  }
+
+  .panel-desc,
+  .user-email {
+    color: #A6A6A6;
+  }
+
+  .input-kr,
+  .input-en {
+    background-color: #14171C;
+    color: #F4F6F8;
+    border-color: #333944;
+  }
+
+  .btn-google {
+    border-color: #333944;
+    color: #F4F6F8;
+  }
+
+  .status-text {
+    color: #7CB4EE;
+  }
+}
