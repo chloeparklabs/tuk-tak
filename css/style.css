@@ -1237,6 +1237,12 @@ button {
   flex-shrink: 0;
 }
 
+.cloud-account-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 10px;
+}
+
 .settings-footer {
   margin-top: auto;
   padding-top: 24px;

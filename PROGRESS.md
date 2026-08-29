@@ -2471,4 +2471,34 @@ AskUserQuestion으로 홈 버튼 배치 범위 확인 — "뒤로가기 2번 이
 - Supabase 계정 교체 여부는 아직 미확인(이 프로젝트에선 미사용이라 급하지 않음)
 - 확인되면 새 Google 계정으로 Firebase 프로젝트 생성(18번 진행 단계 1)부터 이어서 진행
 
+---
+
+## 2026-08-29 (이어서 — Firebase 프로젝트 생성 + 로그인/백업 코드 구현)
+
+### 진행 내용
+사용자가 폰에서 새 배포 URL 정상 설치 확인 후, CLAUDE.md/PROGRESS.md 변경사항까지 커밋+push 요청(완료). 이어서 Firebase 프로젝트 생성(18번 진행 단계 1)을 사용자가 콘솔에서 직접 진행 — Claude가 화면 캡처를 보며 단계별로 안내:
+1. 프로젝트 생성(프로젝트 공개용 이름을 자동생성 값 대신 "Tuk Tak"으로 변경 — 이 이름은 개발자용이 아니라 최종 사용자가 구글 로그인 팝업에서 보게 되는 이름이라는 점을 설명)
+2. Google 로그인 활성화
+3. Firestore 생성(서울 리전, "프로덕션 모드"로 시작 — 테스트 모드는 30일간 전체 공개라 오히려 덜 안전하고, 어차피 커스텀 보안 규칙을 다음 단계에서 작성할 예정이라 프로덕션 모드 권장)
+4. 웹 앱 등록 → firebaseConfig 확보(프로젝트 ID `tuk-tak-2c172`)
+5. 승인된 도메인에 `tuk-tak-six.vercel.app` 추가
+
+사용자가 "시작"으로 승인 후, 로그인 UI+백업/복원 코드(18번 진행 단계 2·3)를 계획 설명대로 구현:
+- **`js/firebase-init.js`(신규)**: Firebase JS SDK 12.18.0을 CDN 모듈로 불러와 초기화, Google 로그인/로그아웃/Firestore 백업(`users/{uid}` 문서에 `sentences` 배열 덮어쓰기)/복원을 `window.CloudSync`로 노출
+- **`index.html`**: `<script type="module" src="js/firebase-init.js">`를 기존 `js/app.js` 스크립트보다 먼저 추가. 설정 화면에 "클라우드 백업" 섹션 신규(로그아웃 상태: Google 로그인 버튼 / 로그인 상태: 이메일 표시+지금 백업·클라우드에서 복원·로그아웃 3버튼)
+- **`js/app.js`**: 모듈 스크립트(firebase-init.js)가 일반 스크립트(app.js)보다 늦게 실행될 수 있는 문제를, `cloudsync-ready` 커스텀 이벤트를 기다렸다가 `CloudSync.onAuthChange()`를 등록하는 방식으로 해결. 백업/복원/로그인/로그아웃 버튼 핸들러 추가 — 복원은 기존 "초기화"와 같은 `confirm()` 패턴으로 확인 후 로컬 문장 전체 교체
+- **`css/style.css`**: `.cloud-account-desc` 스타일 추가(나머지는 기존 `.settings-action-btn` 재사용)
+
+Claude 1차 확인(Playwright, 스크래치패드에 임시 정적 서버+playwright 설치): 로그인 전/후 UI 전환(signed-out/signed-in 뷰 토글, 라이트+다크 스크린샷), `window.CloudSync` 정상 노출, 복원 버튼 클릭 시 확인창 → `CloudSync.restore()`(모킹) → `sentences` 배열 교체 → localStorage 반영 → 카드 화면 재렌더링까지 전체 플로우 확인. 콘솔 에러 없음. 단, 실제 Google 로그인 팝업 자체는 헤드리스 브라우저로 검증 불가해 이 부분은 제외(2차 확인에서 사용자가 직접 확인 필요).
+
+### 반영
+- 신규 파일: `js/firebase-init.js`
+- 수정: `index.html`(script 태그 추가, 설정 화면 클라우드 섹션), `js/app.js`(CloudSync 연동 로직), `css/style.css`(`.cloud-account-desc`)
+- `CLAUDE.md`: 체크리스트 18번에 진행 단계 1~3 완료 상황 상세 반영, 아이콘 인벤토리에 `cloud-upload`/`cloud-download`/`log-out`/Google 로고 추가, "설정 화면 구성"·"메뉴 기능 정리 > 설정 화면"에 클라우드 백업 섹션 문서화, "기술 스택"에 Firebase 스택 추가, "현재 상황 브리핑" 갱신
+
+### 다음 작업 제안
+1. Firestore 보안 규칙을 콘솔에 적용해야 함(사용자가 직접 붙여넣기 필요) — Claude가 다음 메시지에서 규칙 텍스트 안내 예정
+2. 코드를 커밋+push한 뒤, 사용자가 실기기(배포된 새 URL)에서 실제 Google 로그인 → 백업 → (다른 기기 또는 초기화 후) 복원까지 전체 플로우 2차 확인
+3. 2차 확인 완료 후 개인정보처리방침 고지(18번 진행 단계 5) 별도 진행 여부 논의
+
 작업 트리는 클린 상태(모든 변경사항 커밋+push 완료). 다음 세션 시작 시 이 PROGRESS.md를 먼저 확인할 것.

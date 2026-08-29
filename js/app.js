@@ -634,6 +634,13 @@ const deleteDefaultBtn = document.getElementById('delete-default-btn');
 const storageUsageCountEl = document.getElementById('storage-usage-count');
 const storageUsageBarFillEl = document.getElementById('storage-usage-bar-fill');
 const storageUsageDetailEl = document.getElementById('storage-usage-detail');
+const cloudSignedOutView = document.getElementById('cloud-signed-out-view');
+const cloudSignedInView = document.getElementById('cloud-signed-in-view');
+const cloudAccountEmailEl = document.getElementById('cloud-account-email');
+const cloudSigninBtn = document.getElementById('cloud-signin-btn');
+const cloudSignoutBtn = document.getElementById('cloud-signout-btn');
+const cloudBackupBtn = document.getElementById('cloud-backup-btn');
+const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -1727,6 +1734,78 @@ resetOpenBtn.addEventListener('click', () => {
   saveSentences(sentences);
   renderCard();
   alert('문장을 모두 삭제했습니다.');
+});
+
+// ==========================================================================
+// 클라우드 백업/동기화 (18번, Google 로그인 + Firestore)
+// 실시간 동기화가 아니라 "지금 백업"/"클라우드에서 복원" 수동 버튼 방식 —
+// 기존 TSV 내보내기/가져오기와 같은 멘탈모델. js/firebase-init.js가 window.CloudSync로 노출한
+// 기능만 가져다 쓰고, Firebase SDK 자체는 이 파일에서 직접 다루지 않는다.
+// ==========================================================================
+let cloudUser = null;
+
+function renderCloudAccountView() {
+  cloudSignedOutView.classList.toggle('hidden', !!cloudUser);
+  cloudSignedInView.classList.toggle('hidden', !cloudUser);
+  if (cloudUser) {
+    cloudAccountEmailEl.textContent = `${cloudUser.email}로 로그인됨`;
+  }
+}
+
+function setupCloudSync() {
+  if (!window.CloudSync) {
+    // firebase-init.js는 모듈 스크립트라 이 스크립트보다 늦게 실행될 수 있어, 준비 완료 이벤트를 기다림
+    window.addEventListener('cloudsync-ready', setupCloudSync, { once: true });
+    return;
+  }
+  window.CloudSync.onAuthChange((user) => {
+    cloudUser = user;
+    renderCloudAccountView();
+  });
+}
+setupCloudSync();
+
+cloudSigninBtn.addEventListener('click', async () => {
+  try {
+    await window.CloudSync.signIn();
+  } catch (err) {
+    alert(`로그인에 실패했습니다: ${err.message}`);
+  }
+});
+
+cloudSignoutBtn.addEventListener('click', async () => {
+  await window.CloudSync.signOut();
+});
+
+cloudBackupBtn.addEventListener('click', async () => {
+  try {
+    await window.CloudSync.backup(sentences);
+    alert('클라우드에 백업했습니다.');
+  } catch (err) {
+    alert(`백업에 실패했습니다: ${err.message}`);
+  }
+});
+
+cloudRestoreBtn.addEventListener('click', async () => {
+  if (!confirm('클라우드에 백업된 문장으로 지금 기기의 문장을 모두 덮어씁니다. 계속할까요?')) return;
+
+  try {
+    const restored = await window.CloudSync.restore();
+    if (!restored) {
+      alert('클라우드에 저장된 백업이 없습니다.');
+      return;
+    }
+    sentences.length = 0;
+    restored.map(normalizeSentence).forEach((s) => sentences.push(s));
+    saveSentences(sentences);
+    loadRandomOrder();
+    currentIndex = 0;
+    renderCard();
+    if (!listScreen.classList.contains('hidden')) renderSentenceList();
+    alert('클라우드 백업으로 복원했습니다.');
+  } catch (err) {
+    alert(`복원에 실패했습니다: ${err.message}`);
+  }
 });
 
 // ==========================================================================
