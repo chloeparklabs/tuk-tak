@@ -504,6 +504,7 @@
         <button class="add-modal-tab-btn active" type="button" data-tab="form">폼 입력</button>
         <button class="add-modal-tab-btn" type="button" data-tab="file">파일 가져오기</button>
         <button class="add-modal-tab-btn" type="button" data-tab="paste">텍스트 붙여넣기</button>
+        <button class="add-modal-tab-btn" type="button" data-tab="quick">빠른입력</button>
       </div>
 
       <div id="add-tab-form" class="add-modal-tab-panel">
@@ -530,6 +531,12 @@
           <textarea id="paste-textarea" class="add-form-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
         </div>
         <button id="paste-submit-btn" class="btn modal-btn modal-btn-submit">가져오기</button>
+      </div>
+
+      <div id="add-tab-quick" class="add-modal-tab-panel hidden">
+        <p class="modal-desc">PC 키보드로 여러 문장을 빠르게 입력하세요. Tab 키로 다음 칸으로 이동하고, 마지막 줄에 입력을 시작하면 새 줄이 자동으로 추가됩니다.<br>여기서 입력한 문장을 폰에서도 보려면 설정 화면의 "지금 백업"을 누른 뒤, 폰에서 같은 계정으로 "클라우드에서 복원"을 눌러주세요.</p>
+        <div id="quick-input-rows" class="quick-input-rows"></div>
+        <button id="quick-submit-btn" class="btn modal-btn modal-btn-submit">모두 추가</button>
       </div>
     </div>
   </section>

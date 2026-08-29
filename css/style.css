@@ -797,6 +797,64 @@ button {
   margin-bottom: 4px;
 }
 
+/* PC 빠른입력 탭: 한국어/영어 입력칸이 한 행씩 반복되는 표 형태(2026-08-29) */
+.quick-input-rows {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.quick-input-kr,
+.quick-input-en {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-base);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+.quick-input-kr::placeholder,
+.quick-input-en::placeholder {
+  color: var(--gray-300);
+}
+
+.quick-input-kr:focus,
+.quick-input-en:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.quick-input-row-delete-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+}
+
+.quick-input-row-delete-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .font-size-row {
   display: flex;
   align-items: center;

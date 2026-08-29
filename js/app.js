@@ -596,6 +596,7 @@ const addModalTabBtns = document.querySelectorAll('.add-modal-tab-btn');
 const addTabForm = document.getElementById('add-tab-form');
 const addTabFile = document.getElementById('add-tab-file');
 const addTabPaste = document.getElementById('add-tab-paste');
+const addTabQuick = document.getElementById('add-tab-quick');
 const addKrInput = document.getElementById('add-kr-input');
 const addEnInput = document.getElementById('add-en-input');
 const addSubmitBtn = document.getElementById('add-submit-btn');
@@ -603,6 +604,8 @@ const importFileInput = document.getElementById('import-file-input');
 const importTabOpenBtn = document.getElementById('import-tab-open-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
+const quickInputRowsEl = document.getElementById('quick-input-rows');
+const quickSubmitBtn = document.getElementById('quick-submit-btn');
 const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
@@ -869,6 +872,7 @@ function setAddModalTab(tab) {
   addTabForm.classList.toggle('hidden', tab !== 'form');
   addTabFile.classList.toggle('hidden', tab !== 'file');
   addTabPaste.classList.toggle('hidden', tab !== 'paste');
+  addTabQuick.classList.toggle('hidden', tab !== 'quick');
 }
 
 function openAddModal(sentence) {
@@ -898,6 +902,7 @@ function closeAddModal() {
   addEnInput.value = '';
   pasteTextarea.value = '';
   importFileInput.value = '';
+  resetQuickInputRows();
   editingId = null;
 }
 
@@ -954,6 +959,79 @@ pasteSubmitBtn.addEventListener('click', () => {
   const parsed = parseSentencesText(pasteTextarea.value);
   parsed.forEach((s) => addSentence(s.kr, s.en));
   alert(`${parsed.length}개 문장을 추가했습니다.`);
+  closeAddModal();
+  refreshAfterAdd();
+});
+
+// --- 빠른입력 탭 (PC 키보드로 한국어/영어를 행 단위로 빠르게 입력, 19번 검증용) ---
+// 마지막 행에 뭔가 입력하면 자동으로 새 빈 행을 추가해, 행 추가 버튼 없이 Tab/Enter만으로 계속 이어 입력 가능
+function createQuickInputRow() {
+  const row = document.createElement('div');
+  row.className = 'quick-input-row';
+
+  const krInput = document.createElement('input');
+  krInput.type = 'text';
+  krInput.className = 'quick-input-kr';
+  krInput.placeholder = '한국어';
+
+  const enInput = document.createElement('input');
+  enInput.type = 'text';
+  enInput.className = 'quick-input-en';
+  enInput.placeholder = '영어';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'quick-input-row-delete-btn';
+  deleteBtn.setAttribute('aria-label', '이 줄 삭제');
+  deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+
+  const onInput = () => {
+    // 이 행이 마지막 행이고 뭔가 입력됐다면 새 빈 행을 이어서 추가
+    if (row === quickInputRowsEl.lastElementChild && (krInput.value.trim() || enInput.value.trim())) {
+      quickInputRowsEl.appendChild(createQuickInputRow());
+    }
+  };
+  krInput.addEventListener('input', onInput);
+  enInput.addEventListener('input', onInput);
+
+  deleteBtn.addEventListener('click', () => {
+    // 마지막 남은 한 줄은 지우지 않고 내용만 비움(빈 화면 방지)
+    if (quickInputRowsEl.children.length <= 1) {
+      krInput.value = '';
+      enInput.value = '';
+      return;
+    }
+    row.remove();
+  });
+
+  row.appendChild(krInput);
+  row.appendChild(enInput);
+  row.appendChild(deleteBtn);
+  return row;
+}
+
+function resetQuickInputRows() {
+  quickInputRowsEl.innerHTML = '';
+  quickInputRowsEl.appendChild(createQuickInputRow());
+}
+resetQuickInputRows();
+
+quickSubmitBtn.addEventListener('click', () => {
+  const rows = [...quickInputRowsEl.querySelectorAll('.quick-input-row')];
+  const pairs = rows
+    .map((row) => ({
+      kr: row.querySelector('.quick-input-kr').value.trim(),
+      en: row.querySelector('.quick-input-en').value.trim(),
+    }))
+    .filter((s) => s.kr && s.en);
+
+  if (pairs.length === 0) {
+    alert('입력한 문장이 없습니다.');
+    return;
+  }
+
+  pairs.forEach((s) => addSentence(s.kr, s.en));
+  alert(`${pairs.length}개 문장을 추가했습니다.`);
   closeAddModal();
   refreshAfterAdd();
 });
