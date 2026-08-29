@@ -2448,4 +2448,27 @@ AskUserQuestion으로 홈 버튼 배치 범위 확인 — "뒤로가기 2번 이
 - 끝났다면 새 계정으로 Firebase 프로젝트 생성(18번 진행 단계 1) 부터 이어서 진행
 - 아직이면 계속 대기, 다른 작업(15-2 유료판, 온보딩 문구 확정 등) 진행 여부 논의 가능
 
+---
+
+## 2026-08-29 (이어서 — GitHub·Vercel 새 계정 이전 완료)
+
+### 진행 내용
+사용자가 구글/GitHub/Vercel 새 계정을 모두 만들고 GitHub에 새 저장소(`https://github.com/chloeparklabs/tuk-tak.git`)까지 생성 완료했다고 알려옴. Claude가 기존 폰 데이터 백업 여부·git origin 전환 여부를 AskUserQuestion으로 확인(둘 다 "바로 진행"으로 답변, 기존 폰 데이터는 보존 불필요) 후 진행:
+
+1. `git remote set-url origin https://github.com/chloeparklabs/tuk-tak.git`
+2. `git push` 시도 → 이 PC의 Git 인증정보가 옛 계정(`easycodehow`)으로 캐시돼 있어 403 권한 오류 발생
+3. 사용자가 직접 터미널에서 `gh auth login` 실행(대화형 로그인이라 Claude가 대신 실행 불가, `!` 프리픽스로 안내) → 첫 시도는 디바이스 코드 처리 전 시간초과로 실패 → 재시도해 새 계정(chloeparklabs)으로 로그인 승인 완료
+4. `gh auth setup-git`으로 Git이 새 인증정보를 쓰도록 연결 → `git push -u origin main` 성공(새 저장소에 전체 이력 반영)
+5. 사용자가 Vercel 대시보드에서 새 계정으로 `chloeparklabs/tuk-tak` 저장소를 연결해 재배포 → 새 배포 URL `https://tuk-tak-six.vercel.app/` 확보
+6. Claude가 WebFetch로 새 URL 정상 로드 확인(오류 없음)
+
+### 반영
+- `CLAUDE.md`: "배포 URL"을 `https://tuk-tak-six.vercel.app/`로 교체(옛 주소 `tuk-tak-beta.vercel.app`는 각주로 보존), "현재 상황 브리핑" 18번 설명에 "GitHub·Vercel 교체 완료(2026-08-29), 다음은 Firebase 프로젝트 생성 단계"로 갱신
+- 로컬 git origin이 `chloeparklabs/tuk-tak`으로 전환됨(이 세션부터 push는 새 저장소로 감)
+
+### 다음 작업 제안
+- 폰에서 새 주소(`tuk-tak-six.vercel.app`)로 접속해 PWA 재설치 + 정상 동작 확인(사용자 2차 확인 — 옛 주소에 보존할 데이터가 없다고 확인했으므로 백업 복원 절차는 생략 가능)
+- Supabase 계정 교체 여부는 아직 미확인(이 프로젝트에선 미사용이라 급하지 않음)
+- 확인되면 새 Google 계정으로 Firebase 프로젝트 생성(18번 진행 단계 1)부터 이어서 진행
+
 작업 트리는 클린 상태(모든 변경사항 커밋+push 완료). 다음 세션 시작 시 이 PROGRESS.md를 먼저 확인할 것.
