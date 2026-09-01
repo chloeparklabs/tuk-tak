@@ -1066,7 +1066,10 @@ button {
 }
 
 .screen-topbar-text-btn {
-  margin-left: auto;
+  /* margin-left:auto를 여기 두지 않음 — 검색 아이콘(.screen-topbar-icon-btn)과 나란히
+     있을 때 두 요소 모두 auto margin이면 남는 공간을 절반씩 나눠 가져 가운데 즈음에
+     붕 뜨는 버그가 있었음(2026-09-01). 그룹을 오른쪽으로 미는 역할은 앞의 아이콘 버튼이
+     전담하고, 이 버튼은 그 뒤에서 gap만큼만 떨어져 오른쪽 끝에 붙음 */
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
@@ -1076,6 +1079,46 @@ button {
   border-radius: 8px;
   padding: 8px 14px;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   문장관리 검색 (22번) — 검색 아이콘 탭 시 뒤로가기가 "취소"로, 타이틀이
+   입력창으로 바뀌는 선택모드와 같은 헤더 전환 패턴 재사용
+   ========================================================================== */
+.screen-topbar-icon-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.screen-topbar-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 검색 모드에서 타이틀(절대 위치) 자리를 대신해 flex 흐름에 실제로 자리를 차지 —
+   뒤로가기가 "취소" 텍스트로 바뀌고 우측 아이콘들이 숨겨지며 남는 공간을 자연스럽게 채움 */
+.list-search-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-family: inherit;
+  color: #FFFFFF;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.list-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* 문장관리 선택 모드 전용 하단 고정 삭제 버튼 — 상단 구석(취소 옆)에 있던 것보다 엄지로

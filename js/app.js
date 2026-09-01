@@ -619,6 +619,9 @@ const listScreen = document.getElementById('list-screen');
 const listTopbarEl = document.getElementById('list-topbar');
 const listBackBtn = document.getElementById('list-back-btn');
 const listTopbarTitleEl = document.getElementById('list-topbar-title');
+const listSearchBtn = document.getElementById('list-search-btn');
+const listSearchInput = document.getElementById('list-search-input');
+const listFilterBarEl = document.getElementById('list-filter-bar');
 const listSelectBtn = document.getElementById('list-select-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const listBulkDeleteFooterEl = document.getElementById('list-bulk-delete-footer');
@@ -1055,13 +1058,24 @@ let selectedIds = new Set();
 let longPressTimer = null;
 let longPressFiredId = null;
 let filterMode = 'all';
+let searching = false;
+let searchQuery = '';
 
 // 정렬은 그대로 적용한 뒤, 필터 조건에 안 맞는 문장만 걸러냄 (정렬·필터는 독립적)
+// 검색 중일 때는 filterMode가 항상 'all'로 강제되므로(아래 enterSearchMode) 검색어
+// 조건만 추가로 걸리고, 필터 자체와는 동시에 겹치지 않음
 function getFilteredSentences() {
   const ordered = getOrderedSentences();
-  if (filterMode === 'important') return ordered.filter((s) => s.important);
-  if (filterMode === 'unfamiliar') return ordered.filter((s) => s.unfamiliar);
-  return ordered;
+  let list = ordered;
+  if (filterMode === 'important') list = list.filter((s) => s.important);
+  else if (filterMode === 'unfamiliar') list = list.filter((s) => s.unfamiliar);
+
+  if (searching && searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    list = list.filter((s) => s.kr.toLowerCase().includes(q) || s.en.toLowerCase().includes(q));
+  }
+
+  return list;
 }
 
 function applyFilterMode(mode) {
@@ -1081,7 +1095,12 @@ listFilterBtns.forEach((btn) => {
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
   listFilterSection.classList.toggle('hidden', selecting);
+  listFilterBarEl.classList.toggle('hidden', searching);
   listBulkDeleteFooterEl.classList.toggle('hidden', !selecting);
+  listSearchBtn.classList.toggle('hidden', selecting || searching);
+  listSelectBtn.classList.toggle('hidden', selecting || searching);
+  listSearchInput.classList.toggle('hidden', !searching);
+  listTopbarTitleEl.classList.toggle('hidden', searching);
 
   if (selecting) {
     const n = selectedIds.size;
@@ -1089,15 +1108,17 @@ function updateListTopbar() {
     listBackBtn.textContent = '취소';
     listBackBtn.setAttribute('aria-label', '선택 취소');
     listTopbarTitleEl.textContent = n > 0 ? `${n}개 선택` : '문장 선택';
-    listSelectBtn.classList.add('hidden');
     listBulkDeleteBtn.disabled = n === 0;
     listBulkDeleteBtn.textContent = n > 0 ? `삭제 (${n}개)` : '삭제';
+  } else if (searching) {
+    listBackBtn.classList.add('text-mode');
+    listBackBtn.textContent = '취소';
+    listBackBtn.setAttribute('aria-label', '검색 취소');
   } else {
     listBackBtn.classList.remove('text-mode');
     listBackBtn.innerHTML = LIST_BACK_ICON;
     listBackBtn.setAttribute('aria-label', '뒤로가기');
     listTopbarTitleEl.textContent = '문장 관리';
-    listSelectBtn.classList.remove('hidden');
   }
 }
 
@@ -1111,6 +1132,26 @@ function enterSelectMode() {
 function exitSelectMode() {
   selecting = false;
   selectedIds.clear();
+  renderSentenceList();
+  updateListTopbar();
+}
+
+// 검색 아이콘 탭 시 필터를 "전체"로 리셋(선택된 탭이 아니라 전체 문장 대상 검색) —
+// 결과 항목엔 기존 ☆⚑ 아이콘이 그대로 남아있어 어떤 탭에 속하는지는 계속 구분됨
+function enterSearchMode() {
+  searching = true;
+  searchQuery = '';
+  listSearchInput.value = '';
+  applyFilterMode('all');
+  renderSentenceList();
+  updateListTopbar();
+  listSearchInput.focus();
+}
+
+function exitSearchMode() {
+  searching = false;
+  searchQuery = '';
+  listSearchInput.value = '';
   renderSentenceList();
   updateListTopbar();
 }
@@ -1135,12 +1176,14 @@ function renderSentenceList() {
   sentenceListEl.innerHTML = '';
 
   const filtered = getFilteredSentences();
-  listCountInfoEl.textContent = `${FILTER_COUNT_LABELS[filterMode]} ${filtered.length}개`;
+  listCountInfoEl.textContent = searching
+    ? `검색결과 ${filtered.length}개`
+    : `${FILTER_COUNT_LABELS[filterMode]} ${filtered.length}개`;
 
   if (filtered.length === 0) {
     const emptyMsg = document.createElement('p');
     emptyMsg.className = 'sentence-list-empty-msg';
-    emptyMsg.textContent = '표시할 문장이 없습니다.';
+    emptyMsg.textContent = searching ? '검색 결과가 없습니다.' : '표시할 문장이 없습니다.';
     sentenceListEl.appendChild(emptyMsg);
     return;
   }
@@ -1222,6 +1265,9 @@ listOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   listScreen.classList.remove('hidden');
   selecting = false;
+  searching = false;
+  searchQuery = '';
+  listSearchInput.value = '';
   selectedIds.clear();
   applyFilterMode('all');
   renderSentenceList();
@@ -1233,11 +1279,20 @@ listBackBtn.addEventListener('click', () => {
     exitSelectMode();
     return;
   }
+  if (searching) {
+    exitSearchMode();
+    return;
+  }
   listScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
 });
 
 listSelectBtn.addEventListener('click', enterSelectMode);
+listSearchBtn.addEventListener('click', enterSearchMode);
+listSearchInput.addEventListener('input', () => {
+  searchQuery = listSearchInput.value;
+  renderSentenceList();
+});
 
 listBulkDeleteBtn.addEventListener('click', () => {
   if (selectedIds.size === 0) return;
