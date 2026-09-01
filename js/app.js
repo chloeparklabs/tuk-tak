@@ -620,7 +620,9 @@ const listTopbarEl = document.getElementById('list-topbar');
 const listBackBtn = document.getElementById('list-back-btn');
 const listTopbarTitleEl = document.getElementById('list-topbar-title');
 const listSearchBtn = document.getElementById('list-search-btn');
+const listSearchBox = document.getElementById('list-search-box');
 const listSearchInput = document.getElementById('list-search-input');
+const listSearchClearBtn = document.getElementById('list-search-clear-btn');
 const listFilterBarEl = document.getElementById('list-filter-bar');
 const listSelectBtn = document.getElementById('list-select-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
@@ -1099,7 +1101,7 @@ function updateListTopbar() {
   listBulkDeleteFooterEl.classList.toggle('hidden', !selecting);
   listSearchBtn.classList.toggle('hidden', selecting || searching);
   listSelectBtn.classList.toggle('hidden', selecting || searching);
-  listSearchInput.classList.toggle('hidden', !searching);
+  listSearchBox.classList.toggle('hidden', !searching);
   listTopbarTitleEl.classList.toggle('hidden', searching);
 
   if (selecting) {
@@ -1110,11 +1112,9 @@ function updateListTopbar() {
     listTopbarTitleEl.textContent = n > 0 ? `${n}개 선택` : '문장 선택';
     listBulkDeleteBtn.disabled = n === 0;
     listBulkDeleteBtn.textContent = n > 0 ? `삭제 (${n}개)` : '삭제';
-  } else if (searching) {
-    listBackBtn.classList.add('text-mode');
-    listBackBtn.textContent = '취소';
-    listBackBtn.setAttribute('aria-label', '검색 취소');
   } else {
+    // 검색 중일 때도 뒤로가기는 그대로 "뒤로가기" — 검색 취소는 검색창 안의
+    // X 버튼(list-search-clear-btn)이 전담(2026-09-01, 폼 형태로 바뀌며 요청)
     listBackBtn.classList.remove('text-mode');
     listBackBtn.innerHTML = LIST_BACK_ICON;
     listBackBtn.setAttribute('aria-label', '뒤로가기');
@@ -1279,16 +1279,13 @@ listBackBtn.addEventListener('click', () => {
     exitSelectMode();
     return;
   }
-  if (searching) {
-    exitSearchMode();
-    return;
-  }
   listScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
 });
 
 listSelectBtn.addEventListener('click', enterSelectMode);
 listSearchBtn.addEventListener('click', enterSearchMode);
+listSearchClearBtn.addEventListener('click', exitSearchMode);
 listSearchInput.addEventListener('input', () => {
   searchQuery = listSearchInput.value;
   renderSentenceList();

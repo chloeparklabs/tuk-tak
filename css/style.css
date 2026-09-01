@@ -1105,20 +1105,60 @@ button {
 }
 
 /* 검색 모드에서 타이틀(절대 위치) 자리를 대신해 flex 흐름에 실제로 자리를 차지 —
-   뒤로가기가 "취소" 텍스트로 바뀌고 우측 아이콘들이 숨겨지며 남는 공간을 자연스럽게 채움 */
+   우측 아이콘들이 숨겨지며 남는 공간을 자연스럽게 채움. 처음엔 배경 없이 텍스트만
+   블루 바 위에 얹는 방식이었으나 "검색칸이 안 보인다"는 피드백으로 눈에 띄는 폼
+   박스로 변경(2026-09-01) — 하늘색 칩(.en-text/.backup-reminder-banner와 같은
+   --color-chip-answer, 테마 무관 항상 밝은 배경) 안에 아이콘+입력창+취소(X) 버튼을 배치 */
+.list-search-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-chip-answer);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.list-search-box-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  /* 밝은 배경 위 고정 요소라 .en-text와 같은 규칙으로 리터럴 값 사용 */
+  color: #4B5D6B;
+}
+
 .list-search-input {
   flex: 1;
   min-width: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-family: inherit;
-  color: #FFFFFF;
+  color: #1E2A38;
   background: none;
   border: none;
   outline: none;
 }
 
 .list-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: #4B5D6B;
+}
+
+.list-search-clear-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: #4B5D6B;
+  cursor: pointer;
+}
+
+.list-search-clear-btn svg {
+  width: 15px;
+  height: 15px;
 }
 
 /* 문장관리 선택 모드 전용 하단 고정 삭제 버튼 — 상단 구석(취소 옆)에 있던 것보다 엄지로
