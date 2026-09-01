@@ -457,123 +457,6 @@ function deleteSentence(id) {
 }
 
 // ==========================================================================
-// 20. 통계/복습 리포트 — 연속학습일수/정답률/진도
-// 기존 문장 데이터 구조(important/unfamiliar)는 건드리지 않고, 신규 localStorage
-// 2종만 추가: 학습한 날짜 목록(연속학습일수용) + 복습 기록 로그(정답률·진도용)
-// ==========================================================================
-const STUDY_DATES_KEY = 'tuktak_study_dates';
-const REVIEW_LOG_KEY = 'tuktak_review_log';
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function loadStudyDates() {
-  try {
-    return JSON.parse(localStorage.getItem(STUDY_DATES_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-// 카드 정답을 펼칠 때마다 호출 — 아래 "알아요/아직이에요" 사용 여부와 무관하게
-// 연속학습일수에는 항상 반영되도록 분리(카드만 봐도 학습으로 인정)
-function recordStudyDate() {
-  const dates = loadStudyDates();
-  const today = todayStr();
-  if (!dates.includes(today)) {
-    dates.push(today);
-    localStorage.setItem(STUDY_DATES_KEY, JSON.stringify(dates));
-  }
-}
-
-function loadReviewLog() {
-  try {
-    return JSON.parse(localStorage.getItem(REVIEW_LOG_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-// 카드 마킹 아이콘 바의 "알아요(✓)/아직이에요(✗)" 탭 시 호출
-function recordReview(sentenceId, known) {
-  const log = loadReviewLog();
-  log.push({ date: todayStr(), sentenceId: String(sentenceId), known });
-  localStorage.setItem(REVIEW_LOG_KEY, JSON.stringify(log));
-}
-
-// 오늘 포함 연속 학습일수 + 역대 최장 기록. 오늘 아직 안 봤어도 어제까지
-// 연속이었다면 "아직 안 끊긴" 것으로 보고 어제 기준으로 current를 계산
-function computeStreak(dates) {
-  const set = new Set(dates);
-  if (set.size === 0) return { current: 0, longest: 0 };
-  const oneDay = 24 * 60 * 60 * 1000;
-
-  const sorted = [...set].sort();
-  let longest = 1;
-  let run = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    const diffDays = Math.round((new Date(sorted[i]) - new Date(sorted[i - 1])) / oneDay);
-    run = diffDays === 1 ? run + 1 : 1;
-    longest = Math.max(longest, run);
-  }
-
-  const today = todayStr();
-  let cursor = new Date(set.has(today) ? today : new Date(Date.now() - oneDay).toISOString().slice(0, 10));
-  let current = 0;
-  while (set.has(cursor.toISOString().slice(0, 10))) {
-    current++;
-    cursor = new Date(cursor.getTime() - oneDay);
-  }
-  return { current, longest };
-}
-
-// 통계 화면 진입할 때마다 다시 계산해 표시 (설정 화면의 renderStorageUsage()와 같은 패턴)
-function renderStats() {
-  const { current, longest } = computeStreak(loadStudyDates());
-  statsStreakCurrentEl.textContent = `${current}일`;
-  statsStreakLongestEl.textContent = `${longest}일`;
-
-  const log = loadReviewLog();
-  const totalReviews = log.length;
-  const hasReviews = totalReviews > 0;
-  statsAccuracyEmptyEl.classList.toggle('hidden', hasReviews);
-  statsAccuracySectionEl.classList.toggle('hidden', !hasReviews);
-
-  if (hasReviews) {
-    const totalKnown = log.filter((r) => r.known).length;
-    const allPercent = Math.round((totalKnown / totalReviews) * 100);
-    statsAccuracyAllTextEl.textContent = `${allPercent}% (${totalKnown}/${totalReviews})`;
-    statsAccuracyAllFillEl.style.width = `${allPercent}%`;
-
-    const weekAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const weekLog = log.filter((r) => r.date >= weekAgo);
-    if (weekLog.length > 0) {
-      const weekKnown = weekLog.filter((r) => r.known).length;
-      const weekPercent = Math.round((weekKnown / weekLog.length) * 100);
-      statsAccuracyWeekTextEl.textContent = `${weekPercent}% (${weekKnown}/${weekLog.length})`;
-      statsAccuracyWeekFillEl.style.width = `${weekPercent}%`;
-    } else {
-      statsAccuracyWeekTextEl.textContent = '기록 없음';
-      statsAccuracyWeekFillEl.style.width = '0%';
-    }
-  }
-
-  const reviewedIds = new Set(log.map((r) => r.sentenceId));
-  const totalSentences = sentences.length;
-  const reviewedCount = sentences.filter((s) => reviewedIds.has(String(s.id))).length;
-  const progressPercent = totalSentences > 0 ? Math.round((reviewedCount / totalSentences) * 100) : 0;
-  statsProgressTextEl.textContent = `${reviewedCount}/${totalSentences}개 (${progressPercent}%)`;
-  statsProgressFillEl.style.width = `${progressPercent}%`;
-
-  statsCountTotalEl.textContent = `${totalSentences}개`;
-  statsCountDefaultEl.textContent = `${sentences.filter((s) => s.source === 'default').length}개`;
-  statsCountMineEl.textContent = `${sentences.filter((s) => s.source !== 'default').length}개`;
-  statsCountImportantEl.textContent = `${sentences.filter((s) => s.important).length}개`;
-  statsCountUnfamiliarEl.textContent = `${sentences.filter((s) => s.unfamiliar).length}개`;
-}
-
-// ==========================================================================
 // 출제/정렬 순서 (랜덤순/최신순/오래된순/못외운것 먼저/중요한것 먼저)
 // ==========================================================================
 function saveRandomOrder() {
@@ -740,24 +623,6 @@ const listSelectBtn = document.getElementById('list-select-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const listBulkDeleteFooterEl = document.getElementById('list-bulk-delete-footer');
 const sentenceListEl = document.getElementById('sentence-list');
-const statsOpenBtn = document.getElementById('stats-open-btn');
-const statsScreen = document.getElementById('stats-screen');
-const statsBackBtn = document.getElementById('stats-back-btn');
-const statsStreakCurrentEl = document.getElementById('stats-streak-current');
-const statsStreakLongestEl = document.getElementById('stats-streak-longest');
-const statsAccuracyEmptyEl = document.getElementById('stats-accuracy-empty');
-const statsAccuracySectionEl = document.getElementById('stats-accuracy-section');
-const statsAccuracyAllTextEl = document.getElementById('stats-accuracy-all-text');
-const statsAccuracyAllFillEl = document.getElementById('stats-accuracy-all-fill');
-const statsAccuracyWeekTextEl = document.getElementById('stats-accuracy-week-text');
-const statsAccuracyWeekFillEl = document.getElementById('stats-accuracy-week-fill');
-const statsProgressTextEl = document.getElementById('stats-progress-text');
-const statsProgressFillEl = document.getElementById('stats-progress-fill');
-const statsCountTotalEl = document.getElementById('stats-count-total');
-const statsCountDefaultEl = document.getElementById('stats-count-default');
-const statsCountMineEl = document.getElementById('stats-count-mine');
-const statsCountImportantEl = document.getElementById('stats-count-important');
-const statsCountUnfamiliarEl = document.getElementById('stats-count-unfamiliar');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
 const restartOpenBtn = document.getElementById('restart-open-btn');
 const helpOpenBtn = document.getElementById('help-open-btn');
@@ -783,8 +648,6 @@ const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
 const cardFlagBtn = document.getElementById('card-flag-btn');
-const cardKnowBtn = document.getElementById('card-know-btn');
-const cardUnknownBtn = document.getElementById('card-unknown-btn');
 const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterSection = document.getElementById('list-filter-section');
@@ -940,20 +803,6 @@ function toggleCurrentSentenceFlag(toggleFn) {
 cardStarBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleImportant));
 cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfamiliar));
 
-// "알아요/아직이에요"는 즐겨찾기·미암기와 달리 정렬에 영향 없는 순수 기록용이라
-// currentIndex 보정 없이 바로 기록만 함(카드 화면 이동 없음)
-cardKnowBtn.addEventListener('click', () => {
-  const sentence = getCardOrderedSentences()[currentIndex];
-  if (!sentence) return;
-  recordReview(sentence.id, true);
-});
-
-cardUnknownBtn.addEventListener('click', () => {
-  const sentence = getCardOrderedSentences()[currentIndex];
-  if (!sentence) return;
-  recordReview(sentence.id, false);
-});
-
 // 카드 화면에서 바로 수정/삭제 (문장관리의 수정 모달·삭제 로직을 그대로 재사용)
 cardEditBtn.addEventListener('click', () => {
   const sentence = getCardOrderedSentences()[currentIndex];
@@ -995,7 +844,6 @@ startBtn.addEventListener('click', () => {
 
 checkBtn.addEventListener('click', () => {
   revealed = true;
-  recordStudyDate();
   renderCard();
 });
 
@@ -1866,17 +1714,6 @@ settingsOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   settingsScreen.classList.remove('hidden');
   renderStorageUsage();
-});
-
-statsOpenBtn.addEventListener('click', () => {
-  cardScreen.classList.add('hidden');
-  statsScreen.classList.remove('hidden');
-  renderStats();
-});
-
-statsBackBtn.addEventListener('click', () => {
-  statsScreen.classList.add('hidden');
-  cardScreen.classList.remove('hidden');
 });
 
 settingsBackBtn.addEventListener('click', () => {
