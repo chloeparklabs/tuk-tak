@@ -1065,28 +1065,10 @@ button {
   color: #FFFFFF;
 }
 
-.screen-topbar-text-btn {
-  /* margin-left:auto를 여기 두지 않음 — 검색 아이콘(.screen-topbar-icon-btn)과 나란히
-     있을 때 두 요소 모두 auto margin이면 남는 공간을 절반씩 나눠 가져 가운데 즈음에
-     붕 뜨는 버그가 있었음(2026-09-01). 그룹을 오른쪽으로 미는 역할은 앞의 아이콘 버튼이
-     전담하고, 이 버튼은 그 뒤에서 gap만큼만 떨어져 오른쪽 끝에 붙음 */
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  color: #FFFFFF;
-  background: rgba(255, 255, 255, 0.16);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
 /* ==========================================================================
-   문장관리 검색 (22번) — 검색 아이콘 탭 시 뒤로가기가 "취소"로, 타이틀이
-   입력창으로 바뀌는 선택모드와 같은 헤더 전환 패턴 재사용
+   문장관리 상단바 우측 아이콘 버튼(검색·선택) — 2026-09-01, 22번
    ========================================================================== */
 .screen-topbar-icon-btn {
-  margin-left: auto;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1104,6 +1086,14 @@ button {
   height: 20px;
 }
 
+/* 우측 아이콘 그룹 중 맨 앞(검색)에만 붙여 그룹 전체를 오른쪽 끝으로 밈 — 그룹 내
+   모든 요소에 각자 margin-left:auto를 주면 flexbox가 남는 공간을 균등 분배해
+   그룹이 오른쪽 끝이 아니라 화면 중간에 붕 뜨는 버그가 있었음(2026-09-01 발견).
+   이후에 새 아이콘 버튼을 이 그룹에 추가할 땐 이 클래스를 새로 붙이지 말 것 */
+.screen-topbar-actions-lead {
+  margin-left: auto;
+}
+
 /* 검색 모드에서 타이틀(절대 위치) 자리를 대신해 flex 흐름에 실제로 자리를 차지 —
    우측 아이콘들이 숨겨지며 남는 공간을 자연스럽게 채움. 처음엔 배경 없이 텍스트만
    블루 바 위에 얹는 방식이었으나 "검색칸이 안 보인다"는 피드백으로 눈에 띄는 폼
@@ -1117,7 +1107,8 @@ button {
   gap: 6px;
   background-color: var(--color-chip-answer);
   border-radius: 8px;
-  padding: 7px 10px;
+  height: 40px;
+  padding: 0 10px;
 }
 
 .list-search-box-icon {
