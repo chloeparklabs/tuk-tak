@@ -202,7 +202,7 @@ button {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 250px;
+  min-width: 270px;
   background-color: var(--color-base);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(20, 23, 28, 0.15);
@@ -387,13 +387,13 @@ button {
 .more-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 14px 14px;
   background: none;
   border: none;
   border-radius: 8px;
   color: var(--gray-800);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -401,8 +401,8 @@ button {
 }
 
 .more-menu-item svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   color: var(--gray-600);
   flex-shrink: 0;
 }
