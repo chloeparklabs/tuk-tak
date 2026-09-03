@@ -202,7 +202,7 @@ button {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 270px;
+  min-width: 220px;
   background-color: var(--color-base);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(20, 23, 28, 0.15);
