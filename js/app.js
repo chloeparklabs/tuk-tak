@@ -610,6 +610,7 @@ const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
 const moreOpenBtn = document.getElementById('more-open-btn');
+const topbarLogoBtn = document.getElementById('topbar-logo-btn');
 const moreMenu = document.getElementById('more-menu');
 const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
 const sortOptionBtns = document.querySelectorAll('.sort-option-btn');
@@ -1745,6 +1746,12 @@ function endMiniSession() {
 }
 
 miniSessionExitBtn.addEventListener('click', endMiniSession);
+
+// 로고는 카드 화면(메인)에만 있으므로, 미니 학습 중일 때 로고를 눌러도 "종료"와
+// 동일하게 전체 덱으로 돌아가게 함(평소엔 이미 메인이라 아무 동작 없음)
+topbarLogoBtn.addEventListener('click', () => {
+  if (miniSessionActive) endMiniSession();
+});
 
 aiVariationAddBtn.addEventListener('click', () => {
   if (aiVariationSelectedIndexes.size === 0) return;

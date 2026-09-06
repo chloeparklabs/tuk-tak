@@ -175,6 +175,7 @@ button {
   /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
   letter-spacing: 0.5px;
+  cursor: pointer;
 }
 
 .topbar-more {
