@@ -176,6 +176,10 @@ button {
   color: #FFFFFF;
   letter-spacing: 0.5px;
   cursor: pointer;
+  /* 클릭 가능해지며 생긴 텍스트 선택(모바일 사전 찾기 팝업 등) 방지 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .topbar-more {
