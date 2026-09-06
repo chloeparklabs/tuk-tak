@@ -658,6 +658,7 @@ const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterSection = document.getElementById('list-filter-section');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 const listCountInfoEl = document.getElementById('list-count-info');
+const listFilterStudyBtn = document.getElementById('list-filter-study-btn');
 const variationOpenBtn = document.getElementById('variation-open-btn');
 const variationListScreen = document.getElementById('variation-list-screen');
 const variationListBackBtn = document.getElementById('variation-list-back-btn');
@@ -1094,6 +1095,15 @@ listFilterBtns.forEach((btn) => {
   });
 });
 
+// 23번: 필터(중요/미암기)로 걸러진 문장만 미니 학습으로 바로 학습하기
+listFilterStudyBtn.addEventListener('click', () => {
+  const ids = getFilteredSentences().map((s) => String(s.id));
+  if (ids.length === 0) return;
+  listScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+  startMiniSession(ids, `${FILTER_COUNT_LABELS[filterMode]}만 학습 중`);
+});
+
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
   listFilterSection.classList.toggle('hidden', selecting);
@@ -1179,6 +1189,8 @@ function renderSentenceList() {
   listCountInfoEl.textContent = searching
     ? `검색결과 ${filtered.length}개`
     : `${FILTER_COUNT_LABELS[filterMode]} ${filtered.length}개`;
+  // "전체" 필터는 어차피 평소 카드 학습과 같으므로 버튼을 노출할 필요 없음(23번)
+  listFilterStudyBtn.classList.toggle('hidden', filterMode === 'all' || filtered.length === 0);
 
   if (filtered.length === 0) {
     const emptyMsg = document.createElement('p');
@@ -1712,13 +1724,14 @@ aiVariationSelectAllBtn.addEventListener('click', () => {
 });
 
 // --- 4단계: 선택 항목 추가 + 미니 학습 시작 ---
-function startMiniSession(ids) {
+// label: 배너에 표시할 문구 접두어. 23번(필터 학습)에서는 "중요만 학습 중"처럼 구분되게 넘김
+function startMiniSession(ids, label = '미니 학습 중') {
   miniSessionActive = true;
   miniSessionIds = ids;
   currentIndex = 0;
   revealed = false;
   miniSessionBanner.classList.remove('hidden');
-  miniSessionBannerText.textContent = `미니 학습 중 · ${ids.length}개`;
+  miniSessionBannerText.textContent = `${label} · ${ids.length}개`;
   renderCard();
 }
 

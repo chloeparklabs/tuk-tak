@@ -1040,6 +1040,21 @@ button {
   text-align: center;
 }
 
+/* 필터(중요/미암기)로 걸러진 문장만 학습하기 — "전체" 필터에서는 굳이 필요 없어 숨김 (23번) */
+.list-filter-study-btn {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #FFFFFF;
+  background: var(--color-brand);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
 /* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
 .screen-back-btn.text-mode {
   width: auto;
