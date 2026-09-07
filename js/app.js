@@ -389,7 +389,7 @@ const LAST_SENTENCE_ID_KEY = 'tuktak_last_sentence_id';
 
 // 온보딩(시작 화면 설명문) — 최초 방문(플래그 없음)엔 설명문, 재방문(플래그 있음)엔 짧은 태그라인 노출
 const ONBOARDING_SEEN_KEY = 'tuktak_onboarding_seen';
-const START_INTRO_TEXT = '내게 필요한 문장만 골라서 확실하게 외우는 앱입니다. 남이 정해준 문장이 아니라 내가 쓸 문장을, 생각하지 않아도 술술 나올 때까지 반복해서 암기하세요.';
+const START_INTRO_TEXT = "내게 필요한 문장만 골라서 확실하게 외우는 앱입니다. 남이 정해준 문장이 아니라 내가 쓸 문장을, '툭' 치면 '탁' 나올 때까지 암기하세요.";
 const START_TAGLINE_TEXT = '개인화된 문장 암기 앱';
 
 const SORT_KEY = 'tuktak_sort_order';
