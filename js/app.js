@@ -387,6 +387,11 @@ function saveSentences(list) {
 // 마지막으로 보던 문장 id (앱을 껐다 켜도 이어서 시작하기 위함)
 const LAST_SENTENCE_ID_KEY = 'tuktak_last_sentence_id';
 
+// 온보딩(시작 화면 설명문) — 최초 방문(플래그 없음)엔 설명문, 재방문(플래그 있음)엔 짧은 태그라인 노출
+const ONBOARDING_SEEN_KEY = 'tuktak_onboarding_seen';
+const START_INTRO_TEXT = '내게 필요한 문장만 골라서 확실하게 외우는 앱입니다. 남이 정해준 문장이 아니라 내가 쓸 문장을, 생각하지 않아도 술술 나올 때까지 반복해서 암기하세요.';
+const START_TAGLINE_TEXT = '개인화된 문장 암기 앱';
+
 const SORT_KEY = 'tuktak_sort_order';
 const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important'];
 const DEFAULT_SORT_MODE = 'oldest'; // 기존(정렬 기능 도입 전) 순서와 동일해 설정을 건드리지 않은 사용자는 체감 변화 없음
@@ -582,6 +587,7 @@ let miniSessionIds = [];
 const startScreen = document.getElementById('start-screen');
 const cardScreen = document.getElementById('card-screen');
 const startBtn = document.getElementById('start-btn');
+const startIntroTextEl = document.getElementById('start-intro-text');
 const cardEl = document.querySelector('.card');
 const krTextEl = document.getElementById('kr-text');
 const enTextEl = document.getElementById('en-text');
@@ -838,7 +844,10 @@ function goToSentence(index) {
   renderCard();
 }
 
+startIntroTextEl.textContent = localStorage.getItem(ONBOARDING_SEEN_KEY) ? START_TAGLINE_TEXT : START_INTRO_TEXT;
+
 startBtn.addEventListener('click', () => {
+  localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
   startScreen.classList.add('hidden');
   cardScreen.classList.remove('hidden');
 
