@@ -161,9 +161,10 @@ button {
   word-break: keep-all;
 }
 
-/* 재방문 태그라인은 최초 방문 설명문보다 가벼운 톤으로 — 대비가 다소 낮아도 무방 */
+/* 재방문 태그라인은 최초 방문 설명문보다 가벼운 톤으로 — 대비가 다소 낮아도 무방.
+   --color-chip-answer(#E6F1FB)와 같은 색조(약 209°)에서 채도는 유지하고 명도만 낮춰 살짝 더 진하게 */
 .start-intro-text.start-tagline {
-  color: var(--color-chip-answer);
+  color: #AFD2F4;
 }
 
 .start-btn-fixed {
