@@ -140,7 +140,7 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 10px;
   text-align: center;
 }
 
@@ -159,6 +159,11 @@ button {
   line-height: 1.6;
   max-width: 320px;
   word-break: keep-all;
+}
+
+/* 재방문 태그라인은 최초 방문 설명문보다 가벼운 톤으로 — 대비가 다소 낮아도 무방 */
+.start-intro-text.start-tagline {
+  color: var(--color-chip-answer);
 }
 
 .start-btn-fixed {

@@ -844,7 +844,9 @@ function goToSentence(index) {
   renderCard();
 }
 
-startIntroTextEl.textContent = localStorage.getItem(ONBOARDING_SEEN_KEY) ? START_TAGLINE_TEXT : START_INTRO_TEXT;
+const isReturningVisit = !!localStorage.getItem(ONBOARDING_SEEN_KEY);
+startIntroTextEl.textContent = isReturningVisit ? START_TAGLINE_TEXT : START_INTRO_TEXT;
+startIntroTextEl.classList.toggle('start-tagline', isReturningVisit);
 
 startBtn.addEventListener('click', () => {
   localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
