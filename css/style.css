@@ -477,6 +477,14 @@ button {
   background-color: var(--gray-50);
 }
 
+/* 문장추가/문장관리/문장변형(콘텐츠 이동)과 설정/도움말(메타 이동)을 시각적으로 그룹화 —
+   부모 .more-menu의 gap(4px)에 이 여백이 더해져 그룹 사이만 간격이 더 넓어짐 */
+.more-menu-divider {
+  height: 1px;
+  background-color: var(--gray-100);
+  margin: 6px 4px;
+}
+
 /* grid의 위/아래 1fr 두 행이 항상 같은 크기로 나뉘어, 가운데(auto) 행인 영어 박스가
    한국어 문장·마킹 아이콘 바 길이와 무관하게 항상 화면(헤더~버튼바) 정중앙에 오게 됨 */
 .card {
