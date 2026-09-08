@@ -3412,3 +3412,29 @@ push 후 사용자가 폰에서 캡처한 로고("TUK TAK")가 PC에서 본 것�
 - **커밋+push 후 사용자 실기기 2차 확인 필요**(여러 기기/브라우저에서 로고·본문 텍스트가 이제 일관되게 Pretendard로 보이는지 확인) — 2차 확인 전까지 다음 작업으로 넘어가지 않음
 - 온보딩 화면 최종 사용자 실기기 확인(2026-09-07 항목, 아직 진행 중)
 - 개발자 계정 로그인/서류 심사 관련은 이전 항목들 참고(진행 중)
+
+### 추가 (같은 날, 배포 전체 404 장애 발생 및 복구 — vercel.json 신규)
+
+#### 장애 발생
+위 Pretendard 폰트 커밋(`90d3c47`) push 직후 사용자가 "404에러" 제보. 조사 결과 폰트 자체 문제가 아니라 **배포 전체가 죽은 상태**였음 — `tuk-tak-six.vercel.app`(현재 프로덕션 주소) 루트 접속 시 `index.html`조차 안 뜨고 Vercel 플랫폼 레벨 `X-Vercel-Error: NOT_FOUND` 발생. GitHub Vercel 연동 상태(`gh api .../commits/.../status`)는 "배포 성공"으로 나와 코드/빌드 오류가 아닌 것으로 추정하고 조사 이어감
+
+#### 원인 조사 (vercel CLI 로그인 후 확인)
+사용자 승인으로 `vercel login`(디바이스 코드 승인 방식)으로 직접 로그인 → `vercel link`로 로컬 연결 → `vercel project inspect tuk-tak` 실행, **"Output Directory: `public` if it exists, or `.`"** 문구 발견 — Vercel의 "Other"(정적 사이트) 프리셋 zero-config 규칙상 **프로젝트 루트에 `public/` 폴더가 있으면 그 폴더만을 배포 결과물의 루트로 인식**한다는 사실 확인. 이번 폰트 작업에서 처음으로 `public/fonts/pretendard/`를 만들면서 이 규칙이 발동 → `index.html`/`css/`/`js/` 등 프로젝트 루트 전체가 배포 결과물에서 제외되어 전 사이트 404로 이어진 것으로 최종 확인(배포 자체는 "성공"으로 뜬 이유도 이것 — 파일을 못 찾은 게 아니라 잘못된 디렉터리를 성공적으로 배포한 것). `vercel alias ls`/`vercel inspect`로 얼라이어스 자체는 정상 연결돼 있었고(`dpl_DxpzPhHEV2N4Yj6bGHHVzdbf2mo6`가 GitHub 상태 API의 target_url과 정확히 일치), 도메인 연결 문제가 아니라 순수 출력 디렉터리 오인식 문제였음이 확인됨
+
+#### 복구
+프로젝트 루트에 `vercel.json` 신규 생성 — `{ "outputDirectory": "." }`로 명시해 `public/` 폴더 존재 여부와 무관하게 항상 프로젝트 루트를 배포 결과물로 고정. 커밋(`275e342`)+push → 재배포 완료 후 확인: `https://tuk-tak-six.vercel.app/` 루트/CSS/폰트 파일 전부 200 응답, Playwright로 재검증(Pretendard 700 loaded, 콘솔 에러 없음, 스크린샷 정상) — **장애 완전 복구 확인**
+
+#### 조사 중 부가 발견 (조치 불필요, 기록만)
+- `tuk-tak.vercel.app`(짧은 기본 별칭)은 우리 프로젝트가 아니라 **완전히 다른 계정의 "Nimbus Weather" 앱**이 차지하고 있음 — Vercel `*.vercel.app` 네임스페이스가 전역 공유라 짧은 이름은 이미 다른 프로젝트가 선점한 상태. 우리 프로젝트가 `tuk-tak-six`처럼 접미사가 붙은 이유이기도 함
+- `tuk-tak-beta.vercel.app`(2026-08-29 이전 옛 계정 주소)은 여전히 접속은 되지만 그 시점 스냅샷에 멈춰 있어 이후 커밋이 전혀 반영되지 않음(더 이상 배포 연결 안 됨, 참고용으로만 살아있음)
+- 이번에 처음으로 `vercel` CLI 로그인 완료 + 로컬에 `.vercel`(프로젝트 연결 정보)·`.env.local` 생성됨 → 둘 다 `.gitignore`에 자동 추가(CLI가 자동 처리, 커밋 시 함께 반영)
+
+#### 반영
+- `vercel.json` 신규 추가(`outputDirectory: "."`)
+- `.gitignore`: `.vercel`, `.env*.local` 추가(vercel CLI 자동 처리)
+- `PROGRESS.md`: 이 기록 추가
+
+#### 다음 작업 제안 (갱신)
+- 이번 장애는 코드 결함이 아니라 배포 설정 문제였고 이미 복구+재검증까지 완료 — 별도 사용자 실기기 재확인은 필요 시에만(정상 작동 이미 서버 응답으로 확인됨)
+- 온보딩 화면 최종 사용자 실기기 확인(2026-09-07 항목, 아직 진행 중) — 이번 장애로 중단됐던 것이니 재개 필요
+- 개발자 계정 로그인/서류 심사 관련은 이전 항목들 참고(진행 중)
