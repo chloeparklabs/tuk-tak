@@ -3384,3 +3384,31 @@ push 후 사용자가 폰에서 캡처한 로고("TUK TAK")가 PC에서 본 것�
 - 사용자가 캐시 초기화 후 로고 두께 재확인 → 여전히 다르면 원인 재조사
 - Pretendard 폰트 파일 실제 추가 여부 논의(현재 시스템 폰트로 대체 중이라는 사실을 사용자가 알게 됨 — 착수 여부는 미정, 다음 세션에 논의)
 - 개발자 계정 로그인/서류 심사 관련은 위 항목들 참고(진행 중)
+
+---
+
+## 2026-09-08 (Pretendard 폰트 파일 실제 추가 — 로고 렌더링 불일치 근본 원인 해결)
+
+### 배경
+2026-09-07 세션에서 "폰에서 로고 두께가 다르게 보인다"는 제보의 원인을 브라우저 캐시로 추정했었으나, 사용자가 "로고가 512x512 아이콘 이미지 아니냐(피그마에서 만든 것)"고 재확인 요청한 것을 계기로 다시 조사 — 실제로는 시작 화면 로고가 `icons/` 폴더의 이미지가 아니라 `<p class="start-logo">TUK TAK</p>` 텍스트를 CSS로 스타일링한 것이었고, CLAUDE.md에 명시된 `font-family: 'Pretendard', ...`에도 불구하고 실제 Pretendard 웹폰트 파일(`.woff2`, `@font-face`)이 프로젝트에 전혀 없었던 것이 근본 원인으로 확인됨(`/public/fonts/pretendard/` 경로 자체가 존재하지 않았음) — 브라우저가 'Pretendard'를 못 찾고 기기별 시스템 기본 폰트로 대체 렌더링하고 있었고, 이게 기기·브라우저마다 로고 두께/모양이 달라 보이는 진짜 원인이었음
+
+### 진행 내용
+1. Pretendard 공식 배포(jsdelivr CDN, `pretendard@1.3.9`)에서 웹폰트 서브셋(`web/static/woff2`) 4개 웨이트(Regular 400/Medium 500/SemiBold 600/Bold 700, CLAUDE.md에 명시된 사용 웨이트와 일치) 다운로드 → `public/fonts/pretendard/`에 저장(각 파일 wOF2 매직바이트 확인)
+2. `css/style.css` 최상단에 `@font-face` 4개 선언 추가(`font-display: swap`), 기존 "폰트 파일 추가 전까지 시스템 폰트로 대체" 주석 제거
+3. Service Worker가 없는 구조라(사전 캐싱 대상 아님) 별도 캐시 무효화 조치 불필요 확인
+
+### Claude 1차 확인
+스크래치패드에 Node 정적 서버 + Playwright(chromium, 기존 세션에 설치돼 있던 것 재사용) 구동:
+- `curl`로 `css/style.css`·폰트 파일 경로가 실제로 200 응답하는지 확인(상대 경로 `../public/fonts/pretendard/...` 정합성 확인)
+- Playwright로 `index.html` 로드 후 `document.fonts`를 확인 — `Pretendard 700 loaded`(로고가 쓰는 굵기) 확인, 콘솔 에러 없음
+- 스크린샷으로 실제 Pretendard 볼드 서체가 로고에 적용된 것을 시각 확인(기존 시스템 폰트 대체 렌더링과 다른 형태)
+- 임시 서버·스크래치패드 파일 전부 정리 완료
+
+### 반영
+- `public/fonts/pretendard/Pretendard-{Regular,Medium,SemiBold,Bold}.woff2` 신규 추가
+- `css/style.css`: `@font-face` 선언 추가
+
+### 다음 작업 제안
+- **커밋+push 후 사용자 실기기 2차 확인 필요**(여러 기기/브라우저에서 로고·본문 텍스트가 이제 일관되게 Pretendard로 보이는지 확인) — 2차 확인 전까지 다음 작업으로 넘어가지 않음
+- 온보딩 화면 최종 사용자 실기기 확인(2026-09-07 항목, 아직 진행 중)
+- 개발자 계정 로그인/서류 심사 관련은 이전 항목들 참고(진행 중)

@@ -312,7 +312,7 @@
 
 ### 타이포그래피
 - **기본 폰트**: Pretendard
-- **폰트 파일 위치**: `/public/fonts/pretendard/` (woff2, web/static 서브셋)
+- **폰트 파일 위치**: `/public/fonts/pretendard/` (woff2, web/static 서브셋, `@font-face`로 `css/style.css` 최상단에 선언 — 2026-09-08 실제 파일 추가 완료. 그 전까지는 선언만 있고 파일이 없어 기기별 시스템 폰트로 대체 렌더링되고 있었고, 이게 로고 등 텍스트가 기기마다 다르게 보이던 근본 원인이었음)
 - **사용 웨이트**: 400 Regular · 500 Medium · 600 SemiBold · 700 Bold
 - **font-family 선언**: `'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif`
 

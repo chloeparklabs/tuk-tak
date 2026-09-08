@@ -72,6 +72,38 @@
 }
 
 /* ==========================================================================
+   폰트 (Pretendard 자체 호스팅 — 기기별 시스템 폰트 대체 렌더링 방지)
+   ========================================================================== */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../public/fonts/pretendard/Pretendard-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../public/fonts/pretendard/Pretendard-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../public/fonts/pretendard/Pretendard-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../public/fonts/pretendard/Pretendard-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
    기본 리셋
    ========================================================================== */
 * {
@@ -85,7 +117,6 @@ html, body {
 }
 
 body {
-  /* Pretendard 폰트 파일 추가 전까지 시스템 폰트로 대체 */
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--color-surface);
   color: var(--color-text-primary);
