@@ -988,8 +988,8 @@ button {
 .modal-btn {
   flex: none;
   width: 100%;
-  padding: 12px 0;
-  font-size: 15px;
+  padding: 16px 0;
+  font-size: 18px;
 }
 
 .modal-btn-submit {
@@ -1460,8 +1460,9 @@ button {
   align-items: center;
   gap: 10px;
   justify-content: flex-start;
-  padding: 14px 16px;
+  padding: 16px;
   margin-bottom: 10px;
+  font-size: 18px;
 }
 
 .settings-action-btn svg {
