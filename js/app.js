@@ -636,7 +636,7 @@ const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const listBulkDeleteFooterEl = document.getElementById('list-bulk-delete-footer');
 const sentenceListEl = document.getElementById('sentence-list');
 const settingsOpenBtn = document.getElementById('settings-open-btn');
-const restartOpenBtn = document.getElementById('restart-open-btn');
+const restartSettingsBtn = document.getElementById('restart-settings-btn');
 const helpOpenBtn = document.getElementById('help-open-btn');
 const helpScreen = document.getElementById('help-screen');
 const helpBackBtn = document.getElementById('help-back-btn');
@@ -1897,6 +1897,11 @@ resetOpenBtn.addEventListener('click', () => {
   alert('문장을 모두 삭제했습니다.');
 });
 
+restartSettingsBtn.addEventListener('click', () => {
+  goToSentence(0);
+  goToCardScreen();
+});
+
 // ==========================================================================
 // 클라우드 백업/동기화 (18번, Google 로그인 + Firestore)
 // 실시간 동기화가 아니라 "지금 백업"/"클라우드에서 복원" 수동 버튼 방식 —
@@ -2159,12 +2164,8 @@ deleteDefaultBtn.addEventListener('click', () => {
 });
 
 // ==========================================================================
-// 상단바 더보기 메뉴 (문장추가 / 문장관리 / 설정 / 처음부터)
+// 상단바 더보기 메뉴 (문장추가 / 문장관리 / 설정)
 // ==========================================================================
-restartOpenBtn.addEventListener('click', () => {
-  goToSentence(0);
-});
-
 moreOpenBtn.addEventListener('click', () => {
   moreMenu.classList.toggle('hidden');
 });
