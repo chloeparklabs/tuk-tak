@@ -124,6 +124,12 @@
       </button>
     </header>
     <div id="list-filter-section" class="list-filter-section">
+      <p class="list-note-intro">문장을 쭉 훑어보며 노트처럼 외워도 좋아요</p>
+      <div id="list-display-mode-bar" class="list-display-mode-bar" role="radiogroup" aria-label="문장 표시 방식">
+        <button id="list-display-both-btn" class="list-display-mode-btn active" type="button" role="radio" aria-checked="true" data-display="both">전체 보기</button>
+        <button id="list-display-kr-btn" class="list-display-mode-btn" type="button" role="radio" aria-checked="false" data-display="kr">한글만</button>
+        <button id="list-display-en-btn" class="list-display-mode-btn" type="button" role="radio" aria-checked="false" data-display="en">영어만</button>
+      </div>
       <div id="list-filter-bar" class="list-filter-bar">
         <button class="list-filter-btn active" type="button" data-filter="all">전체</button>
         <button class="list-filter-btn" type="button" data-filter="important">중요</button>
@@ -467,6 +473,7 @@
         <li>항목을 탭하면 수정, 길게 누르면 해당 문장만 삭제 확인</li>
         <li>상단 "선택" 버튼으로 여러 문장을 체크해 한 번에 삭제 가능 (최소 1개는 항상 남아 있어야 함)</li>
         <li><strong>필터</strong>: 전체 / 중요 / 미암기 탭으로 조건에 맞는 문장만 보기. 탭 아래에 현재 보고 있는 문장 개수도 함께 표시됨</li>
+        <li>카드로 한 문장씩 넘기지 않고, 이 화면에서 쭉 스크롤하며 노트처럼 훑어보는 것도 좋은 학습 방법. "전체 보기 / 한글만 / 영어만" 버튼으로 원하는 언어만 볼 수 있고, 각 문장의 스피커 아이콘으로 발음도 들을 수 있음</li>
       </ul>
           </div>
         </div>

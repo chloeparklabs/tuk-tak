@@ -3689,3 +3689,48 @@ Playwright로 각 아이콘 SVG의 `getBBox()`(실제 그림이 24×24 viewBox �
 
 #### 반영
 - `CLAUDE.md`: 24번 체크박스 완료 처리, Claude 1차 확인 항목 뒤에 사용자 2차 확인 완료 문구 추가, 최상단 브리핑 "완성됨"/"착수 중" 목록 갱신
+
+## 2026-09-11 (계속) — 문장관리 노트형 학습 지원 신규 (체크리스트 25번)
+
+### 배경
+다른 앱 사용자 후기 중 "플래시카드보다 노트(목록) 형태가 좋다"는 리뷰를 본 사용자가 "툭탁도 두 방식을 선택하게 만들 수 있나"는 질문으로 시작. Claude가 코드를 확인해 **문장관리 화면이 이미 한/영 텍스트를 동시에 보여주는 목록이라 사실상 노트형 학습이 가능한 구조**임을 발견 — 다만 `white-space:nowrap`+생략(`...`)으로 문장이 잘리고 있어 실제로는 못 쓰는 상태였음. "완전히 새 토글 화면을 만들기"(어려움) 대신 "기존 문장관리를 노트형으로도 쓸 수 있게 다듬기"(1번 안, 거의 공짜)로 방향을 좁혀 논의.
+
+### 사용자가 정리한 5가지 요구사항 + Claude 피드백 반영
+1. 노트형 학습 안내를 도움말+문장관리 화면 상단에 상시 노출
+2. 목록 글자도 설정의 글자크기 적용
+3. 문장이 잘리지 않게 — 필요하면 아이콘을 아래로 내려서라도 전체 문장 노출
+4. 한글만 보기/영어만 보기 버튼 신규
+5. 여기에도 스피커 아이콘으로 발음 듣기
+
+Claude가 각 항목의 구현 난이도/트레이드오프를 짚어준 뒤 사용자가 세부안 확정: (1)상시노출 (2)한/영 같은 크기 (3)"항상 2단 구조"(A안, 텍스트 길이와 무관하게 아이콘이 늘 아래 줄 — 매번 모양이 바뀌는 B안보다 일관성 우선) (4)토글 위치는 목록 맨 위, 선택 상태는 재방문해도 "기억"(필터처럼 매번 리셋 안 함) (5)스피커 추가는 그대로 승인. **"시작"으로 착수 승인**.
+
+### 구현 내용
+- **상시 안내문**: `#list-filter-section` 맨 위에 `.list-note-intro`("문장을 쭉 훑어보며 노트처럼 외워도 좋아요") 신규, 도움말 "문장 관리하기" 섹션에도 같은 취지 한 줄 추가
+- **표시 방식 3단 토글**: `#list-display-mode-bar`(전체 보기/한글만/영어만) 신규 — `.mode-select`(화면모드)와 시각적으로 동일하지만, JS의 `modeSelectBtns = document.querySelectorAll('.mode-select-btn')`가 화면모드 로직 전용이라 클래스를 그대로 재사용하면 테마 전환 로직과 충돌 위험 → 완전히 별도 클래스(`.list-display-mode-btn`)로 새로 작성. 선택 상태는 `tuktak_list_display_mode`로 localStorage 저장(필터는 매번 "전체"로 리셋되지만, 표시 방식은 개인 취향이라 유지되게 함). `applyListDisplayMode()`가 항목을 다시 그리지 않고 `#sentence-list`에 `hide-kr`/`hide-en` 클래스만 토글해 즉시 반영
+- **텍스트 줄바꿈 허용(핵심)**: `.sentence-list-kr`/`.sentence-list-en`에서 `white-space:nowrap`+`text-overflow:ellipsis` 제거, 폰트 크기도 고정값(15px/13px)에서 카드 화면과 같은 `var(--kr-font-size)`로 통일(한/영 동일 크기)
+- **2단 레이아웃(A안)**: `.sentence-list-item`을 `flex-direction: column`으로 변경해 텍스트(전체 폭, 줄바꿈 허용)가 위, 아이콘 줄(`align-self: flex-end`)이 항상 그 아래에 오도록 고정. 선택(삭제) 모드의 체크박스+텍스트는 `.sentence-list-select-row`(가로 flex)로 따로 묶어 한 줄 유지
+  - **회귀 방지**: `.sentence-list-item`/`.sentence-checkbox`/`.sentence-list-text` 클래스를 AI 변형 미리보기 화면(15-2, `renderAiVariationPreview()`)도 그대로 재사용하고 있어서, 레이아웃을 바꾸면 그 화면의 체크박스+텍스트가 세로로 어긋날 뻔했음 — 그 화면의 렌더링 코드에도 같은 `.sentence-list-select-row` wrapper를 적용해 회귀 방지(발견 즉시 함께 수정)
+- **스피커 아이콘**: 카드 화면(24번)의 `speakEnglish()`를 그대로 재사용하는 `.sentence-speaker-btn` 추가, 별표·깃발과 같은 "문장과 상호작용" 그룹(구분선 앞)에 배치 — `☆ ⚑ 🔊 | ✦(AI변형)`. 24번에서 이미 겪은 "lucide volume-2 아이콘은 그림 높이가 짧아 작아 보인다"는 문제를 사용자 재신고 없이 선제적으로 반영해 18px→21px로 개별 확대
+
+### Claude 1차 확인
+스크래치패드 Playwright(임시 정적 서버, 기존 설치된 playwright 재사용):
+- 매우 긴 한국어/영어 문장을 추가한 뒤 문장관리에서 `white-space: normal` + `scrollHeight === clientHeight`(클리핑 없음)로 전체 문장이 잘리지 않고 여러 줄로 보이는 것 확인
+- 해당 항목 스피커 아이콘 탭 → `speechSynthesis.speak` 스텁으로 정확한 문장 텍스트 호출 확인
+- "영어만" 선택 시 한국어 숨김 + `localStorage` 저장 확인, "한글만" 선택 시 영어 숨김 확인
+- 선택(삭제) 모드에서 체크박스+텍스트가 한 줄로 유지되는 것(`.sentence-list-select-row` flexDirection: row) 확인
+- **AI 변형 미리보기 화면(15-2) 별도 재확인**: 문장 하나를 골라 AI 변형 프롬프트→붙여넣기→미리보기까지 실제로 진행해, 공유 클래스 변경에도 체크박스+텍스트 배치가 깨지지 않는 것 스크린샷으로 확인(회귀 없음)
+- 360px 라이트/다크 스크린샷으로 안내문·토글·2단 아이콘 레이아웃 확인, 콘솔 에러 없음
+- 스크래치패드 정리 완료
+
+### 반영
+- `index.html`: 문장관리 화면에 안내문+표시방식 토글 마크업 추가, 도움말에 노트형 학습 안내 문구 한 줄 추가
+- `css/style.css`: `.list-note-intro`/`.list-display-mode-bar`/`.list-display-mode-btn`/`#sentence-list.hide-kr`/`.hide-en` 신규, `.sentence-list-item`/`.sentence-list-select-row`/`.sentence-list-actions`/`.sentence-list-kr`/`.sentence-list-en`/`.sentence-speaker-btn` 수정
+- `js/app.js`: `SPEAKER_ICON` 상수, `LIST_DISPLAY_MODE_KEY`/`listDisplayMode` 상태, `applyListDisplayMode()`, `renderSentenceList()`/`renderAiVariationPreview()` 구조 변경, 클릭/롱프레스 핸들러에 스피커 아이콘 예외처리 추가
+- `CLAUDE.md`: 체크리스트 25번 신규, 최상단 브리핑, "문장관리" 메뉴 정리, "문장관리 필터 탭"/"문장관리 항목 레이아웃" UI 레이아웃 규칙 갱신
+
+### 다음 작업 제안
+- **사용자 실기기 2차 확인 필요**(안내문·토글·긴 문장 줄바꿈·스피커 아이콘이 실기기에서 잘 보이고 잘 동작하는지, AI 변형 미리보기 화면도 정상인지) — 2차 확인 전까지 다음 기능 단계로 넘어가지 않음
+- "삭제 시 전체선택" 메뉴는 이번 세션에 착수하지 않고 다음 작업 아이디어로만 기록(사용자가 명시적으로 보류 요청) — 문장관리 선택 모드에서 하나씩 체크하기 번거로울 때를 위한 전체선택 버튼
+- 테스터 12명(지인 등 Gmail 계정) 섭외를 앱 완성 전부터 미리 준비해두면 출시 일정 단축 가능
+- `reference/docs/PC_빠른입력_점검_2026-09-08.docx` 검토 후 필요 시 커밋 + 19번 유료 범위 최종 확정
+- 온보딩 화면 최종 사용자 실기기 확인(2026-09-07 항목, 아직 진행 중)

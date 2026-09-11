@@ -1031,6 +1031,65 @@ button {
 }
 
 /* ==========================================================================
+   문장관리 — 노트형 학습 안내 + 표시 방식 토글 (25번, 2026-09-11)
+   ========================================================================== */
+/* 문장변형 목록(.variation-list-intro)과 같은 패턴 — 항상 노출(사용자가 "상시노출" 선택) */
+.list-note-intro {
+  padding: 12px 20px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  text-align: center;
+}
+
+[data-theme="dark"] .list-note-intro {
+  color: var(--color-text-primary);
+}
+
+/* 전체 보기/한글만/영어만 — .mode-select(화면모드)와 시각적으로 동일한 3단 세그먼트지만,
+   modeSelectBtns 전역 셀렉터(.mode-select-btn)와 겹치면 화면모드 로직이 오작동하므로
+   반드시 별도 클래스로 유지할 것 */
+.list-display-mode-bar {
+  display: flex;
+  margin: 10px 20px 0;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.list-display-mode-btn {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--gray-600);
+  background-color: var(--color-base);
+  border: none;
+  cursor: pointer;
+}
+
+.list-display-mode-btn:not(:last-child) {
+  border-right: 1.5px solid var(--gray-200);
+}
+
+.list-display-mode-btn.active {
+  background-color: var(--color-brand);
+  /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
+}
+
+/* 표시 방식에 따라 한국어/영어 텍스트를 통째로 숨김(항목 단위가 아니라 목록 컨테이너
+   단위로 한 번만 토글 — 매번 재렌더링할 필요 없음) */
+#sentence-list.hide-kr .sentence-list-kr {
+  display: none;
+}
+
+#sentence-list.hide-en .sentence-list-en {
+  display: none;
+}
+
+/* ==========================================================================
    문장관리 필터 탭 (전체 / 중요 / 미암기)
    ========================================================================== */
 .list-filter-bar {
@@ -1222,11 +1281,14 @@ button {
   gap: 10px;
 }
 
+/* 텍스트 줄(전체 폭, 줄바꿈 허용) 위 / 아이콘 줄 아래 — 항상 2단 구조(25번, 2026-09-11).
+   문장이 길어져도 아이콘 자리 확보를 위해 텍스트 폭을 줄이지 않고, 아이콘이 아래 줄로
+   내려가게 해 문장이 잘리지 않도록 함(사용자가 "아이콘을 아래로 내리더라도 글이 끝까지
+   보이게" 요청) */
 .sentence-list-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   padding: 14px 16px;
   background-color: var(--gray-50);
   border-radius: 12px;
@@ -1239,6 +1301,14 @@ button {
 .sentence-list-item.checked {
   background-color: var(--gray-100);
   border-color: var(--color-brand);
+}
+
+/* 선택 모드에서만 쓰는 체크박스+텍스트 한 줄 — 체크박스는 첫 줄 텍스트와 나란히
+   맞추기 위해 상단 정렬(문장이 여러 줄이어도 체크박스가 세로 중앙으로 치우치지 않음) */
+.sentence-list-select-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .sentence-checkbox {
@@ -1289,21 +1359,21 @@ button {
   border-radius: 999px;
 }
 
+/* 25번(2026-09-11): 고정 크기(15px/13px)+한 줄 생략(...) 대신, 카드 화면과 같은
+   글자크기 설정(--kr-font-size)을 그대로 따르고 문장 전체가 여러 줄로 보이게 변경 —
+   "노트처럼 훑어보며 외우기"엔 문장이 잘리면 안 되고, 글자 크기도 조절 가능해야 함.
+   한국어/영어를 같은 크기로 통일(15-1 문장변형 상세 화면과 같은 결정) */
 .sentence-list-kr {
-  font-size: 15px;
+  font-size: var(--kr-font-size);
   font-weight: 600;
   color: var(--color-text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .sentence-list-en {
-  font-size: 13px;
+  font-size: var(--kr-font-size);
   color: var(--color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: keep-all;
 }
 
 .sentence-list-empty-msg {
@@ -1313,17 +1383,21 @@ button {
   color: var(--color-text-secondary);
 }
 
+/* 텍스트 줄 아래 별도 줄로 이동(25번, 2026-09-11) — 더 이상 텍스트와 폭을 다투지
+   않으므로 오른쪽 정렬만 유지(align-self: flex-end, 부모가 flex-column으로 바뀜) */
 .sentence-list-actions {
   display: flex;
   align-items: center;
+  align-self: flex-end;
   gap: 2px;
   flex-shrink: 0;
 }
 
-/* 별/깃발/AI 아이콘 3개가 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
-   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용) */
+/* 별/깃발/스피커/AI 아이콘이 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
+   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용, 2026-09-11 스피커 추가) */
 .sentence-star-btn,
 .sentence-unfamiliar-btn,
+.sentence-speaker-btn,
 .sentence-ai-btn {
   display: flex;
   align-items: center;
@@ -1343,6 +1417,14 @@ button {
 .sentence-ai-btn svg {
   width: 18px;
   height: 18px;
+}
+
+/* lucide의 volume-2 아이콘은 24x24 안에서 다른 아이콘보다 그림이 짧게 그려져 있어
+   같은 크기(18px)로 두면 유독 작아 보임(카드 화면 24번에서 이미 확인된 문제,
+   같은 비율(약 1.2배)로 이 목록의 스피커 아이콘에도 선제 적용) */
+.sentence-speaker-btn svg {
+  width: 21px;
+  height: 21px;
 }
 
 .sentence-star-btn.active,

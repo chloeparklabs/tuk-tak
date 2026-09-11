@@ -669,6 +669,7 @@ const listFilterSection = document.getElementById('list-filter-section');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 const listCountInfoEl = document.getElementById('list-count-info');
 const listFilterStudyBtn = document.getElementById('list-filter-study-btn');
+const listDisplayModeBtns = document.querySelectorAll('.list-display-mode-btn');
 const variationOpenBtn = document.getElementById('variation-open-btn');
 const variationListScreen = document.getElementById('variation-list-screen');
 const variationListBackBtn = document.getElementById('variation-list-back-btn');
@@ -1016,6 +1017,8 @@ const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="current
 // 문장관리 목록 항목의 "AI로 변형하기" 아이콘(sparkles) — 15-2, 별표/깃발과 달리 즉시 토글이 아니라
 // 새 화면(프롬프트 생성)으로 이동하는 무거운 동작이라 시각적으로 확실히 구분되는 모양을 사용
 const AI_VARIATION_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
+// 문장관리 목록 항목의 "발음 듣기" 아이콘(25번) — 카드 화면(24번)의 speakEnglish()를 그대로 재사용
+const SPEAKER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>';
 
 let selecting = false;
 let selectedIds = new Set();
@@ -1024,6 +1027,11 @@ let longPressFiredId = null;
 let filterMode = 'all';
 let searching = false;
 let searchQuery = '';
+
+// 문장관리 노트형 학습(25번) — 전체보기/한글만/영어만 표시 방식. 필터(전체/중요/미암기)와
+// 달리 재방문해도 유지되는 개인 취향이라 localStorage에 저장
+const LIST_DISPLAY_MODE_KEY = 'tuktak_list_display_mode';
+let listDisplayMode = localStorage.getItem(LIST_DISPLAY_MODE_KEY) || 'both';
 
 // 정렬은 그대로 적용한 뒤, 필터 조건에 안 맞는 문장만 걸러냄 (정렬·필터는 독립적)
 // 검색 중일 때는 filterMode가 항상 'all'로 강제되므로(아래 enterSearchMode) 검색어
@@ -1055,6 +1063,28 @@ listFilterBtns.forEach((btn) => {
     renderSentenceList();
   });
 });
+
+// 25번: 전체 보기/한글만/영어만 — 항목을 다시 그리지 않고 목록 컨테이너에 클래스만
+// 토글(hide-kr/hide-en)해 즉시 반영. 필터와 달리 재방문해도 유지되는 개인 취향
+function applyListDisplayMode() {
+  listDisplayModeBtns.forEach((btn) => {
+    const isActive = btn.dataset.display === listDisplayMode;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-checked', String(isActive));
+  });
+  sentenceListEl.classList.toggle('hide-kr', listDisplayMode === 'en');
+  sentenceListEl.classList.toggle('hide-en', listDisplayMode === 'kr');
+}
+
+listDisplayModeBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    listDisplayMode = btn.dataset.display;
+    localStorage.setItem(LIST_DISPLAY_MODE_KEY, listDisplayMode);
+    applyListDisplayMode();
+  });
+});
+
+applyListDisplayMode();
 
 // 23번: 필터(중요/미암기)로 걸러진 문장만 미니 학습으로 바로 학습하기
 listFilterStudyBtn.addEventListener('click', () => {
@@ -1167,13 +1197,6 @@ function renderSentenceList() {
     item.className = 'sentence-list-item' + (selecting && selectedIds.has(id) ? ' checked' : '');
     item.dataset.id = id;
 
-    if (selecting) {
-      const checkbox = document.createElement('span');
-      checkbox.className = 'sentence-checkbox';
-      checkbox.innerHTML = LIST_CHECK_ICON;
-      item.appendChild(checkbox);
-    }
-
     const textWrap = document.createElement('div');
     textWrap.className = 'sentence-list-text';
 
@@ -1194,9 +1217,23 @@ function renderSentenceList() {
 
     textWrap.appendChild(krEl);
     textWrap.appendChild(enEl);
-    item.appendChild(textWrap);
 
-    if (!selecting) {
+    if (selecting) {
+      // 25번(2026-09-11)으로 텍스트가 여러 줄이 될 수 있어, 체크박스+텍스트를
+      // 한 줄로 묶어 상단 정렬(.sentence-list-select-row)
+      const selectRow = document.createElement('div');
+      selectRow.className = 'sentence-list-select-row';
+
+      const checkbox = document.createElement('span');
+      checkbox.className = 'sentence-checkbox';
+      checkbox.innerHTML = LIST_CHECK_ICON;
+
+      selectRow.appendChild(checkbox);
+      selectRow.appendChild(textWrap);
+      item.appendChild(selectRow);
+    } else {
+      item.appendChild(textWrap);
+
       const actions = document.createElement('div');
       actions.className = 'sentence-list-actions';
 
@@ -1214,6 +1251,14 @@ function renderSentenceList() {
       unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
       unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
 
+      // 25번: 발음 듣기(카드 화면 24번의 speakEnglish() 재사용) — 별표/깃발처럼
+      // 문장 자체와 상호작용하는 성격이라 구분선 앞(토글 그룹)에 배치
+      const speakerBtn = document.createElement('button');
+      speakerBtn.type = 'button';
+      speakerBtn.className = 'sentence-speaker-btn';
+      speakerBtn.setAttribute('aria-label', '발음 듣기');
+      speakerBtn.innerHTML = SPEAKER_ICON;
+
       const divider = document.createElement('span');
       divider.className = 'sentence-list-actions-divider';
 
@@ -1225,6 +1270,7 @@ function renderSentenceList() {
 
       actions.appendChild(starBtn);
       actions.appendChild(unfamiliarBtn);
+      actions.appendChild(speakerBtn);
       actions.appendChild(divider);
       actions.appendChild(aiBtn);
       item.appendChild(actions);
@@ -1306,6 +1352,12 @@ sentenceListEl.addEventListener('click', (e) => {
     return;
   }
 
+  if (e.target.closest('.sentence-speaker-btn')) {
+    const sentence = sentences.find((s) => String(s.id) === id);
+    if (sentence) speakEnglish(sentence.en);
+    return;
+  }
+
   if (selecting) {
     if (selectedIds.has(id)) {
       selectedIds.delete(id);
@@ -1326,7 +1378,7 @@ sentenceListEl.addEventListener('pointerdown', (e) => {
   if (selecting) return;
   const item = e.target.closest('.sentence-list-item');
   if (!item) return;
-  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn') || e.target.closest('.sentence-ai-btn')) return;
+  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn') || e.target.closest('.sentence-ai-btn') || e.target.closest('.sentence-speaker-btn')) return;
 
   const id = item.dataset.id;
   clearTimeout(longPressTimer);
@@ -1634,10 +1686,15 @@ function renderAiVariationPreview() {
     el.className = checked ? 'sentence-list-item checked' : 'sentence-list-item';
     el.dataset.index = String(index);
 
+    // .sentence-list-item이 25번(문장관리 노트형 학습)에서 flex-column으로 바뀌어
+    // 체크박스+텍스트를 한 줄로 유지하려면 .sentence-list-select-row로 감싸야 함
+    const selectRow = document.createElement('div');
+    selectRow.className = 'sentence-list-select-row';
+
     const checkbox = document.createElement('span');
     checkbox.className = 'sentence-checkbox';
     checkbox.innerHTML = LIST_CHECK_ICON;
-    el.appendChild(checkbox);
+    selectRow.appendChild(checkbox);
 
     const textWrap = document.createElement('div');
     textWrap.className = 'sentence-list-text';
@@ -1652,7 +1709,8 @@ function renderAiVariationPreview() {
 
     textWrap.appendChild(krEl);
     textWrap.appendChild(enEl);
-    el.appendChild(textWrap);
+    selectRow.appendChild(textWrap);
+    el.appendChild(selectRow);
 
     aiVariationPreviewListEl.appendChild(el);
   });
