@@ -1031,9 +1031,10 @@ button {
 }
 
 /* ==========================================================================
-   문장관리 — 노트형 학습 안내 + 표시 방식 토글 (25번, 2026-09-11)
+   노트형 학습 화면 — 안내 + 표시 방식 토글 (25번, 2026-09-11)
+   문장관리(관리용, 원래 모습 유지)와 완전히 분리된 화면에서 사용
    ========================================================================== */
-/* 문장변형 목록(.variation-list-intro)과 같은 패턴 — 항상 노출(사용자가 "상시노출" 선택) */
+/* 문장변형 목록(.variation-list-intro)과 같은 패턴 — 항상 노출 */
 .list-note-intro {
   padding: 12px 20px 0;
   font-size: 14px;
@@ -1081,12 +1082,83 @@ button {
 
 /* 표시 방식에 따라 한국어/영어 텍스트를 통째로 숨김(항목 단위가 아니라 목록 컨테이너
    단위로 한 번만 토글 — 매번 재렌더링할 필요 없음) */
-#sentence-list.hide-kr .sentence-list-kr {
+#note-study-list.hide-kr .note-study-kr {
   display: none;
 }
 
-#sentence-list.hide-en .sentence-list-en {
+#note-study-list.hide-en .note-study-en {
   display: none;
+}
+
+/* display:flex를 쓰지 않음 — 세로 flex 컨테이너로 만들면 자식인 .list-display-mode-bar
+   (overflow:hidden 있음)가 목록이 길어 내용이 넘칠 때 flex-shrink로 거의 0px까지
+   찌그러지는 버그가 있었음(2026-09-11 발견, overflow가 hidden/auto/scroll인 flex
+   아이템은 자동 최소 크기가 content 기준이 아니라 0이 되는 flexbox 스펙 때문).
+   일반 블록 흐름으로 두면 이 문제 자체가 발생하지 않음(#list-filter-section과 동일) */
+.note-study-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.note-study-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* 관리용 아이콘(별표/깃발/AI/체크박스) 전혀 없이 스피커 하나만 — 순수 읽기 화면 */
+.note-study-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--gray-50);
+  border-radius: 12px;
+}
+
+.note-study-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.note-study-kr {
+  font-size: var(--kr-font-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  word-break: keep-all;
+}
+
+.note-study-en {
+  font-size: var(--kr-font-size);
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+/* 이 화면의 유일한 아이콘 — 관리 아이콘과 성격이 달라(암기 보조) 작고 은은하게 */
+.note-study-speaker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--gray-500);
+  cursor: pointer;
+}
+
+/* lucide volume-2 아이콘의 그림 높이가 짧은 문제(24번에서 확인) — 여기서도 동일 보정 */
+.note-study-speaker-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ==========================================================================
@@ -1137,10 +1209,19 @@ button {
   text-align: center;
 }
 
-/* 필터(중요/미암기)로 걸러진 문장만 학습하기 — "전체" 필터에서는 굳이 필요 없어 숨김 (23번) */
+/* 필터(중요/미암기)로 걸러진 문장만 학습하기(23번) + 노트형 학습 진입(25번) —
+   "전체" 필터에서는 플래시카드 버튼만 숨기고, 노트형 학습 버튼은 항상 노출(문장이 있으면).
+   두 버튼 라벨이 길어(예: "이 조건으로 플래시카드 학습") 옆으로 나란히 두면 좁은 화면에서
+   넘칠 수 있어 세로로 쌓음(2026-09-11) */
+.list-study-entry-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 20px 0;
+}
+
 .list-filter-study-btn {
-  display: block;
-  margin: 10px auto 0;
+  width: 100%;
   padding: 8px 18px;
   font-size: 13px;
   font-weight: 600;
@@ -1150,6 +1231,13 @@ button {
   border: none;
   border-radius: 999px;
   cursor: pointer;
+}
+
+/* 플래시카드 학습(솔리드)과 시각적으로 구분되는 보조 액션 — 아웃라인 */
+.list-note-study-btn {
+  color: var(--color-brand);
+  background: none;
+  border: 1.5px solid var(--color-brand);
 }
 
 /* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
@@ -1281,14 +1369,11 @@ button {
   gap: 10px;
 }
 
-/* 텍스트 줄(전체 폭, 줄바꿈 허용) 위 / 아이콘 줄 아래 — 항상 2단 구조(25번, 2026-09-11).
-   문장이 길어져도 아이콘 자리 확보를 위해 텍스트 폭을 줄이지 않고, 아이콘이 아래 줄로
-   내려가게 해 문장이 잘리지 않도록 함(사용자가 "아이콘을 아래로 내리더라도 글이 끝까지
-   보이게" 요청) */
 .sentence-list-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 14px 16px;
   background-color: var(--gray-50);
   border-radius: 12px;
@@ -1301,14 +1386,6 @@ button {
 .sentence-list-item.checked {
   background-color: var(--gray-100);
   border-color: var(--color-brand);
-}
-
-/* 선택 모드에서만 쓰는 체크박스+텍스트 한 줄 — 체크박스는 첫 줄 텍스트와 나란히
-   맞추기 위해 상단 정렬(문장이 여러 줄이어도 체크박스가 세로 중앙으로 치우치지 않음) */
-.sentence-list-select-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
 }
 
 .sentence-checkbox {
@@ -1359,21 +1436,21 @@ button {
   border-radius: 999px;
 }
 
-/* 25번(2026-09-11): 고정 크기(15px/13px)+한 줄 생략(...) 대신, 카드 화면과 같은
-   글자크기 설정(--kr-font-size)을 그대로 따르고 문장 전체가 여러 줄로 보이게 변경 —
-   "노트처럼 훑어보며 외우기"엔 문장이 잘리면 안 되고, 글자 크기도 조절 가능해야 함.
-   한국어/영어를 같은 크기로 통일(15-1 문장변형 상세 화면과 같은 결정) */
 .sentence-list-kr {
-  font-size: var(--kr-font-size);
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
-  word-break: keep-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sentence-list-en {
-  font-size: var(--kr-font-size);
+  font-size: 13px;
   color: var(--color-text-secondary);
-  word-break: keep-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sentence-list-empty-msg {
@@ -1383,21 +1460,17 @@ button {
   color: var(--color-text-secondary);
 }
 
-/* 텍스트 줄 아래 별도 줄로 이동(25번, 2026-09-11) — 더 이상 텍스트와 폭을 다투지
-   않으므로 오른쪽 정렬만 유지(align-self: flex-end, 부모가 flex-column으로 바뀜) */
 .sentence-list-actions {
   display: flex;
   align-items: center;
-  align-self: flex-end;
   gap: 2px;
   flex-shrink: 0;
 }
 
-/* 별/깃발/스피커/AI 아이콘이 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
-   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용, 2026-09-11 스피커 추가) */
+/* 별/깃발/AI 아이콘 3개가 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
+   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용) */
 .sentence-star-btn,
 .sentence-unfamiliar-btn,
-.sentence-speaker-btn,
 .sentence-ai-btn {
   display: flex;
   align-items: center;
@@ -1417,14 +1490,6 @@ button {
 .sentence-ai-btn svg {
   width: 18px;
   height: 18px;
-}
-
-/* lucide의 volume-2 아이콘은 24x24 안에서 다른 아이콘보다 그림이 짧게 그려져 있어
-   같은 크기(18px)로 두면 유독 작아 보임(카드 화면 24번에서 이미 확인된 문제,
-   같은 비율(약 1.2배)로 이 목록의 스피커 아이콘에도 선제 적용) */
-.sentence-speaker-btn svg {
-  width: 21px;
-  height: 21px;
 }
 
 .sentence-star-btn.active,
