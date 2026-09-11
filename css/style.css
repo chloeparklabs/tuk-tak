@@ -555,8 +555,10 @@ button {
   align-items: center;
   justify-content: center;
   /* 정답 발음 듣기(24번) 아이콘 추가로 5개+구분선이 된 뒤 좁은 화면에서 넘치지 않도록
-     간격을 20px→14px로 축소(2026-09-11, 아래 .card-mark-btn 크기 축소와 함께 적용) */
-  gap: 14px;
+     간격을 20px→16px로 소폭 축소(2026-09-11). 아이콘 자체 크기(44px)는 그대로 유지 —
+     #card-screen/.card의 grid-template-columns: minmax(0, 1fr) 수정(아래 #card-screen
+     주석 참고) 덕분에 이 정도로 폭이 늘어도 화면 전체가 밀리지 않는 것을 320px까지 확인 */
+  gap: 16px;
   /* 영어 박스 테두리에서 정확히 40px 떨어지도록 함 */
   margin-top: 40px;
 }
@@ -565,10 +567,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 아이콘이 4개(44px)에서 5개+구분선으로 늘어나며 좁은 화면에서 폭이 넘쳐
-     화면 전체가 가로로 밀리는 문제가 있어 44px→40px로 축소(2026-09-11) */
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   border-radius: 50%;
@@ -577,8 +577,8 @@ button {
 }
 
 .card-mark-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .card-mark-btn.active {
