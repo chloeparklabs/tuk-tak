@@ -82,6 +82,9 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
         </button>
         <span class="card-mark-divider"></span>
+        <button id="card-speaker-btn" class="card-mark-btn" type="button" aria-label="정답 발음 듣기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>
+        </button>
         <button id="card-edit-btn" class="card-mark-btn" type="button" aria-label="문장 수정">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .622.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
         </button>
@@ -254,6 +257,13 @@
           <button id="mode-light-btn" class="mode-select-btn" type="button" role="radio" data-mode="light">라이트</button>
           <button id="mode-dark-btn" class="mode-select-btn" type="button" role="radio" data-mode="dark">다크</button>
         </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-row-label">발음 자동 재생</span>
+        <button id="auto-play-toggle-btn" class="settings-toggle" type="button" role="switch" aria-checked="false" aria-label="발음 자동 재생">
+          <span class="settings-toggle-thumb"></span>
+        </button>
       </div>
 
       <div class="settings-row settings-row-fontsize">
@@ -530,20 +540,20 @@
           <textarea id="add-kr-input" class="add-form-textarea" placeholder="예) 오늘 날씨가 어때?"></textarea>
         </div>
         <div class="add-form-field">
-          <label class="add-form-field-label" for="add-en-input">영어</label>
+          <label class="add-form-field-label" for="add-en-input">학습할 언어</label>
           <textarea id="add-en-input" class="add-form-textarea" placeholder="예) How is the weather?"></textarea>
         </div>
         <button id="add-submit-btn" class="btn modal-btn modal-btn-submit">추가</button>
       </div>
 
       <div id="add-tab-file" class="add-modal-tab-panel hidden">
-        <p class="modal-desc">엑셀/메모장 등에서 만든 CSV·TSV·TXT 파일을 선택하세요.<br>파일에는 한줄마다 "한국어 [탭] 영어" 형태로 작성하면 됩니다.<br>자세한 설명이 필요하면 도움말 항목을 참고하세요.</p>
+        <p class="modal-desc">엑셀/메모장 등에서 만든 CSV·TSV·TXT 파일을 선택하세요.<br>파일에는 한줄마다 "한국어 [탭] 학습할 언어" 형태로 작성하면 됩니다.<br>자세한 설명이 필요하면 도움말 항목을 참고하세요.</p>
         <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
         <button id="import-tab-open-btn" class="btn modal-btn modal-btn-submit">파일 선택</button>
       </div>
 
       <div id="add-tab-paste" class="add-modal-tab-panel hidden">
-        <p class="modal-desc">한 줄에 문장 하나씩, 한국어와 영어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
+        <p class="modal-desc">한 줄에 문장 하나씩, 한국어와 학습할 언어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
         <div class="add-form-field">
           <textarea id="paste-textarea" class="add-form-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
         </div>

@@ -400,6 +400,9 @@ const RANDOM_ORDER_KEY = 'tuktak_random_order';
 // 기본문장(source: 'default') 숨기기 설정 — 카드 학습/문장관리 양쪽에 적용(getOrderedSentences 참고)
 const HIDE_DEFAULT_KEY = 'tuktak_hide_default';
 
+// 정답 발음 자동 재생 설정 — 기본은 꺼짐(스피커 아이콘 탭으로만 재생), 켜두면 "확인" 시 자동 재생
+const AUTO_PLAY_PRONUNCIATION_KEY = 'tuktak_auto_play_pronunciation';
+
 // 로컬 백업 리마인더 — 마지막 백업(또는 배너 닫기) 시점 이후 7일 경과 OR 그 이후 내 문장(기본문장 제외)
 // 100개 이상 추가 시 카드 화면 상단 배너로 노출(2026-08-28, 최초엔 10개로 논의했으나 "너무 자주 뜨면
 // 귀찮다"는 이유로 100개 확정). {at, count} 형태로 localStorage에 저장
@@ -410,6 +413,7 @@ const BACKUP_REMINDER_SENTENCE_COUNT = 100;
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
 let hideDefaultSentences = localStorage.getItem(HIDE_DEFAULT_KEY) === 'true';
+let autoPlayPronunciation = localStorage.getItem(AUTO_PLAY_PRONUNCIATION_KEY) === 'true';
 
 const sentences = loadSentences();
 loadRandomOrder();
@@ -642,6 +646,7 @@ const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
 const hideDefaultToggleBtn = document.getElementById('hide-default-toggle-btn');
+const autoPlayToggleBtn = document.getElementById('auto-play-toggle-btn');
 const deleteDefaultBtn = document.getElementById('delete-default-btn');
 const storageUsageCountEl = document.getElementById('storage-usage-count');
 const storageUsageBarFillEl = document.getElementById('storage-usage-bar-fill');
@@ -657,6 +662,7 @@ const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
 const cardFlagBtn = document.getElementById('card-flag-btn');
+const cardSpeakerBtn = document.getElementById('card-speaker-btn');
 const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
 const listFilterSection = document.getElementById('list-filter-section');
@@ -813,6 +819,23 @@ function toggleCurrentSentenceFlag(toggleFn) {
 cardStarBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleImportant));
 cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfamiliar));
 
+// 정답 발음 듣기(TTS) — 기기 내장 SpeechSynthesis 사용, 서버 비용 없음.
+// 언어는 'en-US' 고정(대부분 영어 학습 목적 전제) — "학습할 언어" 라벨로 일반화된
+// 다른 언어쌍을 넣은 경우 발음이 어색할 수 있으나, 언어 선택 UI는 범위 밖으로 남겨둠.
+function speakEnglish(text) {
+  if (!('speechSynthesis' in window) || !text) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  window.speechSynthesis.speak(utterance);
+}
+
+cardSpeakerBtn.addEventListener('click', () => {
+  const sentence = getCardOrderedSentences()[currentIndex];
+  if (!sentence) return;
+  speakEnglish(sentence.en);
+});
+
 // 카드 화면에서 바로 수정/삭제 (문장관리의 수정 모달·삭제 로직을 그대로 재사용)
 cardEditBtn.addEventListener('click', () => {
   const sentence = getCardOrderedSentences()[currentIndex];
@@ -860,6 +883,10 @@ startBtn.addEventListener('click', () => {
 checkBtn.addEventListener('click', () => {
   revealed = true;
   renderCard();
+  if (autoPlayPronunciation) {
+    const sentence = getCardOrderedSentences()[currentIndex];
+    if (sentence) speakEnglish(sentence.en);
+  }
 });
 
 prevBtn.addEventListener('click', () => {
@@ -2051,6 +2078,22 @@ hideDefaultToggleBtn.addEventListener('click', () => {
   if (!listScreen.classList.contains('hidden')) {
     renderSentenceList();
   }
+});
+
+// ==========================================================================
+// 정답 발음 자동 재생 설정 — 설정 화면
+// ==========================================================================
+function applyAutoPlayToggle() {
+  autoPlayToggleBtn.classList.toggle('active', autoPlayPronunciation);
+  autoPlayToggleBtn.setAttribute('aria-checked', String(autoPlayPronunciation));
+}
+
+applyAutoPlayToggle();
+
+autoPlayToggleBtn.addEventListener('click', () => {
+  autoPlayPronunciation = !autoPlayPronunciation;
+  localStorage.setItem(AUTO_PLAY_PRONUNCIATION_KEY, String(autoPlayPronunciation));
+  applyAutoPlayToggle();
 });
 
 deleteDefaultBtn.addEventListener('click', () => {
