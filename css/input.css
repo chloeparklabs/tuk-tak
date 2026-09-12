@@ -161,13 +161,6 @@ body {
   cursor: default;
 }
 
-.font-size-preview {
-  min-width: 24px;
-  font-weight: 700;
-  color: #1E2A38;
-  text-align: center;
-}
-
 .input-rows {
   display: flex;
   flex-direction: column;
@@ -297,10 +290,6 @@ body {
   .font-size-btn {
     color: #F4F6F8;
     border-color: #333944;
-  }
-
-  .font-size-preview {
-    color: #F4F6F8;
   }
 
   .input-kr,

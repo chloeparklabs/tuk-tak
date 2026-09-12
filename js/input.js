@@ -12,7 +12,6 @@ const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
 const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
-const fontSizePreviewEl = document.getElementById('font-size-preview');
 
 // 입력하는 대로 내용에 맞춰 textarea 높이를 늘림(줄바꿈된 문장이 잘리지 않도록)
 function autoGrow(el) {
@@ -39,7 +38,6 @@ const FONT_SIZE_STEP = 2;
 
 function applyFontSize(size) {
   document.documentElement.style.setProperty('--input-font-size', `${size}px`);
-  fontSizePreviewEl.style.fontSize = `${size}px`;
   fontSizeDecreaseBtn.disabled = size <= FONT_SIZE_MIN;
   fontSizeIncreaseBtn.disabled = size >= FONT_SIZE_MAX;
   // 글자 크기가 바뀌면 기존 문장들의 줄바꿈 수도 달라질 수 있어 높이를 다시 계산
