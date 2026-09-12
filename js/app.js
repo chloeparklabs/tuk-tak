@@ -1987,7 +1987,7 @@ cloudBackupBtn.addEventListener('click', async () => {
 });
 
 cloudRestoreBtn.addEventListener('click', async () => {
-  if (!confirm('클라우드에 백업된 문장으로 지금 기기의 문장을 모두 덮어씁니다. 계속할까요?')) return;
+  if (!confirm('클라우드에 백업된 문장으로 지금 기기의 문장을 모두 덮어씁니다. 이 기기에서 최근에 추가하거나 수정한 문장이 있다면 먼저 "지금 백업"으로 반영해두는 것을 추천합니다. 계속할까요?')) return;
 
   try {
     const restored = await window.CloudSync.restore();
