@@ -371,14 +371,24 @@
 
       <div id="cloud-signed-in-view" class="cloud-account-view hidden">
         <p id="cloud-account-email" class="cloud-account-desc"></p>
-        <button id="cloud-backup-btn" class="btn btn-outline settings-action-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.502 8.242"/><path d="m8 17 4-4 4 4"/></svg>
-          <span>지금 백업</span>
-        </button>
-        <button id="cloud-restore-btn" class="btn btn-outline settings-action-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="m8 17 4 4 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.502 8.242"/></svg>
-          <span>클라우드에서 복원</span>
-        </button>
+        <div class="settings-action-row">
+          <button id="cloud-backup-btn" class="btn btn-outline settings-action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.502 8.242"/><path d="m8 17 4-4 4 4"/></svg>
+            <span>지금 백업</span>
+          </button>
+          <button id="cloud-backup-info-btn" class="settings-info-btn" type="button" aria-label="지금 백업 설명">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          </button>
+        </div>
+        <div class="settings-action-row">
+          <button id="cloud-restore-btn" class="btn btn-outline settings-action-btn settings-action-btn-warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="m8 17 4 4 4-4"/><path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.502 8.242"/></svg>
+            <span>클라우드에서 복원</span>
+          </button>
+          <button id="cloud-restore-info-btn" class="settings-info-btn" type="button" aria-label="클라우드에서 복원 설명">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          </button>
+        </div>
         <button id="cloud-signout-btn" class="btn btn-outline settings-action-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
           <span>로그아웃</span>

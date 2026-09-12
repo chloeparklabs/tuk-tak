@@ -627,6 +627,8 @@ const cloudSigninBtn = document.getElementById('cloud-signin-btn');
 const cloudSignoutBtn = document.getElementById('cloud-signout-btn');
 const cloudBackupBtn = document.getElementById('cloud-backup-btn');
 const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
+const cloudBackupInfoBtn = document.getElementById('cloud-backup-info-btn');
+const cloudRestoreInfoBtn = document.getElementById('cloud-restore-info-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -1975,6 +1977,16 @@ cloudSigninBtn.addEventListener('click', async () => {
 
 cloudSignoutBtn.addEventListener('click', async () => {
   await window.CloudSync.signOut();
+});
+
+// "클라우드"라는 용어 자체를 낯설어하는 사용자를 위한 쉬운 설명(2026-09-12) — 앞으로 추가될
+// 병합/삭제 버튼도 같은 .settings-info-btn + alert() 패턴을 따를 것
+cloudBackupInfoBtn.addEventListener('click', () => {
+  alert('클라우드는 인터넷에 있는 저장 공간이에요(이 폰이 아니라 구글 서버). "지금 백업"을 누르면 지금 갖고 있는 문장들을 그 저장 공간에 복사해둬요. 나중에 폰을 바꾸거나 다른 기기에서도 이 백업으로 문장을 불러올 수 있어요.');
+});
+
+cloudRestoreInfoBtn.addEventListener('click', () => {
+  alert('클라우드(구글 서버)에 저장해둔 백업을 지금 이 기기로 가져와요. ⚠️ 지금 기기에 있는 문장은 모두 사라지고 백업 내용으로 통째로 바뀌니, 최근에 추가한 문장이 있다면 먼저 "지금 백업"을 눌러두세요.');
 });
 
 cloudBackupBtn.addEventListener('click', async () => {

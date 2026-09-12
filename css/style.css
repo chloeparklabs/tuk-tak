@@ -1598,6 +1598,50 @@ button {
   flex-shrink: 0;
 }
 
+/* 클라우드 백업/복원처럼 버튼 옆에 "?" 설명 버튼을 나란히 두는 행(2026-09-12) —
+   .settings-info-btn이 align-items 기본값(stretch)으로 옆 버튼과 높이가 자동으로 맞춰짐 */
+.settings-action-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.settings-action-row .settings-action-btn {
+  width: auto;
+  margin-bottom: 0;
+}
+
+.settings-info-btn {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  color: var(--gray-500);
+  cursor: pointer;
+}
+
+.settings-info-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* "클라우드에서 복원"은 지금 기기의 문장을 전부 덮어쓰는 되돌릴 수 없는 동작이라, 누르기 전에도
+   주의가 필요함을 암시하도록 다른 설정 버튼과 다른 색(즐겨찾기와 같은 accent-star 계열)을 사용
+   (2026-09-12, "경고 표시등이 있으면 좋겠다" 피드백) */
+.settings-action-btn-warning {
+  border-color: var(--color-accent-star);
+  color: var(--color-accent-star);
+}
+
+.settings-action-btn-warning:active {
+  background-color: var(--color-accent-star);
+  color: #FFFFFF;
+}
+
 .cloud-account-desc {
   font-size: 13px;
   color: var(--color-text-secondary);

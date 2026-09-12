@@ -257,7 +257,7 @@ saveBtn.addEventListener('click', async () => {
     const existing = (await window.CloudSync.restore()) || [];
     const merged = [...existing, ...pairs.map((s) => makeSentence(s.kr, s.en))];
     await window.CloudSync.backup(merged);
-    statusTextEl.textContent = `${pairs.length}개 문장을 클라우드에 저장했습니다. 폰에서 "클라우드에서 복원"을 누르면 확인할 수 있어요. ⚠️ 복원은 폰의 문장을 전부 이 백업으로 교체하니, 폰에서 최근에 추가한 문장이 있다면 먼저 폰에서 "지금 백업"을 눌러두세요.`;
+    statusTextEl.textContent = `${pairs.length}개 문장을 클라우드에 저장했습니다. 폰에서 "클라우드에서 복원"을 눌러 확인하세요.`;
     resetInputRows();
     cloudCountEl.textContent = `현재 클라우드에 문장 ${merged.length}개 저장돼 있음`;
   } catch (err) {
