@@ -10,6 +10,9 @@ const cloudCountEl = document.getElementById('cloud-count');
 const inputRowsEl = document.getElementById('input-rows');
 const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
+const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
+const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
+const fontSizePreviewEl = document.getElementById('font-size-preview');
 
 // 입력하는 대로 내용에 맞춰 textarea 높이를 늘림(줄바꿈된 문장이 잘리지 않도록)
 function autoGrow(el) {
@@ -25,6 +28,37 @@ window.addEventListener('resize', () => {
   resizeGrowTimer = setTimeout(() => {
     document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
   }, 100);
+});
+
+// 입력 글자 크기 조절 — 문장이 길어 타이핑할 때 글자를 크게 보고 싶은 경우를 위함(localStorage로 재방문해도 유지)
+const FONT_SIZE_STORAGE_KEY = 'tuktak_input_font_size';
+const FONT_SIZE_DEFAULT = 15;
+const FONT_SIZE_MIN = 13;
+const FONT_SIZE_MAX = 25;
+const FONT_SIZE_STEP = 2;
+
+function applyFontSize(size) {
+  document.documentElement.style.setProperty('--input-font-size', `${size}px`);
+  fontSizePreviewEl.style.fontSize = `${size}px`;
+  fontSizeDecreaseBtn.disabled = size <= FONT_SIZE_MIN;
+  fontSizeIncreaseBtn.disabled = size >= FONT_SIZE_MAX;
+  // 글자 크기가 바뀌면 기존 문장들의 줄바꿈 수도 달라질 수 있어 높이를 다시 계산
+  document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+}
+
+const savedFontSize = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY), 10);
+let currentFontSize = Number.isFinite(savedFontSize) ? savedFontSize : FONT_SIZE_DEFAULT;
+applyFontSize(currentFontSize);
+
+fontSizeDecreaseBtn.addEventListener('click', () => {
+  currentFontSize = Math.max(FONT_SIZE_MIN, currentFontSize - FONT_SIZE_STEP);
+  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSize);
+  applyFontSize(currentFontSize);
+});
+fontSizeIncreaseBtn.addEventListener('click', () => {
+  currentFontSize = Math.min(FONT_SIZE_MAX, currentFontSize + FONT_SIZE_STEP);
+  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSize);
+  applyFontSize(currentFontSize);
 });
 
 function makeSentence(kr, en) {

@@ -124,6 +124,50 @@ body {
   margin: 0 0 20px;
 }
 
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.font-size-control-label {
+  font-size: 13px;
+  color: #7C8A96;
+}
+
+.font-size-control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-size-btn {
+  min-width: 40px;
+  height: 32px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  background: none;
+  color: #1E2A38;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.font-size-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.font-size-preview {
+  min-width: 24px;
+  font-weight: 700;
+  color: #1E2A38;
+  text-align: center;
+}
+
 .input-rows {
   display: flex;
   flex-direction: column;
@@ -147,7 +191,7 @@ body {
 .input-en {
   width: 100%;
   padding: 12px 14px;
-  font-size: 15px;
+  font-size: var(--input-font-size, 15px);
   font-family: inherit;
   line-height: 1.5;
   background-color: #FFFFFF;
@@ -244,6 +288,19 @@ body {
 
   .input-row {
     border-color: #333944;
+  }
+
+  .font-size-control-label {
+    color: #A6A6A6;
+  }
+
+  .font-size-btn {
+    color: #F4F6F8;
+    border-color: #333944;
+  }
+
+  .font-size-preview {
+    color: #F4F6F8;
   }
 
   .input-kr,

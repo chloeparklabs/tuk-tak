@@ -32,6 +32,16 @@
         </div>
         <p id="cloud-count" class="cloud-count"></p>
 
+        <!-- 입력 글자 크기 조절: 문장이 길어 타이핑할 때 글자를 크게 보고 싶은 경우를 위함 -->
+        <div class="font-size-control">
+          <span class="font-size-control-label">입력 글자 크기</span>
+          <div class="font-size-control-buttons">
+            <button id="font-size-decrease" class="font-size-btn" type="button" aria-label="글자 작게">가-</button>
+            <span id="font-size-preview" class="font-size-preview">가</span>
+            <button id="font-size-increase" class="font-size-btn" type="button" aria-label="글자 크게">가+</button>
+          </div>
+        </div>
+
         <div id="input-rows" class="input-rows"></div>
 
         <button id="save-btn" class="btn-primary" type="button">클라우드에 저장</button>
