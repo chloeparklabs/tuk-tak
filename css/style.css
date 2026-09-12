@@ -1140,13 +1140,14 @@ button {
   word-break: keep-all;
 }
 
-/* 이 화면의 유일한 아이콘 — 관리 아이콘과 성격이 달라(암기 보조) 작고 은은하게 */
+/* 이 화면의 유일한 아이콘 — 관리 아이콘과 성격이 달라(암기 보조) 작고 은은하게
+   (2026-09-12, 26px→32px로 확대 — 너무 작다는 피드백) */
 .note-study-speaker-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   background: none;
   border: none;
@@ -1155,10 +1156,11 @@ button {
   cursor: pointer;
 }
 
-/* lucide volume-2 아이콘의 그림 높이가 짧은 문제(24번에서 확인) — 여기서도 동일 보정 */
+/* lucide volume-2 아이콘의 그림 높이가 짧은 문제(24번에서 확인) — 여기서도 동일 보정
+   (2026-09-12, 18px→22px로 확대) */
 .note-study-speaker-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
 }
 
 /* ==========================================================================
