@@ -11,6 +11,22 @@ const inputRowsEl = document.getElementById('input-rows');
 const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
 
+// 입력하는 대로 내용에 맞춰 textarea 높이를 늘림(줄바꿈된 문장이 잘리지 않도록)
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
+// 창 크기 변경(브라우저 폭 조절, 기기 회전 등)으로 줄바꿈 수가 달라지면 높이도 다시 계산해야
+// 함 — 그대로 두면 좁아진 폭 기준으로 늘어난 줄 수만큼 텍스트 아랫부분이 잘려 보임
+let resizeGrowTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeGrowTimer);
+  resizeGrowTimer = setTimeout(() => {
+    document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+  }, 100);
+});
+
 function makeSentence(kr, en) {
   return {
     id: Date.now() + Math.random(),
@@ -27,13 +43,14 @@ function createInputRow() {
   const row = document.createElement('div');
   row.className = 'input-row';
 
-  const krInput = document.createElement('input');
-  krInput.type = 'text';
+  // <input> 대신 <textarea>를 써서 긴 문장이 줄바꿈되며 항상 전체가 보이게 함(가로 스크롤로 앞부분이 가려지는 문제 방지)
+  const krInput = document.createElement('textarea');
+  krInput.rows = 1;
   krInput.className = 'input-kr';
   krInput.placeholder = '한국어';
 
-  const enInput = document.createElement('input');
-  enInput.type = 'text';
+  const enInput = document.createElement('textarea');
+  enInput.rows = 1;
   enInput.className = 'input-en';
   enInput.placeholder = '학습어';
 
@@ -44,6 +61,8 @@ function createInputRow() {
   deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
 
   const onInput = () => {
+    autoGrow(krInput);
+    autoGrow(enInput);
     if (row === inputRowsEl.lastElementChild && (krInput.value.trim() || enInput.value.trim())) {
       inputRowsEl.appendChild(createInputRow());
     }
@@ -75,6 +94,8 @@ function createInputRow() {
     if (inputRowsEl.children.length <= 1) {
       krInput.value = '';
       enInput.value = '';
+      autoGrow(krInput);
+      autoGrow(enInput);
       return;
     }
     row.remove();

@@ -127,26 +127,35 @@ body {
 .input-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   margin-bottom: 20px;
 }
 
+/* 문장 하나(한국어+학습어)를 카드로 묶어 구분 — 화면 크기와 무관하게 항상 세로 배치.
+   문장은 보통 길어서 가로로 반씩 나누면 입력칸 안에서 앞부분이 가려지므로 한 줄 전체 폭을 줌 */
 .input-row {
+  position: relative;
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 44px 16px 16px;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 10px;
 }
 
 .input-kr,
 .input-en {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   padding: 12px 14px;
   font-size: 15px;
   font-family: inherit;
+  line-height: 1.5;
   background-color: #FFFFFF;
   color: #1E2A38;
   border: 1.5px solid #D9D9D9;
   border-radius: 8px;
+  resize: none;
+  overflow: hidden;
 }
 
 .input-kr::placeholder,
@@ -160,10 +169,14 @@ body {
   border-color: #378ADD;
 }
 
+/* 문장 길이와 무관하게 삭제 아이콘은 카드 우측 상단에 고정 */
 .input-row-delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,22 +189,6 @@ body {
 .input-row-delete svg {
   width: 18px;
   height: 18px;
-}
-
-/* 좁은 화면(폰 등)에서는 한 행에 나란히 눌려있던 한국어/학습어 칸을 위아래로 쌓아 넓게 사용 */
-@media (max-width: 480px) {
-  .input-row {
-    flex-wrap: wrap;
-  }
-
-  .input-kr,
-  .input-en {
-    flex-basis: 100%;
-  }
-
-  .input-row-delete {
-    margin-left: auto;
-  }
 }
 
 .btn-primary {
@@ -243,6 +240,10 @@ body {
   .panel-desc,
   .user-email {
     color: #A6A6A6;
+  }
+
+  .input-row {
+    border-color: #333944;
   }
 
   .input-kr,
