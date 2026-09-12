@@ -35,7 +35,7 @@ function createInputRow() {
   const enInput = document.createElement('input');
   enInput.type = 'text';
   enInput.className = 'input-en';
-  enInput.placeholder = '영어';
+  enInput.placeholder = '학습어';
 
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
