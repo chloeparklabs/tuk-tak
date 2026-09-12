@@ -601,6 +601,7 @@ const listSearchInput = document.getElementById('list-search-input');
 const listSearchClearBtn = document.getElementById('list-search-clear-btn');
 const listFilterBarEl = document.getElementById('list-filter-bar');
 const listSelectBtn = document.getElementById('list-select-btn');
+const listSelectAllBtn = document.getElementById('list-select-all-btn');
 const listBulkDeleteBtn = document.getElementById('list-bulk-delete-btn');
 const listBulkDeleteFooterEl = document.getElementById('list-bulk-delete-footer');
 const sentenceListEl = document.getElementById('sentence-list');
@@ -1135,6 +1136,8 @@ function updateListTopbar() {
   listSearchBox.classList.toggle('hidden', !searching);
   listTopbarTitleEl.classList.toggle('hidden', searching);
 
+  listSelectAllBtn.classList.toggle('hidden', !selecting);
+
   if (selecting) {
     const n = selectedIds.size;
     listBackBtn.classList.add('text-mode');
@@ -1143,6 +1146,11 @@ function updateListTopbar() {
     listTopbarTitleEl.textContent = n > 0 ? `${n}개 선택` : '문장 선택';
     listBulkDeleteBtn.disabled = n === 0;
     listBulkDeleteBtn.textContent = n > 0 ? `삭제 (${n}개)` : '삭제';
+
+    // 현재 필터로 보이는 문장을 기준으로 전부 선택돼 있으면 "전체 해제"로 라벨 전환
+    const filteredIds = getFilteredSentences().map((s) => String(s.id));
+    const allSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedIds.has(id));
+    listSelectAllBtn.textContent = allSelected ? '전체 해제' : '전체 선택';
   } else {
     // 검색 중일 때도 뒤로가기는 그대로 "뒤로가기" — 검색 취소는 검색창 안의
     // X 버튼(list-search-clear-btn)이 전담(2026-09-01, 폼 형태로 바뀌며 요청)
@@ -1321,6 +1329,19 @@ listBackBtn.addEventListener('click', () => {
 });
 
 listSelectBtn.addEventListener('click', enterSelectMode);
+
+// 전체 선택/해제: 체크박스를 하나씩 누르는 번거로움을 줄이기 위함(현재 필터로 보이는 문장 기준)
+listSelectAllBtn.addEventListener('click', () => {
+  const filteredIds = getFilteredSentences().map((s) => String(s.id));
+  const allSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedIds.has(id));
+  if (allSelected) {
+    selectedIds.clear();
+  } else {
+    filteredIds.forEach((id) => selectedIds.add(id));
+  }
+  renderSentenceList();
+  updateListTopbar();
+});
 listSearchBtn.addEventListener('click', enterSearchMode);
 listSearchClearBtn.addEventListener('click', exitSearchMode);
 listSearchInput.addEventListener('input', () => {

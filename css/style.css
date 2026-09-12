@@ -1294,6 +1294,21 @@ button {
   margin-left: auto;
 }
 
+/* 선택 모드(다중 삭제) 전용 "전체 선택/전체 해제" 텍스트 버튼 — 검색/선택 아이콘과
+   동시에 보이지 않으므로(선택 모드일 때만 노출) margin-left:auto를 단독으로 사용해도
+   위 .screen-topbar-actions-lead 버그(auto-margin 균등분배)가 재발하지 않음 */
+.screen-topbar-text-btn {
+  margin-left: auto;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 /* 검색 모드에서 타이틀(절대 위치) 자리를 대신해 flex 흐름에 실제로 자리를 차지 —
    우측 아이콘들이 숨겨지며 남는 공간을 자연스럽게 채움. 처음엔 배경 없이 텍스트만
    블루 바 위에 얹는 방식이었으나 "검색칸이 안 보인다"는 피드백으로 눈에 띄는 폼
