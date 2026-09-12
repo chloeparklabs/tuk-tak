@@ -51,6 +51,26 @@ function createInputRow() {
   krInput.addEventListener('input', onInput);
   enInput.addEventListener('input', onInput);
 
+  // Enter 키로 한국어 → 영어(같은 행) → 다음 행 한국어로 자동 이동(엑셀 타이핑 흐름과 유사하게)
+  krInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    enInput.focus();
+  });
+  enInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    let nextRow = row.nextElementSibling;
+    if (!nextRow) {
+      nextRow = createInputRow();
+      inputRowsEl.appendChild(nextRow);
+    }
+    nextRow.querySelector('.input-kr').focus();
+  });
+
+  // 삭제 버튼은 Tab 순서에서 건너뛰게 함(한국어→영어→다음 행 흐름을 방해하지 않도록)
+  deleteBtn.tabIndex = -1;
+
   deleteBtn.addEventListener('click', () => {
     if (inputRowsEl.children.length <= 1) {
       krInput.value = '';
@@ -82,13 +102,21 @@ async function loadCloudCount() {
   }
 }
 
+// 대시보드가 로그아웃→로그인 전환으로 처음 나타나는 순간에만 첫 입력칸에 자동 포커스
+// (매 auth 상태 갱신마다 포커스를 뺏어가지 않도록 이전 로그인 상태와 비교)
+let wasLoggedIn = false;
 function renderAuthView(user) {
-  loginView.classList.toggle('hidden', !!user);
-  dashboardView.classList.toggle('hidden', !user);
-  if (user) {
+  const isLoggedIn = !!user;
+  loginView.classList.toggle('hidden', isLoggedIn);
+  dashboardView.classList.toggle('hidden', !isLoggedIn);
+  if (isLoggedIn) {
     userEmailEl.textContent = user.email;
     loadCloudCount();
+    if (!wasLoggedIn) {
+      inputRowsEl.querySelector('.input-kr')?.focus();
+    }
   }
+  wasLoggedIn = isLoggedIn;
 }
 
 function setupCloudSync() {
