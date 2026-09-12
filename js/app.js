@@ -540,40 +540,8 @@ function getCardOrderedSentences() {
 }
 
 // ==========================================================================
-// 공통 파서 (TSV/CSV → {kr, en}[])
-// 파일 가져오기(엑셀/메모장 등에서 작성한 CSV/TSV/TXT)에서 사용
-// ==========================================================================
-const HEADER_KEYWORDS = ['한국어', 'kr', 'korean'];
-
-function parseSentencesText(text) {
-  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.length > 0);
-  const result = [];
-
-  lines.forEach((line, index) => {
-    // 탭이 있으면 TSV, 없으면 CSV로 간주
-    // 탭도 쉼표도 없으면(메모장 등에서 탭이 스페이스로 바뀐 경우 대응) 연속 공백 2칸 이상을 구분자로 사용
-    let parts;
-    if (line.includes('\t')) {
-      parts = line.split('\t');
-    } else if (line.includes(',')) {
-      parts = line.split(',');
-    } else {
-      parts = line.split(/\s{2,}/);
-    }
-
-    const kr = (parts[0] || '').trim();
-    const en = parts.slice(1).join(' ').trim();
-
-    if (!kr || !en) return;
-    // 첫 줄이 헤더("한국어, 영어" 등)로 보이면 건너뜀
-    if (index === 0 && HEADER_KEYWORDS.includes(kr.toLowerCase())) return;
-
-    result.push({ kr, en });
-  });
-
-  return result;
-}
-
+// 공통 파서 (TSV/CSV → {kr, en}[])는 js/sentence-parser.js로 분리(PC 빠른입력과 공유, 2026-09-12)
+// index.html에서 이 파일보다 먼저 로드되므로 parseSentencesText()는 그대로 호출 가능
 // ==========================================================================
 // 상태
 // ==========================================================================

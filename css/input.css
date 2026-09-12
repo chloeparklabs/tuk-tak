@@ -161,6 +161,23 @@ body {
   cursor: default;
 }
 
+.import-control {
+  margin-bottom: 16px;
+}
+
+.btn-outline {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  color: #378ADD;
+  border: 1.5px solid #378ADD;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .input-rows {
   display: flex;
   flex-direction: column;

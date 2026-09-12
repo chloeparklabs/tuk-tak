@@ -41,6 +41,12 @@
           </div>
         </div>
 
+        <!-- 파일 가져오기: 메모장 등에서 미리 작성한 CSV/TSV/TXT 파일을 불러와 아래 목록에 채움 -->
+        <div class="import-control">
+          <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
+          <button id="import-file-btn" class="btn-outline" type="button">파일 가져오기 (CSV/TSV/TXT)</button>
+        </div>
+
         <div id="input-rows" class="input-rows"></div>
 
         <button id="save-btn" class="btn-primary" type="button">클라우드에 저장</button>
@@ -49,6 +55,7 @@
     </main>
   </div>
 
+  <script src="js/sentence-parser.js"></script>
   <script type="module" src="js/firebase-init.js"></script>
   <script type="module" src="js/input.js"></script>
 </body>

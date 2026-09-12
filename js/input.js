@@ -1,5 +1,6 @@
 // PC 빠른 문장 입력 전용 페이지(input.html) 로직 — 카드 앱(js/app.js)과 독립적으로 동작.
-// js/firebase-init.js가 노출하는 window.CloudSync만 공유해서 쓴다.
+// js/firebase-init.js가 노출하는 window.CloudSync, js/sentence-parser.js가 노출하는
+// window.parseSentencesText만 공유해서 쓴다.
 
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
@@ -12,6 +13,8 @@ const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
 const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
+const importFileInput = document.getElementById('import-file-input');
+const importFileBtn = document.getElementById('import-file-btn');
 
 // 입력하는 대로 내용에 맞춰 textarea 높이를 늘림(줄바꿈된 문장이 잘리지 않도록)
 function autoGrow(el) {
@@ -144,6 +147,44 @@ function resetInputRows() {
   inputRowsEl.appendChild(createInputRow());
 }
 resetInputRows();
+
+// 파일 가져오기(CSV/TSV/TXT) — 폰 앱과 같은 파서(js/sentence-parser.js의 window.parseSentencesText) 재사용.
+// 불러온 문장은 즉시 저장하지 않고 입력 행 목록에 채워 넣어 검토할 수 있게 하며, 마지막 빈 행은
+// 그대로 남겨둬 계속 이어서 입력할 수 있게 함
+importFileBtn.addEventListener('click', () => {
+  importFileInput.click();
+});
+
+importFileInput.addEventListener('change', () => {
+  const file = importFileInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const parsed = window.parseSentencesText(String(reader.result));
+    if (parsed.length === 0) {
+      statusTextEl.textContent = '파일에서 문장을 찾지 못했습니다.';
+      importFileInput.value = '';
+      return;
+    }
+
+    const lastRow = inputRowsEl.lastElementChild;
+    parsed.forEach((s) => {
+      const row = createInputRow();
+      const krInput = row.querySelector('.input-kr');
+      const enInput = row.querySelector('.input-en');
+      krInput.value = s.kr;
+      enInput.value = s.en;
+      inputRowsEl.insertBefore(row, lastRow);
+      autoGrow(krInput);
+      autoGrow(enInput);
+    });
+
+    statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "클라우드에 저장"을 눌러주세요.`;
+    importFileInput.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+});
 
 async function loadCloudCount() {
   cloudCountEl.textContent = '클라우드 백업 확인 중...';
