@@ -629,6 +629,8 @@ const cloudBackupBtn = document.getElementById('cloud-backup-btn');
 const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
 const cloudBackupInfoBtn = document.getElementById('cloud-backup-info-btn');
 const cloudRestoreInfoBtn = document.getElementById('cloud-restore-info-btn');
+const cloudDeleteBtn = document.getElementById('cloud-delete-btn');
+const cloudDeleteInfoBtn = document.getElementById('cloud-delete-info-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardMarkBar = document.getElementById('card-mark-bar');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -1989,6 +1991,10 @@ cloudRestoreInfoBtn.addEventListener('click', () => {
   alert('클라우드(구글 서버)에 저장해둔 백업을 지금 이 기기로 가져와요. ⚠️ 지금 기기에 있는 문장은 모두 사라지고 백업 내용으로 통째로 바뀌니, 최근에 추가한 문장이 있다면 먼저 "지금 백업"을 눌러두세요.');
 });
 
+cloudDeleteInfoBtn.addEventListener('click', () => {
+  alert('클라우드(구글 서버)에 저장해둔 백업만 지워요. 이 기기에 있는 문장은 그대로 남아있어요. ⚠️ 삭제하면 되돌릴 수 없으니, 나중에 필요할 것 같다면 지우기 전에 다른 곳에 따로 백업해두세요.');
+});
+
 cloudBackupBtn.addEventListener('click', async () => {
   try {
     await window.CloudSync.backup(sentences);
@@ -2017,6 +2023,17 @@ cloudRestoreBtn.addEventListener('click', async () => {
     alert('클라우드 백업으로 복원했습니다.');
   } catch (err) {
     alert(`복원에 실패했습니다: ${err.message}`);
+  }
+});
+
+cloudDeleteBtn.addEventListener('click', async () => {
+  if (!confirm('클라우드에 저장된 백업을 삭제합니다. 이 기기의 문장은 그대로 남지만, 클라우드 백업은 되돌릴 수 없이 삭제됩니다. 계속할까요?')) return;
+
+  try {
+    await window.CloudSync.deleteBackup();
+    alert('클라우드 백업을 삭제했습니다.');
+  } catch (err) {
+    alert(`삭제에 실패했습니다: ${err.message}`);
   }
 });
 

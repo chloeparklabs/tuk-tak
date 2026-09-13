@@ -14,6 +14,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  deleteDoc,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -50,12 +51,21 @@ async function restoreSentences() {
   return Array.isArray(data.sentences) ? data.sentences : null;
 }
 
+// 클라우드 백업 삭제(체크리스트 18번 보완 3번) — 이 기기의 로컬 문장에는 영향 없이,
+// Firestore에 저장된 백업 문서만 삭제한다. Google Play "계정 및 데이터 자기서비스 삭제" 정책 대비 목적도 있음
+async function deleteBackup() {
+  const user = auth.currentUser;
+  if (!user) throw new Error('로그인이 필요합니다.');
+  await deleteDoc(doc(db, 'users', user.uid));
+}
+
 window.CloudSync = {
   signIn: () => signInWithPopup(auth, googleProvider),
   signOut: () => signOut(auth),
   onAuthChange: (callback) => onAuthStateChanged(auth, callback),
   backup: backupSentences,
   restore: restoreSentences,
+  deleteBackup,
   getCurrentUser: () => auth.currentUser,
 };
 
