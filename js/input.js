@@ -7,7 +7,6 @@ const dashboardView = document.getElementById('dashboard-view');
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const userEmailEl = document.getElementById('user-email');
-const cloudCountEl = document.getElementById('cloud-count');
 const inputRowsEl = document.getElementById('input-rows');
 const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
@@ -15,6 +14,12 @@ const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
 const importFileInput = document.getElementById('import-file-input');
 const importFileBtn = document.getElementById('import-file-btn');
+const manageRowsEl = document.getElementById('manage-rows');
+const manageCountEl = document.getElementById('manage-count');
+const manageEmptyEl = document.getElementById('manage-empty');
+const manageRefreshBtn = document.getElementById('manage-refresh-btn');
+
+const TRASH_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
 
 // 입력하는 대로 내용에 맞춰 textarea 높이를 늘림(줄바꿈된 문장이 잘리지 않도록)
 function autoGrow(el) {
@@ -93,7 +98,7 @@ function createInputRow() {
   deleteBtn.type = 'button';
   deleteBtn.className = 'input-row-delete';
   deleteBtn.setAttribute('aria-label', '이 줄 삭제');
-  deleteBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+  deleteBtn.innerHTML = TRASH_ICON_SVG;
 
   const onInput = () => {
     autoGrow(krInput);
@@ -180,21 +185,107 @@ importFileInput.addEventListener('change', () => {
       autoGrow(enInput);
     });
 
-    statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "클라우드에 저장"을 눌러주세요.`;
+    statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
 });
 
-async function loadCloudCount() {
-  cloudCountEl.textContent = '클라우드 백업 확인 중...';
-  try {
-    const existing = (await window.CloudSync.restore()) || [];
-    cloudCountEl.textContent = `현재 클라우드에 문장 ${existing.length}개 저장돼 있음`;
-  } catch (err) {
-    cloudCountEl.textContent = '';
-  }
+// 예전 버전 백업에는 important/unfamiliar 필드가 없을 수 있어 불러올 때 보정(카드 앱과 같은 규칙)
+function normalizeSentence(s) {
+  return { important: false, unfamiliar: false, ...s };
 }
+
+// 클라우드에 저장된 기존 문장 관리(조회+수정+삭제) — 데스크탑 빠른입력이 "던져 넣기만 하는
+// 창구"가 아니라 실제로 관리까지 가능해야 의미가 있다는 판단으로 추가(2026-09-13). id로
+// 원본(important/unfamiliar 등 이 화면에서 건드리지 않는 필드)을 찾아 저장 시 보존하기 위한 맵
+let manageSentencesById = new Map();
+// 저장 전 새로고침 시 편집 내용을 잃을 수 있다는 걸 경고하기 위한 "편집됨" 플래그(삭제도 포함)
+let manageDirty = false;
+
+function updateManageCount() {
+  manageCountEl.textContent = manageRowsEl.children.length;
+}
+
+function createManageRow(sentence) {
+  const row = document.createElement('div');
+  row.className = 'input-row';
+  row.dataset.id = String(sentence.id);
+
+  const krInput = document.createElement('textarea');
+  krInput.rows = 1;
+  krInput.className = 'input-kr';
+  krInput.value = sentence.kr;
+
+  const enInput = document.createElement('textarea');
+  enInput.rows = 1;
+  enInput.className = 'input-en';
+  enInput.value = sentence.en;
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'input-row-delete';
+  deleteBtn.setAttribute('aria-label', '이 문장 삭제');
+  deleteBtn.innerHTML = TRASH_ICON_SVG;
+  deleteBtn.tabIndex = -1;
+
+  const onInput = () => {
+    autoGrow(krInput);
+    autoGrow(enInput);
+    manageDirty = true;
+  };
+  krInput.addEventListener('input', onInput);
+  enInput.addEventListener('input', onInput);
+
+  // 관리 목록은 개수가 고정돼 있어(새 행 자동 추가 없음) Enter는 다음 칸/다음 행으로만 이동
+  krInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    enInput.focus();
+  });
+  enInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    row.nextElementSibling?.querySelector('.input-kr')?.focus();
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    if (!confirm('이 문장을 목록에서 지울까요? "변경사항 저장"을 눌러야 실제로 반영됩니다.')) return;
+    row.remove();
+    manageDirty = true;
+    updateManageCount();
+  });
+
+  row.appendChild(krInput);
+  row.appendChild(enInput);
+  row.appendChild(deleteBtn);
+  return row;
+}
+
+async function loadManageList() {
+  manageDirty = false;
+  manageRowsEl.innerHTML = '';
+  manageEmptyEl.classList.add('hidden');
+  try {
+    const existing = ((await window.CloudSync.restore()) || []).map(normalizeSentence);
+    manageSentencesById = new Map(existing.map((s) => [String(s.id), s]));
+    existing.forEach((s) => manageRowsEl.appendChild(createManageRow(s)));
+    document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+    if (existing.length === 0) {
+      manageEmptyEl.textContent = '클라우드에 저장된 문장이 없습니다.';
+      manageEmptyEl.classList.remove('hidden');
+    }
+  } catch (err) {
+    manageEmptyEl.textContent = `문장을 불러오지 못했습니다: ${err.message}`;
+    manageEmptyEl.classList.remove('hidden');
+  }
+  updateManageCount();
+}
+
+manageRefreshBtn.addEventListener('click', () => {
+  if (manageDirty && !confirm('저장하지 않은 편집 내용이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return;
+  loadManageList();
+});
 
 // 대시보드가 로그아웃→로그인 전환으로 처음 나타나는 순간에만 첫 입력칸에 자동 포커스
 // (매 auth 상태 갱신마다 포커스를 뺏어가지 않도록 이전 로그인 상태와 비교)
@@ -205,7 +296,7 @@ function renderAuthView(user) {
   dashboardView.classList.toggle('hidden', !isLoggedIn);
   if (isLoggedIn) {
     userEmailEl.textContent = user.email;
-    loadCloudCount();
+    loadManageList();
     if (!wasLoggedIn) {
       inputRowsEl.querySelector('.input-kr')?.focus();
     }
@@ -234,19 +325,32 @@ logoutBtn.addEventListener('click', () => {
   window.CloudSync.signOut();
 });
 
-// 저장: 기존 클라우드 백업을 먼저 불러와 새로 입력한 문장을 뒤에 합친 뒤 다시 저장(덮어쓰기로 인한
-// 기존 백업 데이터 유실 방지). 폰에는 자동 반영되지 않으므로 "클라우드에서 복원"을 눌러야 함을 안내
+// 저장: (관리 섹션에서 편집/삭제한 기존 문장) + (새로 입력한 문장)을 합쳐 한 번에 저장.
+// 관리 섹션이 이미 "클라우드의 현재 상태"를 그대로 보여주고 있어 별도로 restore를 다시
+// 호출하지 않음(화면에 보이는 그대로가 저장 결과 — 최신 상태가 궁금하면 "새로고침" 사용).
+// 폰에는 자동 반영되지 않으므로 "클라우드에서 복원"을 눌러야 함을 안내
 saveBtn.addEventListener('click', async () => {
-  const rows = [...inputRowsEl.querySelectorAll('.input-row')];
-  const pairs = rows
+  const managedList = [...manageRowsEl.querySelectorAll('.input-row')]
+    .map((row) => {
+      const original = manageSentencesById.get(row.dataset.id) || {};
+      return {
+        ...original,
+        kr: row.querySelector('.input-kr').value.trim(),
+        en: row.querySelector('.input-en').value.trim(),
+      };
+    })
+    .filter((s) => s.kr && s.en);
+
+  const newSentences = [...inputRowsEl.querySelectorAll('.input-row')]
     .map((row) => ({
       kr: row.querySelector('.input-kr').value.trim(),
       en: row.querySelector('.input-en').value.trim(),
     }))
-    .filter((s) => s.kr && s.en);
+    .filter((s) => s.kr && s.en)
+    .map((s) => makeSentence(s.kr, s.en));
 
-  if (pairs.length === 0) {
-    statusTextEl.textContent = '입력한 문장이 없습니다.';
+  if (newSentences.length === 0 && !manageDirty) {
+    statusTextEl.textContent = '저장할 변경사항이 없습니다.';
     return;
   }
 
@@ -254,12 +358,11 @@ saveBtn.addEventListener('click', async () => {
   statusTextEl.textContent = '저장 중...';
 
   try {
-    const existing = (await window.CloudSync.restore()) || [];
-    const merged = [...existing, ...pairs.map((s) => makeSentence(s.kr, s.en))];
-    await window.CloudSync.backup(merged);
-    statusTextEl.textContent = `${pairs.length}개 문장을 클라우드에 저장했습니다. 폰에서 "클라우드에서 복원"을 눌러 확인하세요.`;
+    const finalList = [...managedList, ...newSentences];
+    await window.CloudSync.backup(finalList);
+    statusTextEl.textContent = `저장했습니다. (전체 ${finalList.length}개, 새 문장 ${newSentences.length}개) 폰에서 "클라우드에서 복원"을 눌러 확인하세요.`;
     resetInputRows();
-    cloudCountEl.textContent = `현재 클라우드에 문장 ${merged.length}개 저장돼 있음`;
+    await loadManageList();
   } catch (err) {
     statusTextEl.textContent = `저장에 실패했습니다: ${err.message}`;
   } finally {
