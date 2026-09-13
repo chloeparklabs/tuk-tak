@@ -18,6 +18,8 @@ const manageRowsEl = document.getElementById('manage-rows');
 const manageCountEl = document.getElementById('manage-count');
 const manageEmptyEl = document.getElementById('manage-empty');
 const manageRefreshBtn = document.getElementById('manage-refresh-btn');
+const manageToggleBtn = document.getElementById('manage-toggle-btn');
+const manageContentEl = document.getElementById('manage-content');
 
 const TRASH_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
 
@@ -285,6 +287,18 @@ async function loadManageList() {
 manageRefreshBtn.addEventListener('click', () => {
   if (manageDirty && !confirm('저장하지 않은 편집 내용이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return;
   loadManageList();
+});
+
+// 목록은 접힌 상태에서도 로그인 시점에 이미 불러와져 있음(저장 시 이 목록이 그대로 반영돼야
+// 하므로) — 다만 접혀있는(display:none) 동안 계산된 textarea 높이는 0으로 잘못 잡히므로
+// 펼칠 때마다 다시 계산해줘야 함
+manageToggleBtn.addEventListener('click', () => {
+  const isExpanded = manageToggleBtn.getAttribute('aria-expanded') === 'true';
+  manageToggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+  manageContentEl.classList.toggle('hidden', isExpanded);
+  if (!isExpanded) {
+    manageRowsEl.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+  }
 });
 
 // 대시보드가 로그아웃→로그인 전환으로 처음 나타나는 순간에만 첫 입력칸에 자동 포커스

@@ -31,7 +31,7 @@
           <button id="logout-btn" class="btn-text" type="button">로그아웃</button>
         </div>
 
-        <!-- 입력 글자 크기 조절: 아래 두 섹션(관리/새 문장 추가) 모두에 적용됨 -->
+        <!-- 입력 글자 크기 조절: 아래 두 섹션(새 문장 추가/관리) 모두에 적용됨 -->
         <div class="font-size-control">
           <span class="font-size-control-label">입력 글자 크기</span>
           <div class="font-size-control-buttons">
@@ -40,18 +40,7 @@
           </div>
         </div>
 
-        <!-- 클라우드에 저장된 기존 문장 관리: 조회 + 수정 + 삭제. 데스크탑 빠른입력이 "던져 넣기만
-             하는 창구"가 아니라 실제로 관리까지 가능해야 의미가 있다는 판단으로 추가(2026-09-13) -->
-        <div class="section-heading">
-          <h2 class="section-title">클라우드에 저장된 문장 (<span id="manage-count">0</span>개)</h2>
-          <button id="manage-refresh-btn" class="btn-text" type="button">새로고침</button>
-        </div>
-        <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
-        <div id="manage-rows" class="input-rows"></div>
-        <p id="manage-empty" class="panel-desc hidden"></p>
-
-        <hr class="section-divider" />
-
+        <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
         <h2 class="section-title">새 문장 추가</h2>
 
         <!-- 파일 가져오기: 메모장 등에서 미리 작성한 CSV/TSV/TXT 파일을 불러와 아래 목록에 채움 -->
@@ -61,6 +50,23 @@
         </div>
 
         <div id="input-rows" class="input-rows"></div>
+
+        <hr class="section-divider" />
+
+        <!-- 클라우드에 저장된 기존 문장 관리: 조회 + 수정 + 삭제. 문장이 많으면 화면을 다 채워
+             위의 "새 문장 추가"를 찾기 어려워질 수 있어 기본은 접어두고, 필요할 때만 펼쳐봄(2026-09-13) -->
+        <div class="section-heading">
+          <button id="manage-toggle-btn" class="section-toggle-btn" type="button" aria-expanded="false" aria-controls="manage-content">
+            <h2 class="section-title">클라우드에 저장된 문장 (<span id="manage-count">0</span>개)</h2>
+            <svg class="section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <button id="manage-refresh-btn" class="btn-text" type="button">새로고침</button>
+        </div>
+        <div id="manage-content" class="hidden">
+          <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
+          <div id="manage-rows" class="input-rows"></div>
+          <p id="manage-empty" class="panel-desc hidden"></p>
+        </div>
 
         <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
         <p id="status-text" class="status-text"></p>
