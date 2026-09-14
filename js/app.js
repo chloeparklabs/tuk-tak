@@ -1084,6 +1084,11 @@ function applyListDisplayMode() {
   });
   noteStudyListEl.classList.toggle('hide-kr', listDisplayMode === 'en');
   noteStudyListEl.classList.toggle('hide-en', listDisplayMode === 'kr');
+  // 모드가 바뀌면 개별 문장의 탭-확인(인출연습) 상태는 초기화 — 이전 모드 기준으로
+  // 남아있던 .revealed가 새 모드에서 엉뚱하게 해석되는 걸 방지
+  noteStudyListEl.querySelectorAll('.note-study-item.revealed').forEach((el) => {
+    el.classList.remove('revealed');
+  });
 }
 
 listDisplayModeBtns.forEach((btn) => {
@@ -1131,6 +1136,12 @@ function renderNoteStudyList(ids) {
 
     textWrap.appendChild(krEl);
     textWrap.appendChild(enEl);
+
+    // 한글만/영어만 모드일 때 탭하면 그 문장만 반대쪽 언어를 임시로 보여줘서
+    // 인출연습(recall)이 가능하게 함 — "전체보기"에서는 이미 둘 다 보이므로 시각적 변화 없음
+    textWrap.addEventListener('click', () => {
+      item.classList.toggle('revealed');
+    });
 
     const speakerBtn = document.createElement('button');
     speakerBtn.type = 'button';

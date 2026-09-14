@@ -1090,6 +1090,25 @@ button {
   display: none;
 }
 
+/* 한글만/영어만 모드에서 문장을 탭하면 그 문장만 인출연습처럼 반대쪽 언어를
+   임시로 보여줌(.revealed) — 다시 탭하면 원래대로 복귀. "전체보기"에서는
+   이미 둘 다 보이므로 이 규칙이 적용될 대상 자체가 없음 (2026-09-14, 25번 보완) */
+#note-study-list.hide-en .note-study-item.revealed .note-study-en {
+  display: block;
+}
+
+#note-study-list.hide-en .note-study-item.revealed .note-study-kr {
+  display: none;
+}
+
+#note-study-list.hide-kr .note-study-item.revealed .note-study-kr {
+  display: block;
+}
+
+#note-study-list.hide-kr .note-study-item.revealed .note-study-en {
+  display: none;
+}
+
 /* display:flex를 쓰지 않음 — 세로 flex 컨테이너로 만들면 자식인 .list-display-mode-bar
    (overflow:hidden 있음)가 목록이 길어 내용이 넘칠 때 flex-shrink로 거의 0px까지
    찌그러지는 버그가 있었음(2026-09-11 발견, overflow가 hidden/auto/scroll인 flex
@@ -1125,6 +1144,7 @@ button {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  cursor: pointer;
 }
 
 .note-study-kr {
