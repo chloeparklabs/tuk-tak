@@ -43,10 +43,19 @@
         <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
         <h2 class="section-title">새 문장 추가</h2>
 
-        <!-- 파일 가져오기: 메모장 등에서 미리 작성한 CSV/TSV/TXT 파일을 불러와 아래 목록에 채움 -->
+        <!-- 파일 가져오기(CSV/TSV/TXT) / 텍스트 붙여넣기(카메라로 찍은 문장을 AI가 텍스트로 만들어준 것 등을
+             바로 붙여넣을 때 유용, 2026-09-14) — 둘 다 아래 목록에 새 행으로 채워 넣고, 저장은 별도로 진행 -->
         <div class="import-control">
-          <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
-          <button id="import-file-btn" class="btn-outline" type="button">파일 가져오기 (CSV/TSV/TXT)</button>
+          <div class="import-control-buttons">
+            <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
+            <button id="import-file-btn" class="btn-outline" type="button">파일 가져오기 (CSV/TSV/TXT)</button>
+            <button id="paste-toggle-btn" class="btn-outline" type="button" aria-expanded="false" aria-controls="paste-panel">텍스트 붙여넣기</button>
+          </div>
+          <div id="paste-panel" class="paste-panel hidden">
+            <p class="panel-desc">한 줄에 문장 하나씩, 한국어와 학습어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
+            <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
+            <button id="paste-submit-btn" class="btn-outline" type="button">가져오기</button>
+          </div>
         </div>
 
         <div id="input-rows" class="input-rows"></div>

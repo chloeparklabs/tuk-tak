@@ -14,6 +14,10 @@ const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
 const importFileInput = document.getElementById('import-file-input');
 const importFileBtn = document.getElementById('import-file-btn');
+const pasteToggleBtn = document.getElementById('paste-toggle-btn');
+const pastePanel = document.getElementById('paste-panel');
+const pasteTextarea = document.getElementById('paste-textarea');
+const pasteSubmitBtn = document.getElementById('paste-submit-btn');
 const manageRowsEl = document.getElementById('manage-rows');
 const manageCountEl = document.getElementById('manage-count');
 const manageEmptyEl = document.getElementById('manage-empty');
@@ -155,9 +159,24 @@ function resetInputRows() {
 }
 resetInputRows();
 
-// 파일 가져오기(CSV/TSV/TXT) — 폰 앱과 같은 파서(js/sentence-parser.js의 window.parseSentencesText) 재사용.
-// 불러온 문장은 즉시 저장하지 않고 입력 행 목록에 채워 넣어 검토할 수 있게 하며, 마지막 빈 행은
-// 그대로 남겨둬 계속 이어서 입력할 수 있게 함
+// 파일 가져오기(CSV/TSV/TXT)·텍스트 붙여넣기 공통 — 폰 앱과 같은 파서
+// (js/sentence-parser.js의 window.parseSentencesText) 재사용. 불러온 문장은 즉시 저장하지
+// 않고 입력 행 목록에 채워 넣어 검토할 수 있게 하며, 마지막 빈 행은 그대로 남겨둬 계속
+// 이어서 입력할 수 있게 함
+function insertParsedRows(parsed) {
+  const lastRow = inputRowsEl.lastElementChild;
+  parsed.forEach((s) => {
+    const row = createInputRow();
+    const krInput = row.querySelector('.input-kr');
+    const enInput = row.querySelector('.input-en');
+    krInput.value = s.kr;
+    enInput.value = s.en;
+    inputRowsEl.insertBefore(row, lastRow);
+    autoGrow(krInput);
+    autoGrow(enInput);
+  });
+}
+
 importFileBtn.addEventListener('click', () => {
   importFileInput.click();
 });
@@ -175,22 +194,35 @@ importFileInput.addEventListener('change', () => {
       return;
     }
 
-    const lastRow = inputRowsEl.lastElementChild;
-    parsed.forEach((s) => {
-      const row = createInputRow();
-      const krInput = row.querySelector('.input-kr');
-      const enInput = row.querySelector('.input-en');
-      krInput.value = s.kr;
-      enInput.value = s.en;
-      inputRowsEl.insertBefore(row, lastRow);
-      autoGrow(krInput);
-      autoGrow(enInput);
-    });
-
+    insertParsedRows(parsed);
     statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
+});
+
+// 텍스트 붙여넣기 — 카메라로 찍은 문장을 AI가 텍스트로 만들어준 결과 등을 파일로 저장하지
+// 않고 바로 붙여넣을 때 유용(2026-09-14). 버튼으로 패널을 펼치고/접고, 가져오면 패널은
+// 다시 접히고 내용은 비움(같은 텍스트를 실수로 중복 반영하지 않도록)
+pasteToggleBtn.addEventListener('click', () => {
+  const isHidden = pastePanel.classList.contains('hidden');
+  pastePanel.classList.toggle('hidden', !isHidden);
+  pasteToggleBtn.setAttribute('aria-expanded', String(isHidden));
+  if (isHidden) pasteTextarea.focus();
+});
+
+pasteSubmitBtn.addEventListener('click', () => {
+  const parsed = window.parseSentencesText(pasteTextarea.value);
+  if (parsed.length === 0) {
+    statusTextEl.textContent = '붙여넣은 텍스트에서 문장을 찾지 못했습니다.';
+    return;
+  }
+
+  insertParsedRows(parsed);
+  statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
+  pasteTextarea.value = '';
+  pastePanel.classList.add('hidden');
+  pasteToggleBtn.setAttribute('aria-expanded', 'false');
 });
 
 // 예전 버전 백업에는 important/unfamiliar 필드가 없을 수 있어 불러올 때 보정(카드 앱과 같은 규칙)
