@@ -410,9 +410,14 @@ const BACKUP_CHECKPOINT_KEY = 'tuktak_backup_checkpoint';
 const BACKUP_REMINDER_DAYS = 7;
 const BACKUP_REMINDER_SENTENCE_COUNT = 100;
 
+// 음성 메모(27번, 2026-09-14) — 문장 아이디어가 떠올랐을 때 말로 빠르게 붙잡아두는 임시 보관함.
+// 정식 문장(sentences)과는 별개 데이터 — "완성"되면(문장추가 폼에서 실제로 추가되면) 여기서 제거됨
+const VOICE_MEMO_KEY = 'tuktak_voice_memos';
+
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
 let hideDefaultSentences = localStorage.getItem(HIDE_DEFAULT_KEY) === 'true';
+let voiceMemos = [];
 let autoPlayPronunciation = localStorage.getItem(AUTO_PLAY_PRONUNCIATION_KEY) === 'true';
 
 const sentences = loadSentences();
@@ -658,6 +663,14 @@ const noteStudyScreen = document.getElementById('note-study-screen');
 const noteStudyBackBtn = document.getElementById('note-study-back-btn');
 const noteStudyHomeBtn = document.getElementById('note-study-home-btn');
 const noteStudyListEl = document.getElementById('note-study-list');
+const voiceMemoOpenBtn = document.getElementById('voice-memo-open-btn');
+const voiceMemoScreen = document.getElementById('voice-memo-screen');
+const voiceMemoBackBtn = document.getElementById('voice-memo-back-btn');
+const voiceMemoRecordBtn = document.getElementById('voice-memo-record-btn');
+const voiceMemoStatusEl = document.getElementById('voice-memo-status');
+const voiceMemoPreview = document.getElementById('voice-memo-preview');
+const voiceMemoSaveBtn = document.getElementById('voice-memo-save-btn');
+const voiceMemoListEl = document.getElementById('voice-memo-list');
 const variationOpenBtn = document.getElementById('variation-open-btn');
 const variationListScreen = document.getElementById('variation-list-screen');
 const variationListBackBtn = document.getElementById('variation-list-back-btn');
@@ -894,9 +907,12 @@ nextBtn.addEventListener('click', () => {
 // 고를 필요가 없으므로 탭을 숨기고 폼만 노출한다.
 // ==========================================================================
 let editingId = null;
-// 문장추가 화면은 카드 화면·문장관리 화면 양쪽에서 열릴 수 있어, 뒤로가기 시
+// 문장추가 화면은 카드 화면·문장관리 화면·음성 메모 화면 등 여러 곳에서 열릴 수 있어, 뒤로가기 시
 // 원래 있던 화면으로 돌아가기 위해 연 시점의 화면을 기억해둠
 let addModalReturnScreen = cardScreen;
+// 음성 메모(27번)에서 프리필해서 열었을 때만 값이 있음 — 실제로 문장이 추가되는 순간에만
+// 그 메모를 지움(중간에 뒤로가기로 취소하면 메모는 그대로 남아있어야 하므로)
+let addModalSourceMemoId = null;
 
 function setAddModalTab(tab) {
   addModalTabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
@@ -905,8 +921,9 @@ function setAddModalTab(tab) {
   addTabPaste.classList.toggle('hidden', tab !== 'paste');
 }
 
-function openAddModal(sentence) {
+function openAddModal(sentence, options) {
   setAddModalTab('form');
+  addModalSourceMemoId = (options && options.sourceMemoId) || null;
   if (sentence) {
     editingId = sentence.id;
     addModalTitleEl.textContent = '문장 수정';
@@ -918,9 +935,10 @@ function openAddModal(sentence) {
     editingId = null;
     addModalTitleEl.textContent = '문장 추가';
     addSubmitBtn.textContent = '추가';
+    addKrInput.value = (options && options.prefillKr) || '';
     addModalTabsEl.classList.remove('hidden');
   }
-  addModalReturnScreen = listScreen.classList.contains('hidden') ? cardScreen : listScreen;
+  addModalReturnScreen = document.querySelector('.screen:not(.hidden)') || cardScreen;
   addModalReturnScreen.classList.add('hidden');
   addModal.classList.remove('hidden');
 }
@@ -933,6 +951,7 @@ function closeAddModal() {
   pasteTextarea.value = '';
   importFileInput.value = '';
   editingId = null;
+  addModalSourceMemoId = null;
 }
 
 function refreshAfterAdd() {
@@ -958,6 +977,10 @@ addSubmitBtn.addEventListener('click', () => {
     updateSentence(editingId, kr, en);
   } else {
     addSentence(kr, en);
+    // 음성 메모에서 이어서 완성한 경우에만 원본 메모를 제거(추가가 실제로 성사된 시점에만)
+    if (addModalSourceMemoId) {
+      deleteVoiceMemo(addModalSourceMemoId);
+    }
   }
   closeAddModal();
   refreshAfterAdd();
@@ -1139,6 +1162,156 @@ noteStudyBackBtn.addEventListener('click', () => {
 });
 
 noteStudyHomeBtn.addEventListener('click', goToCardScreen);
+
+// ==========================================================================
+// 음성 메모 (27번, 2026-09-14) — SpeechRecognition으로 문장 아이디어를 빠르게
+// 텍스트로 캡처해두는 임시 보관함. "당장이든 나중이든" 완성할 수 있도록,
+// 실제로 문장추가 폼에서 추가가 성사된 시점에만 원본 메모가 지워짐(위 openAddModal 참고).
+// 비용 0원(브라우저 내장 API), 인식 언어는 한국어(ko-KR) 고정.
+// ==========================================================================
+const VOICE_MEMO_TRASH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+
+function loadVoiceMemos() {
+  try {
+    voiceMemos = JSON.parse(localStorage.getItem(VOICE_MEMO_KEY) || '[]');
+  } catch {
+    voiceMemos = [];
+  }
+}
+
+function saveVoiceMemos() {
+  localStorage.setItem(VOICE_MEMO_KEY, JSON.stringify(voiceMemos));
+}
+
+function deleteVoiceMemo(id) {
+  voiceMemos = voiceMemos.filter((m) => String(m.id) !== String(id));
+  saveVoiceMemos();
+}
+
+function renderVoiceMemoList() {
+  voiceMemoListEl.innerHTML = '';
+  if (voiceMemos.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'voice-memo-list-empty';
+    emptyMsg.textContent = '아직 저장된 메모가 없어요.';
+    voiceMemoListEl.appendChild(emptyMsg);
+    return;
+  }
+  // 최근 메모가 위로 오도록
+  [...voiceMemos].reverse().forEach((memo) => {
+    const item = document.createElement('div');
+    item.className = 'voice-memo-item';
+
+    const textEl = document.createElement('p');
+    textEl.className = 'voice-memo-item-text';
+    textEl.textContent = memo.text;
+    item.appendChild(textEl);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'voice-memo-item-delete-btn';
+    deleteBtn.setAttribute('aria-label', '메모 삭제');
+    deleteBtn.innerHTML = VOICE_MEMO_TRASH_ICON;
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteVoiceMemo(memo.id);
+      renderVoiceMemoList();
+    });
+    item.appendChild(deleteBtn);
+
+    // 메모를 탭하면 그 텍스트를 한국어 칸에 채운 채 문장추가 폼으로 이동 —
+    // 여기서 바로 삭제하지 않고, 실제로 "추가"가 성사되는 순간에만 지워짐
+    item.addEventListener('click', () => {
+      voiceMemoScreen.classList.add('hidden');
+      openAddModal(null, { prefillKr: memo.text, sourceMemoId: memo.id });
+    });
+
+    voiceMemoListEl.appendChild(item);
+  });
+}
+
+voiceMemoOpenBtn.addEventListener('click', () => {
+  cardScreen.classList.add('hidden');
+  voiceMemoScreen.classList.remove('hidden');
+  renderVoiceMemoList();
+});
+
+voiceMemoBackBtn.addEventListener('click', () => {
+  stopVoiceMemoRecording();
+  voiceMemoScreen.classList.add('hidden');
+  cardScreen.classList.remove('hidden');
+});
+
+voiceMemoSaveBtn.addEventListener('click', () => {
+  const text = voiceMemoPreview.value.trim();
+  if (!text) return;
+  voiceMemos.push({ id: Date.now().toString(), text, createdAt: new Date().toISOString() });
+  saveVoiceMemos();
+  voiceMemoPreview.value = '';
+  voiceMemoStatusEl.textContent = '탭해서 말하기';
+  renderVoiceMemoList();
+});
+
+// --- SpeechRecognition (음성 → 텍스트). iOS Safari 등 미지원 브라우저에서는
+// 마이크 버튼을 비활성화하고 안내 문구로 대체 ---
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voiceMemoRecognition = null;
+let voiceMemoRecording = false;
+
+function stopVoiceMemoRecording() {
+  if (voiceMemoRecognition && voiceMemoRecording) {
+    voiceMemoRecognition.stop();
+  }
+}
+
+if (!SpeechRecognitionCtor) {
+  voiceMemoRecordBtn.disabled = true;
+  voiceMemoStatusEl.textContent = '이 브라우저는 음성 인식을 지원하지 않아요';
+} else {
+  voiceMemoRecognition = new SpeechRecognitionCtor();
+  voiceMemoRecognition.lang = 'ko-KR';
+  voiceMemoRecognition.interimResults = false;
+  voiceMemoRecognition.maxAlternatives = 1;
+
+  voiceMemoRecognition.addEventListener('start', () => {
+    voiceMemoRecording = true;
+    voiceMemoRecordBtn.classList.add('recording');
+    voiceMemoStatusEl.textContent = '듣고 있어요...';
+  });
+
+  voiceMemoRecognition.addEventListener('result', (e) => {
+    const transcript = e.results[0][0].transcript;
+    const existing = voiceMemoPreview.value.trim();
+    // 여러 번 나눠 말해도 이어붙여지도록(한 번의 멈춤=한 문장이라고 가정하지 않음)
+    voiceMemoPreview.value = existing ? `${existing} ${transcript}` : transcript;
+  });
+
+  voiceMemoRecognition.addEventListener('error', () => {
+    voiceMemoStatusEl.textContent = '인식하지 못했어요. 다시 시도해주세요';
+  });
+
+  voiceMemoRecognition.addEventListener('end', () => {
+    voiceMemoRecording = false;
+    voiceMemoRecordBtn.classList.remove('recording');
+    if (voiceMemoStatusEl.textContent === '듣고 있어요...') {
+      voiceMemoStatusEl.textContent = '탭해서 말하기';
+    }
+  });
+
+  voiceMemoRecordBtn.addEventListener('click', () => {
+    if (voiceMemoRecording) {
+      voiceMemoRecognition.stop();
+    } else {
+      try {
+        voiceMemoRecognition.start();
+      } catch {
+        // 이미 시작된 상태에서 다시 start()를 부르면 예외를 던지는 브라우저가 있어 방어
+      }
+    }
+  });
+}
+
+loadVoiceMemos();
 
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);

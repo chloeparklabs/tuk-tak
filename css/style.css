@@ -1164,6 +1164,154 @@ button {
 }
 
 /* ==========================================================================
+   음성 메모 화면 (27번, 2026-09-14) — 문장 아이디어를 말로 빠르게 캡처
+   ========================================================================== */
+.voice-memo-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.voice-memo-intro {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-brand-dark);
+  text-align: center;
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .voice-memo-intro {
+  color: var(--color-text-primary);
+}
+
+.voice-memo-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--gray-50);
+  border-radius: 12px;
+}
+
+.voice-memo-record-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background-color: var(--color-brand);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.voice-memo-record-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* 녹음 중에는 accent-star 색으로 전환 — 별표/깃발 등 이 앱의 "활성 상태" 표시와 톤을 맞춤 */
+.voice-memo-record-btn.recording {
+  background-color: var(--color-accent-star);
+}
+
+.voice-memo-record-btn:disabled {
+  background-color: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.voice-memo-status {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.voice-memo-preview {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-base);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.voice-memo-save-btn {
+  width: 100%;
+}
+
+.voice-memo-list-section {
+  margin-top: 28px;
+}
+
+.voice-memo-list-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.voice-memo-list-hint {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.voice-memo-list-empty {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.voice-memo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.voice-memo-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--gray-50);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.voice-memo-item-text {
+  flex: 1;
+  font-size: 15px;
+  color: var(--color-text-primary);
+  word-break: keep-all;
+}
+
+.voice-memo-item-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--gray-500);
+  cursor: pointer;
+}
+
+.voice-memo-item-delete-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ==========================================================================
    문장관리 필터 탭 (전체 / 중요 / 미암기)
    ========================================================================== */
 .list-filter-bar {
