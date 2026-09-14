@@ -393,7 +393,7 @@ const START_INTRO_TEXT = "내게 필요한 문장만 골라서 확실하게 외�
 const START_TAGLINE_TEXT = '개인화된 문장 암기 앱';
 
 const SORT_KEY = 'tuktak_sort_order';
-const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important'];
+const SORT_MODES = ['random', 'newest', 'oldest', 'unfamiliar', 'important', 'kr-alpha', 'en-alpha'];
 const DEFAULT_SORT_MODE = 'oldest'; // 기존(정렬 기능 도입 전) 순서와 동일해 설정을 건드리지 않은 사용자는 체감 변화 없음
 const RANDOM_ORDER_KEY = 'tuktak_random_order';
 
@@ -510,6 +510,14 @@ function getOrderedSentences() {
 
   if (sortMode === 'newest') return [...visible].sort(byNewest);
   if (sortMode === 'oldest') return [...visible].sort(byOldest);
+
+  // 가나다순/알파벳순 — 문장이 많아졌을 때 특정 문장을 훑어 찾기 쉽도록 (2026-09-14, 26번)
+  if (sortMode === 'kr-alpha') {
+    return [...visible].sort((a, b) => (a.kr || '').localeCompare(b.kr || '', 'ko'));
+  }
+  if (sortMode === 'en-alpha') {
+    return [...visible].sort((a, b) => (a.en || '').localeCompare(b.en || '', 'en', { sensitivity: 'base' }));
+  }
 
   if (sortMode === 'unfamiliar' || sortMode === 'important') {
     const key = sortMode;
