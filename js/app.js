@@ -642,8 +642,6 @@ const cloudBackupBtn = document.getElementById('cloud-backup-btn');
 const cloudRestoreBtn = document.getElementById('cloud-restore-btn');
 const cloudBackupInfoBtn = document.getElementById('cloud-backup-info-btn');
 const cloudRestoreInfoBtn = document.getElementById('cloud-restore-info-btn');
-const cloudMergeBtn = document.getElementById('cloud-merge-btn');
-const cloudMergeInfoBtn = document.getElementById('cloud-merge-info-btn');
 const cloudDeleteBtn = document.getElementById('cloud-delete-btn');
 const cloudDeleteInfoBtn = document.getElementById('cloud-delete-info-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
@@ -2165,46 +2163,30 @@ cloudSignoutBtn.addEventListener('click', async () => {
 });
 
 // "클라우드"라는 용어 자체를 낯설어하는 사용자를 위한 쉬운 설명(2026-09-12) — 앞으로 추가될
-// 병합/삭제 버튼도 같은 .settings-info-btn + alert() 패턴을 따를 것
+// 버튼도 같은 .settings-info-btn + alert() 패턴을 따를 것
 cloudBackupInfoBtn.addEventListener('click', () => {
-  alert('클라우드는 인터넷에 있는 저장 공간이에요(이 폰이 아니라 구글 서버). "지금 백업"을 누르면 지금 갖고 있는 문장들을 그 저장 공간에 복사해둬요. 나중에 폰을 바꾸거나 다른 기기에서도 이 백업으로 문장을 불러올 수 있어요.');
+  alert('클라우드는 인터넷에 있는 저장 공간이에요(이 폰이 아니라 구글 서버). "지금 백업"을 누르면 클라우드를 먼저 확인해 다른 기기에서만 추가/수정한 문장이 있으면 이 기기로 가져와 합친 뒤, 그 결과를 클라우드에 저장해요. 이 기기의 문장이 지워지는 일은 없어요.');
 });
 
 cloudRestoreInfoBtn.addEventListener('click', () => {
   alert('클라우드(구글 서버)에 저장해둔 백업을 지금 이 기기로 가져와요. ⚠️ 지금 기기에 있는 문장은 모두 사라지고 백업 내용으로 통째로 바뀌니, 최근에 추가한 문장이 있다면 먼저 "지금 백업"을 눌러두세요.');
 });
 
-cloudMergeInfoBtn.addEventListener('click', () => {
-  alert('이 기기의 문장은 지우지 않고, 클라우드에만 있던 문장을 이 기기에 추가로 가져와요. 같은 문장이 양쪽에 있으면 중요/미암기 표시도 합쳐져요. "클라우드에서 복원"과 달리 지금 기기의 문장이 사라지지 않는 안전한 방법이에요.');
-});
-
 cloudDeleteInfoBtn.addEventListener('click', () => {
   alert('클라우드(구글 서버)에 저장해둔 백업만 지워요. 이 기기에 있는 문장은 그대로 남아있어요. ⚠️ 삭제하면 되돌릴 수 없으니, 나중에 필요할 것 같다면 지우기 전에 다른 곳에 따로 백업해두세요.');
 });
 
+// "지금 백업"은 단순 덮어쓰기가 아니라 항상 병합(2026-09-14 방향 확정 → 같은 날 구현) —
+// 폰↔PC(input.html) 동시편집 시 나중에 저장하는 쪽이 먼저 저장된 변경사항을 지우지 않도록,
+// 저장 전에 클라우드를 먼저 불러와 이 기기 문장과 합침. 기존에 별도 버튼이었던
+// "클라우드와 병합"(18번 보완 2번, B안)의 로직을 그대로 흡수 — 버튼이 사실상 중복이 되어 제거.
+// "클라우드에서 복원"만 예외적으로 의도적 전체교체로 남아있음(되돌릴 수 없는 동작이라 확인창 유지)
 cloudBackupBtn.addEventListener('click', async () => {
   try {
-    await window.CloudSync.backup(sentences);
-    alert('클라우드에 백업했습니다.');
-  } catch (err) {
-    alert(`백업에 실패했습니다: ${err.message}`);
-  }
-});
-
-// 클라우드와 병합(18번 보완 2번, B안) — "클라우드에서 복원"(완전 교체)과 달리 이 기기 문장은
-// 지우지 않고, 클라우드에만 있던 문장만 추가하는 안전한 동기화 방식. 한국어+영어 텍스트가
-// 정확히 일치(공백 trim)하는 문장은 중복 추가하지 않고 중요/미암기 표시만 OR로 합침
-cloudMergeBtn.addEventListener('click', async () => {
-  try {
     const cloudSentences = await window.CloudSync.restore();
-    if (!cloudSentences || cloudSentences.length === 0) {
-      alert('클라우드에 백업된 문장이 없어 병합할 내용이 없습니다. 먼저 "지금 백업"을 눌러주세요.');
-      return;
-    }
-
     let addedCount = 0;
     let updatedFlagCount = 0;
-    cloudSentences.map(normalizeSentence).forEach((cs) => {
+    (cloudSentences || []).map(normalizeSentence).forEach((cs) => {
       const match = sentences.find((ls) => ls.kr.trim() === cs.kr.trim() && ls.en.trim() === cs.en.trim());
       if (match) {
         const before = `${match.important}-${match.unfamiliar}`;
@@ -2221,14 +2203,21 @@ cloudMergeBtn.addEventListener('click', async () => {
       }
     });
 
-    saveSentences(sentences);
-    saveRandomOrder();
-    await window.CloudSync.backup(sentences); // 병합 결과를 클라우드에도 반영해 로컬↔클라우드를 같은 상태로 맞춤
-    renderCard();
-    if (!listScreen.classList.contains('hidden')) renderSentenceList();
-    alert(`클라우드와 병합했습니다. 새 문장 ${addedCount}개 추가, 표시 갱신 ${updatedFlagCount}개.`);
+    if (addedCount > 0 || updatedFlagCount > 0) {
+      saveSentences(sentences);
+      saveRandomOrder();
+      renderCard();
+      if (!listScreen.classList.contains('hidden')) renderSentenceList();
+    }
+    await window.CloudSync.backup(sentences);
+
+    if (addedCount > 0 || updatedFlagCount > 0) {
+      alert(`클라우드에 백업했습니다. (다른 기기에서 추가된 문장 ${addedCount}개, 표시 갱신 ${updatedFlagCount}개 반영)`);
+    } else {
+      alert('클라우드에 백업했습니다.');
+    }
   } catch (err) {
-    alert(`병합에 실패했습니다: ${err.message}`);
+    alert(`백업에 실패했습니다: ${err.message}`);
   }
 });
 

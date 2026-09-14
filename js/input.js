@@ -340,20 +340,24 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // 저장: (관리 섹션에서 편집/삭제한 기존 문장) + (새로 입력한 문장)을 합쳐 한 번에 저장.
-// 관리 섹션이 이미 "클라우드의 현재 상태"를 그대로 보여주고 있어 별도로 restore를 다시
-// 호출하지 않음(화면에 보이는 그대로가 저장 결과 — 최신 상태가 궁금하면 "새로고침" 사용).
-// 폰에는 자동 반영되지 않으므로 "클라우드에서 복원"을 눌러야 함을 안내
+// 2026-09-14 방향 확정("저장은 항상 병합") → 같은 날 구현: 이 페이지를 연 시점의 스냅샷
+// (manageSentencesById)만 기준으로 통째로 덮어쓰면, 그 사이 폰에서 따로 추가/수정한 문장이
+// 조용히 사라질 수 있음(동시편집 유실 위험) — 저장 직전에 클라우드를 한 번 더 불러와
+// "이 페이지에서 편집/삭제한 항목"의 의도만 반영하고, 이 페이지가 모르는(다른 기기가 그 사이
+// 추가한) 항목은 그대로 보존하는 방식으로 병합. 폰에는 자동 반영되지 않으므로
+// "클라우드에서 복원"을 눌러야 함을 안내
 saveBtn.addEventListener('click', async () => {
-  const managedList = [...manageRowsEl.querySelectorAll('.input-row')]
-    .map((row) => {
-      const original = manageSentencesById.get(row.dataset.id) || {};
-      return {
-        ...original,
-        kr: row.querySelector('.input-kr').value.trim(),
-        en: row.querySelector('.input-en').value.trim(),
-      };
-    })
-    .filter((s) => s.kr && s.en);
+  const editedById = new Map();
+  manageRowsEl.querySelectorAll('.input-row').forEach((row) => {
+    editedById.set(row.dataset.id, {
+      kr: row.querySelector('.input-kr').value.trim(),
+      en: row.querySelector('.input-en').value.trim(),
+    });
+  });
+  // 관리 목록을 불러온 시점엔 있었는데 지금 화면엔 없는 id = 이 페이지에서 명시적으로 삭제한 것
+  const deletedIds = new Set(
+    [...manageSentencesById.keys()].filter((id) => !editedById.has(id))
+  );
 
   const newSentences = [...inputRowsEl.querySelectorAll('.input-row')]
     .map((row) => ({
@@ -372,6 +376,23 @@ saveBtn.addEventListener('click', async () => {
   statusTextEl.textContent = '저장 중...';
 
   try {
+    // 저장 직전에 클라우드 최신 상태를 다시 불러옴 — 이 페이지를 연 뒤 다른 기기(폰)가
+    // 추가/수정했을 수 있는 항목까지 반영하기 위함(레이스 컨디션 최소화)
+    const freshCloud = ((await window.CloudSync.restore()) || []).map(normalizeSentence);
+    const managedList = [];
+    freshCloud.forEach((cs) => {
+      const id = String(cs.id);
+      if (deletedIds.has(id)) return; // 이 페이지에서 명시적으로 삭제한 항목은 제외
+      const edit = editedById.get(id);
+      if (edit) {
+        if (edit.kr && edit.en) managedList.push({ ...cs, kr: edit.kr, en: edit.en });
+        // 편집 중 칸을 비웠다면 삭제 의도로 보고 제외(기존 필터 규칙과 동일)
+      } else {
+        // 이 페이지의 관리 목록을 불러온 뒤 다른 기기가 새로 추가/변경한 항목 — 그대로 보존
+        managedList.push(cs);
+      }
+    });
+
     const finalList = [...managedList, ...newSentences];
     await window.CloudSync.backup(finalList);
     statusTextEl.textContent = `저장했습니다. (전체 ${finalList.length}개, 새 문장 ${newSentences.length}개) 폰에서 "클라우드에서 복원"을 눌러 확인하세요.`;
