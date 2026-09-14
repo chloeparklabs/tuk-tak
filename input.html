@@ -74,11 +74,17 @@
         <div id="manage-content" class="hidden">
           <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
           <div id="manage-rows" class="input-rows"></div>
+          <!-- 문장이 많으면 한꺼번에 다 그리는 대신 일정 개수씩만 보여줌(2026-09-14) — 안 보이는
+               나머지도 DOM에는 그대로 남아있어 저장 시 정상 포함됨(위 manage-rows 주석 참고) -->
+          <button id="manage-load-more-btn" class="btn-outline hidden" type="button"></button>
           <p id="manage-empty" class="panel-desc hidden"></p>
         </div>
 
-        <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
-        <p id="status-text" class="status-text"></p>
+        <!-- 목록이 길어져도 저장 버튼을 찾기 쉽도록 화면 하단에 고정(2026-09-14) -->
+        <div class="save-bar">
+          <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
+          <p id="status-text" class="status-text"></p>
+        </div>
       </section>
     </main>
   </div>

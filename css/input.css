@@ -328,6 +328,35 @@ body {
   cursor: pointer;
 }
 
+/* 목록이 길어져도 저장 버튼을 화면 하단에 계속 떠 있게 함(2026-09-14) — .panel의
+   패딩을 상쇄하는 음수 마진으로 카드 바닥에 딱 붙는 형태, 구분선+그림자로 위쪽 콘텐츠와
+   분리. .panel의 반응형 padding/border-radius 값과 짝을 맞춰야 함(아래 미디어쿼리 참고) */
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  margin: 24px -40px -40px;
+  padding: 16px 40px calc(16px + env(safe-area-inset-bottom));
+  background-color: #FFFFFF;
+  border-top: 1px solid #ECECEC;
+  box-shadow: 0 -4px 12px rgba(20, 23, 28, 0.06);
+  border-radius: 0 0 16px 16px;
+}
+
+@media (max-width: 1024px) {
+  .save-bar {
+    margin: 24px -32px -32px;
+    padding: 16px 32px calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .save-bar {
+    margin: 20px -20px -20px;
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 0 0 12px 12px;
+  }
+}
+
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: default;
@@ -359,6 +388,12 @@ body {
     background-color: #1E222A;
     box-shadow: none;
     border: 1px solid #333944;
+  }
+
+  .save-bar {
+    background-color: #1E222A;
+    border-top-color: #333944;
+    box-shadow: none;
   }
 
   .panel-desc,

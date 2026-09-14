@@ -24,6 +24,7 @@ const manageEmptyEl = document.getElementById('manage-empty');
 const manageRefreshBtn = document.getElementById('manage-refresh-btn');
 const manageToggleBtn = document.getElementById('manage-toggle-btn');
 const manageContentEl = document.getElementById('manage-content');
+const manageLoadMoreBtn = document.getElementById('manage-load-more-btn');
 
 const TRASH_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
 
@@ -296,6 +297,35 @@ function createManageRow(sentence) {
   return row;
 }
 
+// 문장이 많을 때 한꺼번에 다 그리면 스크롤바 썸이 너무 작아져 다루기 어려워짐(2026-09-14
+// 사용자 피드백) — 처음엔 이 개수만 보여주고 "더보기"로 이어서 노출. 저장/병합 로직은
+// 항상 .input-row 전체를 querySelectorAll로 찾으므로, 숨긴 행도 DOM에는 그대로 남겨둠(제거 아님)
+const MANAGE_PAGE_SIZE = 20;
+let manageVisibleCount = 0;
+
+function updateManageLoadMoreBtn(total) {
+  const remaining = total - manageVisibleCount;
+  if (remaining <= 0) {
+    manageLoadMoreBtn.classList.add('hidden');
+    return;
+  }
+  manageLoadMoreBtn.textContent = `더보기 (${remaining}개 더 있음)`;
+  manageLoadMoreBtn.classList.remove('hidden');
+}
+
+manageLoadMoreBtn.addEventListener('click', () => {
+  const hiddenRows = manageRowsEl.querySelectorAll('.input-row.hidden');
+  const nextBatch = Array.from(hiddenRows).slice(0, MANAGE_PAGE_SIZE);
+  nextBatch.forEach((row) => {
+    row.classList.remove('hidden');
+    // 숨겨져 있던 동안(display:none) textarea의 scrollHeight가 0으로 잘못 잡히므로
+    // 실제로 보이게 된 지금 다시 계산해야 함(관리 섹션 펼침 토글과 같은 이유)
+    row.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+  });
+  manageVisibleCount += nextBatch.length;
+  updateManageLoadMoreBtn(manageRowsEl.children.length);
+});
+
 async function loadManageList() {
   manageDirty = false;
   manageRowsEl.innerHTML = '';
@@ -303,8 +333,15 @@ async function loadManageList() {
   try {
     const existing = ((await window.CloudSync.restore()) || []).map(normalizeSentence);
     manageSentencesById = new Map(existing.map((s) => [String(s.id), s]));
-    existing.forEach((s) => manageRowsEl.appendChild(createManageRow(s)));
-    document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+    existing.forEach((s, index) => {
+      const row = createManageRow(s);
+      if (index >= MANAGE_PAGE_SIZE) row.classList.add('hidden');
+      manageRowsEl.appendChild(row);
+    });
+    manageVisibleCount = Math.min(MANAGE_PAGE_SIZE, existing.length);
+    updateManageLoadMoreBtn(existing.length);
+    manageRowsEl.querySelectorAll('.input-row:not(.hidden) .input-kr, .input-row:not(.hidden) .input-en')
+      .forEach(autoGrow);
     if (existing.length === 0) {
       manageEmptyEl.textContent = '클라우드에 저장된 문장이 없습니다.';
       manageEmptyEl.classList.remove('hidden');
