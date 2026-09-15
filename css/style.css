@@ -1809,23 +1809,57 @@ button {
   flex-shrink: 0;
 }
 
-/* 클라우드 백업/복원처럼 버튼 옆에 "?" 설명 버튼을 나란히 두는 행(2026-09-12) —
-   .settings-info-btn이 align-items 기본값(stretch)으로 옆 버튼과 높이가 자동으로 맞춰짐 */
-.settings-action-row {
+/* 클라우드 백업/복원/삭제 — "?" 설명 버튼을 액션 버튼 글자 뒤에 같은 시각적 버튼 안에
+   포함시키고, 전체 길이를 로그아웃과 동일한 전체 폭으로 맞춤(2026-09-15, "물음표를 글자
+   뒤에 위치시키고 버튼은 로그아웃과 동일하게 모두 길이 맞추어줘" 요청). 실제로는 액션
+   버튼(.settings-action-main)과 설명 버튼(.settings-info-btn)이 분리된 <button> 두 개인데
+   — 버튼 안에 버튼을 중첩할 수 없는 HTML 제약 때문 — 이 <div>가 시각적 버튼 껍데기
+   (테두리·배경·둥근모서리·전체폭)를 담당해 하나의 버튼처럼 보이게 함 */
+.settings-action-group {
   display: flex;
+  align-items: center;
   gap: 8px;
+  width: 100%;
+  padding: 16px;
   margin-bottom: 10px;
+  background-color: var(--color-base);
+  border: 1.5px solid var(--color-brand);
+  border-radius: 12px;
 }
 
-.settings-action-row .settings-action-btn {
-  /* width:auto 대신 flex:1로 채워 백업/복원/삭제 버튼의 길이를 서로 동일하게 맞춤(2026-09-15) */
-  width: auto;
-  flex: 1;
-  margin-bottom: 0;
+/* 둘 중 어느 버튼을 누르든 그룹 전체가 눌린 것처럼 배경이 반전(기존 .btn-outline:active와 같은 느낌) */
+.settings-action-group:has(:active) {
+  background-color: var(--color-brand);
 }
 
-/* "?" 설명 버튼 — 원형 물음표 아이콘(lucide circle-help 자체가 이미 원 안에 물음표)만 보이도록
-   버튼 자체의 테두리·배경·고정폭 제거(2026-09-15, "원형물음표 아이콘만 버튼안에 넣어줘") */
+.settings-action-group:has(:active) .settings-action-main,
+.settings-action-group:has(:active) .settings-info-btn {
+  color: #FFFFFF;
+}
+
+.settings-action-main {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-brand-dark);
+  font-size: 18px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.settings-action-main svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* "?" 설명 버튼 — 원형 물음표 아이콘(lucide circle-help 자체가 이미 원 안에 물음표)만
+   보이도록 자체 테두리·배경·고정폭 없이 라벨 텍스트 바로 뒤에 배치(2026-09-15) */
 .settings-info-btn {
   flex-shrink: 0;
   display: flex;
@@ -1842,17 +1876,19 @@ button {
   height: 20px;
 }
 
-/* "클라우드에서 복원"은 지금 기기의 문장을 전부 덮어쓰는 되돌릴 수 없는 동작이라, 누르기 전에도
-   주의가 필요함을 암시하도록 다른 설정 버튼과 다른 색(즐겨찾기와 같은 accent-star 계열)을 사용
-   (2026-09-12, "경고 표시등이 있으면 좋겠다" 피드백) */
-.settings-action-btn-warning {
+/* "클라우드에서 복원"/"클라우드 백업 삭제"는 되돌릴 수 없는 동작이라, 누르기 전에도 주의가
+   필요함을 암시하도록 다른 설정 버튼과 다른 색(즐겨찾기와 같은 accent-star 계열) 사용
+   (2026-09-12 도입, 2026-09-15 그룹 단위로 이전) */
+.settings-action-group-warning {
   border-color: var(--color-accent-star);
+}
+
+.settings-action-group-warning .settings-action-main {
   color: var(--color-accent-star);
 }
 
-.settings-action-btn-warning:active {
+.settings-action-group-warning:has(:active) {
   background-color: var(--color-accent-star);
-  color: #FFFFFF;
 }
 
 .cloud-account-desc {
