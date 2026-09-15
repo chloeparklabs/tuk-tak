@@ -1,4 +1,30 @@
 // ==========================================================================
+// TTS 워밍업 (2026-09-15)
+// ==========================================================================
+// 정답 발음 듣기(speakEnglish, 아래 24번 구현부)의 첫 재생만 유독 오래 걸리는 문제 대응.
+// 원인은 브라우저 내장 SpeechSynthesis 엔진이 목소리 데이터를 그제서야 비동기로
+// 로딩하기 때문(우리 코드로 로딩 자체를 없앨 순 없음) — 사용자가 스피커를 처음 누르는
+// 순간이 아니라 앱이 로드되는 시점에 무음 더미 문장으로 미리 로딩을 트리거해 체감
+// 지연을 줄임(완전 제거 보장은 아니고, 완화 목적).
+function warmUpSpeechSynthesis() {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    const warmup = new SpeechSynthesisUtterance(' ');
+    warmup.volume = 0;
+    warmup.lang = 'en-US';
+    window.speechSynthesis.speak(warmup);
+  } catch (e) {
+    // 워밍업 실패는 무시 — 실제 발음 재생 기능엔 영향 없음
+  }
+}
+warmUpSpeechSynthesis();
+// 일부 브라우저는 목소리 목록이 비동기로 늦게 채워져 최초 speak() 호출 시점에
+// 아직 준비가 안 됐을 수 있어, voiceschanged 이벤트 발생 시 한 번 더 워밍업
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.addEventListener('voiceschanged', warmUpSpeechSynthesis, { once: true });
+}
+
+// ==========================================================================
 // 데이터 저장소 (LocalStorage)
 // ==========================================================================
 const STORAGE_KEY = 'tuktak_sentences';
