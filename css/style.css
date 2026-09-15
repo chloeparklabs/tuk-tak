@@ -1242,7 +1242,8 @@ button {
   height: 64px;
   background-color: var(--color-base);
   color: var(--gray-600);
-  border: 2px solid var(--gray-300);
+  /* 테두리 선 색을 마이크 아이콘 선 색과 동일하게 맞춤(2026-09-15) */
+  border: 2px solid var(--gray-600);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -1261,7 +1262,8 @@ button {
 
 .voice-memo-record-btn:disabled {
   background-color: var(--color-base);
-  border-color: var(--gray-200);
+  /* 비활성 상태도 같은 원칙(테두리=아이콘 선 색)으로 통일 */
+  border-color: var(--gray-300);
   color: var(--gray-300);
   cursor: not-allowed;
 }
