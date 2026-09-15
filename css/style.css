@@ -1271,6 +1271,8 @@ button {
 .voice-memo-status {
   font-size: 13px;
   color: var(--color-text-secondary);
+  /* 아래 여백을 기존(부모 flex gap 10px)의 두 배로 — 2026-09-15 */
+  margin-bottom: 10px;
 }
 
 .voice-memo-preview {
@@ -1315,7 +1317,8 @@ button {
 .voice-memo-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* 메모 항목 간 줄간격을 기존(10px)의 절반으로 축소 — 2026-09-15 */
+  gap: 5px;
   margin-top: 12px;
 }
 
