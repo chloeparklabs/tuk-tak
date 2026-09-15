@@ -754,6 +754,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 둥글기만 이 버튼들 전용으로 12px→20px 조정(다른 .btn 공유 버튼엔 영향 없음, 2026-09-15) */
+  border-radius: 20px;
 }
 
 /* 이전/다음: 그레이 아웃라인 (새 컬러가이드 컴포넌트 규칙) */
