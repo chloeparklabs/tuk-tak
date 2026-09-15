@@ -825,7 +825,8 @@ button {
 .add-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
+  /* 좌우 여백 20px→16px로 통일(2026-09-15, 화면별로 제각각이던 좌우 여백 정리) */
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -1052,7 +1053,9 @@ button {
    ========================================================================== */
 /* 문장변형 목록(.variation-list-intro)과 같은 패턴 — 항상 노출 */
 .list-note-intro {
-  padding: 12px 20px 0;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) — 이제 목록 항목(body 16px+자체 16px=32px 인셋)과
+     정확히 같은 인셋(16px+16px=32px)이 되어 같은 화면 안에서도 어긋나 있던 것이 맞춰짐 */
+  padding: 12px 16px 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--color-brand-dark);
@@ -1068,7 +1071,8 @@ button {
    반드시 별도 클래스로 유지할 것 */
 .list-display-mode-bar {
   display: flex;
-  margin: 10px 20px 0;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  margin: 10px 16px 0;
   border: 1.5px solid var(--gray-200);
   border-radius: 8px;
   overflow: hidden;
@@ -1317,9 +1321,11 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  /* 위아래 줄간격을 기존(14px)의 절반(7px)으로 축소, 왼쪽은 패딩 없이 "저장된 메모"
-     타이틀과 같은 세로선에서 시작하도록(2026-09-15, "그리드가 들쭉날쭉해 보인다"는 피드백) */
-  padding: 7px 16px 7px 0;
+  /* 위아래 줄간격을 기존(14px)의 절반(7px)으로 축소(2026-09-15, "그리드가 들쭉날쭉해
+     보인다"는 피드백). 왼쪽 패딩은 한때 "저장된 메모" 타이틀과 정렬을 맞추려 0으로
+     뒀었으나, 그 타이틀 자체가 삭제되며 이유가 사라짐 → 문장관리 항목(.sentence-list-item)과
+     같은 좌우 대칭 16px로 복원(같은 날, 전체 화면 좌우 여백 16px 통일 작업의 일부) */
+  padding: 7px 16px;
   background-color: var(--gray-50);
   border-radius: 12px;
   cursor: pointer;
@@ -1732,7 +1738,8 @@ button {
 .settings-body {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  padding: 8px 16px calc(24px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -1862,7 +1869,8 @@ button {
 .help-body {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  padding: 8px 16px calc(24px + env(safe-area-inset-bottom));
 }
 
 .help-intro {
@@ -2065,7 +2073,8 @@ button {
 .variation-card-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2124,7 +2133,8 @@ button {
 .variation-detail-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 16px;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  padding: 16px 16px 16px;
 }
 
 /* "선택한 문장 추가하기" 고정 하단 버튼 — .ai-variation-preview-footer와 같은 개념(2026-08-27) */
@@ -2270,7 +2280,8 @@ button {
 .ai-variation-body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 20px calc(24px + env(safe-area-inset-bottom));
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) */
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 24px;
