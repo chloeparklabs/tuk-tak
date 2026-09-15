@@ -1212,7 +1212,7 @@ button {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-brand-dark);
-  text-align: center;
+  text-align: left;
   line-height: 1.5;
 }
 
