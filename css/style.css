@@ -1301,12 +1301,6 @@ button {
   color: var(--color-text-primary);
 }
 
-.voice-memo-list-hint {
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
 .voice-memo-list-empty {
   margin-top: 16px;
   font-size: 14px;
