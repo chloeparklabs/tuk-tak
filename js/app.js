@@ -915,6 +915,21 @@ checkBtn.addEventListener('click', () => {
   }
 });
 
+// 문장 텍스트를 탭해도 "확인"과 같은 방식으로 정답을 토글(2026-09-15) — 노트형 학습(25번)의
+// 탭-확인 인출연습과 같은 패턴을 메인 카드 화면에도 적용. "확인" 버튼과 달리 이쪽은
+// 다시 탭하면 한국어로 되돌아감(마킹 아이콘 바도 revealed에 연동돼 함께 숨겨짐)
+function toggleCardReveal() {
+  if (getCardOrderedSentences().length === 0) return;
+  revealed = !revealed;
+  renderCard();
+  if (revealed && autoPlayPronunciation) {
+    const sentence = getCardOrderedSentences()[currentIndex];
+    if (sentence) speakEnglish(sentence.en);
+  }
+}
+krTextEl.addEventListener('click', toggleCardReveal);
+enTextEl.addEventListener('click', toggleCardReveal);
+
 prevBtn.addEventListener('click', () => {
   goToSentence(currentIndex - 1);
 });

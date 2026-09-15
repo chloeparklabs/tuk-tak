@@ -524,6 +524,8 @@ button {
   color: var(--color-text-secondary);
   transition: font-size 0.2s ease, color 0.2s ease;
   word-break: keep-all;
+  /* 탭해서 정답 토글 가능(2026-09-15) — 탭 가능함을 커서로 암시 */
+  cursor: pointer;
 }
 
 /* 정답 확인 전에는 영어 박스(auto 행)가 접혀 있어, 한국어 문장이 3개 행 전체를 차지하며
@@ -553,6 +555,8 @@ button {
   padding: 40px 14px;
   border-radius: 8px;
   word-break: keep-all;
+  /* 탭해서 정답 토글 가능(2026-09-15) — 탭 가능함을 커서로 암시 */
+  cursor: pointer;
 }
 
 /* ==========================================================================
