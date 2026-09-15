@@ -1296,12 +1296,6 @@ button {
   margin-top: 28px;
 }
 
-.voice-memo-list-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
 .voice-memo-list-empty {
   margin-top: 16px;
   font-size: 14px;
