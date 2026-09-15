@@ -160,13 +160,35 @@ function resetInputRows() {
 }
 resetInputRows();
 
+// 파일 가져오기/텍스트 붙여넣기 전용 중복 검사(2026-09-15) — 같은 파일·텍스트를 실수로
+// 반복해서 가져올 때 완전히 같은 문장이 계속 쌓이는 문제 방지. "클라우드에 저장된 문장"
+// 관리 목록(수정 전 원본 포함)과 아직 저장 전인 "새 문장 추가" 행 둘 다와 비교(한국어+영어
+// 텍스트 trim 후 완전일치, 28번 클라우드 병합 로직과 동일 기준)
+function isDuplicateInputSentence(kr, en) {
+  const krTrim = kr.trim();
+  const enTrim = en.trim();
+  const rowMatches = (row) => {
+    const k = (row.querySelector('.input-kr')?.value || '').trim();
+    const e = (row.querySelector('.input-en')?.value || '').trim();
+    return k === krTrim && e === enTrim;
+  };
+  return [...manageRowsEl.querySelectorAll('.input-row')].some(rowMatches)
+    || [...inputRowsEl.querySelectorAll('.input-row')].some(rowMatches);
+}
+
 // 파일 가져오기(CSV/TSV/TXT)·텍스트 붙여넣기 공통 — 폰 앱과 같은 파서
 // (js/sentence-parser.js의 window.parseSentencesText) 재사용. 불러온 문장은 즉시 저장하지
 // 않고 입력 행 목록에 채워 넣어 검토할 수 있게 하며, 마지막 빈 행은 그대로 남겨둬 계속
-// 이어서 입력할 수 있게 함
+// 이어서 입력할 수 있게 함. 중복 문장은 건너뛰고 { addedCount, skippedCount }를 반환
 function insertParsedRows(parsed) {
   const lastRow = inputRowsEl.lastElementChild;
+  let addedCount = 0;
+  let skippedCount = 0;
   parsed.forEach((s) => {
+    if (isDuplicateInputSentence(s.kr, s.en)) {
+      skippedCount++;
+      return;
+    }
     const row = createInputRow();
     const krInput = row.querySelector('.input-kr');
     const enInput = row.querySelector('.input-en');
@@ -175,7 +197,19 @@ function insertParsedRows(parsed) {
     inputRowsEl.insertBefore(row, lastRow);
     autoGrow(krInput);
     autoGrow(enInput);
+    addedCount++;
   });
+  return { addedCount, skippedCount };
+}
+
+// 가져오기 결과 안내 문구 공통 생성(파일 가져오기/텍스트 붙여넣기 공유)
+function buildImportStatusText(addedCount, skippedCount) {
+  if (addedCount === 0 && skippedCount > 0) {
+    return `가져온 문장이 모두 이미 있는 문장이라 추가하지 않았어요. (${skippedCount}개 건너뜀)`;
+  }
+  return skippedCount > 0
+    ? `${addedCount}개 문장을 불러왔습니다. (이미 있는 문장 ${skippedCount}개는 건너뛰었어요) 확인 후 "변경사항 저장"을 눌러주세요.`
+    : `${addedCount}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
 }
 
 importFileBtn.addEventListener('click', () => {
@@ -195,8 +229,8 @@ importFileInput.addEventListener('change', () => {
       return;
     }
 
-    insertParsedRows(parsed);
-    statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
+    const { addedCount, skippedCount } = insertParsedRows(parsed);
+    statusTextEl.textContent = buildImportStatusText(addedCount, skippedCount);
     importFileInput.value = '';
   };
   reader.readAsText(file, 'UTF-8');
@@ -219,8 +253,8 @@ pasteSubmitBtn.addEventListener('click', () => {
     return;
   }
 
-  insertParsedRows(parsed);
-  statusTextEl.textContent = `${parsed.length}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
+  const { addedCount, skippedCount } = insertParsedRows(parsed);
+  statusTextEl.textContent = buildImportStatusText(addedCount, skippedCount);
   pasteTextarea.value = '';
   pastePanel.classList.add('hidden');
   pasteToggleBtn.setAttribute('aria-expanded', 'false');

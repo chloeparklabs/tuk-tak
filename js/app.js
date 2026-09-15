@@ -457,6 +457,16 @@ function addSentence(kr, en) {
   saveSentences(sentences);
 }
 
+// 파일 가져오기/텍스트 붙여넣기 전용 중복 검사(2026-09-15) — 같은 파일·텍스트를 실수로
+// 반복해서 가져올 때 완전히 같은 문장이 계속 쌓이는 문제 방지. 판정 기준은 28번 클라우드
+// 병합 로직과 동일(한국어+영어 텍스트 trim 후 완전일치). 폼으로 하나씩 입력하는 경우는
+// 범위 밖(사용자가 직접 타이핑하는 흐름에 마찰을 더하지 않기 위함)
+function isDuplicateSentence(kr, en) {
+  const krTrim = kr.trim();
+  const enTrim = en.trim();
+  return sentences.some((s) => s.kr.trim() === krTrim && s.en.trim() === enTrim);
+}
+
 function updateSentence(id, kr, en) {
   const target = sentences.find((s) => String(s.id) === String(id));
   if (!target) return;
@@ -1037,8 +1047,19 @@ importFileInput.addEventListener('change', () => {
   const reader = new FileReader();
   reader.onload = () => {
     const parsed = parseSentencesText(String(reader.result));
-    parsed.forEach((s) => addSentence(s.kr, s.en));
-    alert(`${parsed.length}개 문장을 추가했습니다.`);
+    let addedCount = 0;
+    let skippedCount = 0;
+    parsed.forEach((s) => {
+      if (isDuplicateSentence(s.kr, s.en)) {
+        skippedCount++;
+      } else {
+        addSentence(s.kr, s.en);
+        addedCount++;
+      }
+    });
+    alert(skippedCount > 0
+      ? `${addedCount}개 문장을 추가했습니다. (이미 있는 문장 ${skippedCount}개는 건너뛰었어요)`
+      : `${addedCount}개 문장을 추가했습니다.`);
     closeAddModal();
     refreshAfterAdd();
   };
@@ -1048,8 +1069,19 @@ importFileInput.addEventListener('change', () => {
 // --- 텍스트 붙여넣기 탭 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용) ---
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = parseSentencesText(pasteTextarea.value);
-  parsed.forEach((s) => addSentence(s.kr, s.en));
-  alert(`${parsed.length}개 문장을 추가했습니다.`);
+  let addedCount = 0;
+  let skippedCount = 0;
+  parsed.forEach((s) => {
+    if (isDuplicateSentence(s.kr, s.en)) {
+      skippedCount++;
+    } else {
+      addSentence(s.kr, s.en);
+      addedCount++;
+    }
+  });
+  alert(skippedCount > 0
+    ? `${addedCount}개 문장을 추가했습니다. (이미 있는 문장 ${skippedCount}개는 건너뛰었어요)`
+    : `${addedCount}개 문장을 추가했습니다.`);
   closeAddModal();
   refreshAfterAdd();
 });
