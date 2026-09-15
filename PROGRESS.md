@@ -4489,3 +4489,16 @@ A(반응형 레이아웃) 구현 직후, 사용자가 "툭탁은 문장암기앱
 - `CLAUDE.md`: "UI 레이아웃 규칙" 섹션에 이번 통일 작업 기록 신규 추가, 27번 항목의 음성메모 패딩 관련 기록에 "이후 재조정됨" 주석 추가
 - `PROGRESS.md`: 이번 작업 기록 추가
 - 다음: 커밋+push 후 사용자 실기기 2차 확인 요청
+
+### 헤더 로고 자간 조정 (완료, Claude 1차 확인까지)
+사용자 질문 "헤더의 툭탁 영문아이콘의 폰트웨이트와 자간 얼마야?" → font-weight 700(Pretendard Bold, 실제 받아둔 폰트 파일 중 최대 굵기)·letter-spacing 0.5px라고 답변 → "폰트웨이트 700이 최대라고 했던가?" 확인 질문에 `public/fonts/pretendard/` 폴더에 Regular/Medium/SemiBold/Bold 4개 파일만 있어 700이 실제 최대임을 재확인 → "자간 -1px로 조정" 요청
+
+**구현 내용**: `css/style.css`의 `.topbar-logo` `letter-spacing`을 `0.5px` → `-1px`로 변경
+
+### Claude 1차 확인 (Playwright)
+`getComputedStyle`로 `letter-spacing: -1px` 정확히 반영된 것 확인, 스크린샷으로 글자 겹침·잘림 없이 자연스럽게 좁아진 것 확인, 콘솔 에러 없음
+
+### 반영
+- `CLAUDE.md`: 헤더 무채색 전환 항목 아래에 이번 자간 조정 기록 추가
+- `PROGRESS.md`: 이번 작업 기록 추가
+- 다음: 커밋+push 후 사용자 실기기 2차 확인 요청

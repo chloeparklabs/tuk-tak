@@ -246,7 +246,8 @@ button {
   /* 헤더가 무채색으로 바뀌며 로고만 브랜드 컬러를 유지 — 흰 배경 위 컬러 워드마크가
      오히려 더 또렷한 브랜드 표식 역할을 함(2026-09-15) */
   color: var(--color-brand);
-  letter-spacing: 0.5px;
+  /* 자간 0.5px→-1px로 조정(2026-09-15) */
+  letter-spacing: -1px;
   cursor: pointer;
   /* 클릭 가능해지며 생긴 텍스트 선택(모바일 사전 찾기 팝업 등) 방지 */
   -webkit-user-select: none;
