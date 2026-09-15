@@ -1231,15 +1231,18 @@ button {
   border-radius: 12px;
 }
 
+/* 2026-09-15: 솔리드 브랜드 블루 채움 → 회색 아웃라인으로 전환(헤더 무채색 전환과 같은
+   맥락 — 녹음 시작은 이 화면의 단일 주 동작이지만, 녹음 "중" 상태(.recording, 아래)에서
+   이미 강조색으로 전환되므로 평소엔 유틸리티 아이콘처럼 차분한 톤으로 남겨둠) */
 .voice-memo-record-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 64px;
   height: 64px;
-  background-color: var(--color-brand);
-  color: #FFFFFF;
-  border: none;
+  background-color: var(--color-base);
+  color: var(--gray-600);
+  border: 2px solid var(--gray-300);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -1252,10 +1255,14 @@ button {
 /* 녹음 중에는 accent-star 색으로 전환 — 별표/깃발 등 이 앱의 "활성 상태" 표시와 톤을 맞춤 */
 .voice-memo-record-btn.recording {
   background-color: var(--color-accent-star);
+  border-color: var(--color-accent-star);
+  color: #FFFFFF;
 }
 
 .voice-memo-record-btn:disabled {
-  background-color: var(--gray-300);
+  background-color: var(--color-base);
+  border-color: var(--gray-200);
+  color: var(--gray-300);
   cursor: not-allowed;
 }
 
