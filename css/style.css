@@ -540,7 +540,9 @@ button {
   margin-bottom: 16px;
   font-size: var(--kr-font-size-revealed);
   font-weight: 500;
-  color: var(--color-text-muted);
+  /* --color-text-muted(대비 3.3:1)는 컬러 가이드상 소글씨 본문 금지 색인데 실제 문장에
+     쓰이고 있어 가독성 문제 — 대비 6.4:1인 --color-text-secondary로 교체(2026-09-15) */
+  color: var(--color-text-secondary);
 }
 
 .en-text {
@@ -1067,7 +1069,8 @@ button {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-brand-dark);
-  text-align: center;
+  /* 가운데→왼쪽 정렬로 통일(2026-09-15) — 문장변형/음성메모 등 다른 안내문과 정렬 방식 통일 */
+  text-align: left;
 }
 
 [data-theme="dark"] .list-note-intro {
@@ -1371,7 +1374,8 @@ button {
 .list-filter-bar {
   display: flex;
   gap: 8px;
-  padding: 12px 20px;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) — 아래 목록(.sentence-list, 16px)과 정렬 맞춤 */
+  padding: 12px 16px;
   border-bottom: 1px solid var(--gray-100);
 }
 
@@ -1407,7 +1411,8 @@ button {
 
 /* 현재 활성 필터 탭 기준 문장 개수 안내 — 탭과 구분선 사이, 은은하되 읽히는 정도로 */
 .list-count-info {
-  padding: 8px 20px 0;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15, 가운데 정렬이라 시각적 영향은 적지만 일관성 위해) */
+  padding: 8px 16px 0;
   font-size: 13px;
   color: var(--color-text-secondary);
   text-align: center;
@@ -1421,7 +1426,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 10px 20px 0;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) — 아래 목록과 정렬 맞춤 */
+  margin: 10px 16px 0;
 }
 
 .list-filter-study-btn {
@@ -1922,7 +1928,8 @@ button {
 .help-intro {
   font-size: 15px;
   font-weight: 600;
-  text-align: center;
+  /* 가운데→왼쪽 정렬로 통일(2026-09-15) — 문장변형/음성메모 등 다른 안내문과 정렬 방식 통일 */
+  text-align: left;
   color: var(--color-brand-dark);
   padding: 16px 8px 20px;
   margin-bottom: 8px;
@@ -2101,7 +2108,8 @@ button {
    word-break: keep-all이 빠져 있어 좁은 화면에서 단어 중간에 아무 데서나 줄바꿈되던 문제 수정 —
    자연스러운 지점(HTML의 <br>)에서만 줄바꿈되도록 함(2026-08-26) */
 .variation-list-intro {
-  padding: 12px 20px 4px;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) — 아래 목록(.variation-card-list, 16px)과 정렬 맞춤 */
+  padding: 12px 16px 4px;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-brand-dark);
@@ -2358,7 +2366,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  /* 좌우 여백 20px→16px로 통일(2026-09-15) — 아래 목록(.sentence-list, 16px)과 정렬 맞춤 */
+  padding: 12px 16px;
   border-bottom: 1px solid var(--gray-100);
 }
 
