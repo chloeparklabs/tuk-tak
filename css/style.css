@@ -1023,8 +1023,9 @@ button {
 }
 
 .screen-back-btn svg {
-  width: 22px;
-  height: 22px;
+  /* 22px→32px로 확대(2026-09-15) */
+  width: 32px;
+  height: 32px;
 }
 
 /* "홈" 버튼 — 뒤로가기를 2번 이상 눌러야 메인(카드) 화면으로 돌아갈 수 있는 화면에만 배치
