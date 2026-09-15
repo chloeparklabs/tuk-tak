@@ -1327,7 +1327,9 @@ button {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  /* 위아래 줄간격을 기존(14px)의 절반(7px)으로 축소, 왼쪽은 패딩 없이 "저장된 메모"
+     타이틀과 같은 세로선에서 시작하도록(2026-09-15, "그리드가 들쭉날쭉해 보인다"는 피드백) */
+  padding: 7px 16px 7px 0;
   background-color: var(--gray-50);
   border-radius: 12px;
   cursor: pointer;
