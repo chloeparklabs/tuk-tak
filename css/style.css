@@ -881,7 +881,8 @@ button {
   min-height: 100px;
   width: 100%;
   padding: 12px;
-  font-size: 16px;
+  /* 설정 화면 "글자크기"와 연동(2026-09-15) — 카드 화면 한국어 텍스트와 같은 변수 재사용 */
+  font-size: var(--kr-font-size);
   font-family: inherit;
   color: var(--color-text-primary);
   background-color: var(--color-base);
