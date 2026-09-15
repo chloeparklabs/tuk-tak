@@ -662,7 +662,9 @@ const helpBackBtn = document.getElementById('help-back-btn');
 const settingsScreen = document.getElementById('settings-screen');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const exportBackupBtn = document.getElementById('export-backup-btn');
+const exportBackupInfoBtn = document.getElementById('export-backup-info-btn');
 const resetOpenBtn = document.getElementById('reset-open-btn');
+const resetInfoBtn = document.getElementById('reset-info-btn');
 const hideDefaultToggleBtn = document.getElementById('hide-default-toggle-btn');
 const autoPlayToggleBtn = document.getElementById('auto-play-toggle-btn');
 const deleteDefaultBtn = document.getElementById('delete-default-btn');
@@ -2170,6 +2172,14 @@ async function exportBackup() {
   URL.revokeObjectURL(url);
   return true;
 }
+
+exportBackupInfoBtn.addEventListener('click', () => {
+  alert('지금 저장된 모든 문장을 파일(.tsv)로 이 기기에 저장합니다.\n나중에 "문장추가 > 파일 가져오기"로 다시 불러올 수 있어요.');
+});
+
+resetInfoBtn.addEventListener('click', () => {
+  alert('이 기기에 저장된 문장을 모두 삭제합니다. 글자크기 등 다른 설정은 그대로 유지돼요.\n삭제 후에는 되돌릴 수 없으니, 필요하면 먼저 "백업 내보내기"나 "클라우드에 백업"을 해두세요.');
+});
 
 exportBackupBtn.addEventListener('click', async () => {
   const success = await exportBackup();
