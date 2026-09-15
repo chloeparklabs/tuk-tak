@@ -857,51 +857,41 @@ button {
   min-height: 0;
 }
 
-/* 한국어/영어 입력 필드: 라벨 띠 + 테두리 없는 입력창(레퍼런스 스타일).
-   .add-body의 좌우 패딩(20px)을 상쇄해 화면 끝까지 꽉 차게 함 */
+/* 한국어/영어 입력 필드: 라벨 띠 + 테두리 있는 입력창(2026-09-15부터, 아래 참고) */
 .add-form-field {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  margin: 0 -20px;
 }
 
 .add-form-field-label {
-  padding: 10px 20px 4px;
+  padding: 10px 0 4px;
   font-size: 13px;
   font-weight: 600;
   color: var(--gray-600);
 }
 
+/* 무테두리 edge-to-edge 스타일 → 음성 메모 입력칸(.voice-memo-preview)과 같은 일반적인
+   폼 박스 모양(테두리+둥근 모서리)으로 전환(2026-09-15, "폼입력탭의 폼을 보통 폼의 모양으로
+   바꿔야겠어" 요청). 이제 테두리로 경계가 항상 보이므로 다크모드 전용 보정·포커스 전용
+   box-shadow 트릭이 둘 다 불필요해져 함께 제거(음성 메모 입력칸도 별도 포커스 스타일 없음) */
 .add-form-textarea {
   flex: 1;
   min-height: 100px;
   width: 100%;
-  padding: 12px 20px;
+  padding: 12px;
   font-size: 16px;
   font-family: inherit;
   color: var(--color-text-primary);
   background-color: var(--color-base);
-  border: none;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 8px;
   resize: none;
 }
 
 .add-form-textarea::placeholder {
   color: var(--gray-300);
-}
-
-/* 다크모드는 입력창 배경(--color-base)이 화면 배경(--color-surface)과 같은 색이라
-   테두리 없이는 경계가 전혀 안 보임 → 다크모드에서만 옅은 테두리로 구분 (2026-08-21) */
-[data-theme="dark"] .add-form-textarea {
-  border: 1px solid var(--gray-200);
-}
-
-/* 기본 테두리가 없는 입력창이라 포커스 시에도 표시가 필요함.
-   레이아웃이 흔들리지 않도록 border 대신 안쪽 box-shadow 링으로 표시 (2026-08-21) */
-.add-form-textarea:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--color-brand);
 }
 
 .modal-desc {
@@ -2347,14 +2337,12 @@ button {
   gap: 10px;
 }
 
-/* .add-form-textarea의 edge-to-edge 스타일(테두리 없음, 음수 margin 전제)은 이 화면과
-   안 맞아 자체 테두리를 가진 독립 필드로 재정의 */
+/* 문장추가 화면처럼 화면 전체를 채우는 입력이 아니라 한 화면에 2개 필드+버튼이 나란히
+   있는 구조라 flex/높이만 재정의 — 테두리·둥근모서리·패딩은 2026-09-15부터 .add-form-textarea
+   기본 스타일이 이미 동일해져 중복 선언 불필요 */
 .ai-variation-textarea {
   flex: none;
   min-height: 110px;
-  padding: 12px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: 8px;
 }
 
 #ai-variation-prompt-textarea {
