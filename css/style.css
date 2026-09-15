@@ -67,7 +67,10 @@
    쓰기 때문에 다크 배경 위에서는 시인성이 떨어짐 → 다크모드에서만 밝은 색으로 전환.
    .en-text는 자체 하이라이트 칩(--color-chip-answer, 항상 밝은 배경) 위에 있어 제외 */
 [data-theme="dark"] .stepper-btn,
-[data-theme="dark"] .help-accordion-header {
+[data-theme="dark"] .help-accordion-header,
+[data-theme="dark"] .screen-topbar-text-btn,
+[data-theme="dark"] .screen-topbar.selecting .screen-back-btn,
+[data-theme="dark"] .screen-topbar.selecting .screen-topbar-title {
   color: var(--color-text-primary);
 }
 
@@ -230,14 +233,19 @@ button {
   /* 카드 화면 padding(24px) 밖으로 확장해 화면 좌우 끝까지 꽉 차게 표시 */
   margin: -24px -24px 0 -24px;
   padding: 16px 24px;
-  background-color: var(--color-brand);
+  /* 2026-09-15: 브랜드 블루 배경 → 화면 배경과 같은 무채색(--color-surface)으로 전환.
+     헤더가 거의 모든 화면에서 반복 노출되는 가장 큰 색면이라 "파란색이 너무 많다"는
+     피드백의 핵심 원인이었음 — 브랜드 인지는 로고(.topbar-logo)만 컬러로 유지하는 것으로 대체 */
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .topbar-logo {
   font-size: 18px;
   font-weight: 700;
-  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
-  color: #FFFFFF;
+  /* 헤더가 무채색으로 바뀌며 로고만 브랜드 컬러를 유지 — 흰 배경 위 컬러 워드마크가
+     오히려 더 또렷한 브랜드 표식 역할을 함(2026-09-15) */
+  color: var(--color-brand);
   letter-spacing: 0.5px;
   cursor: pointer;
   /* 클릭 가능해지며 생긴 텍스트 선택(모바일 사전 찾기 팝업 등) 방지 */
@@ -258,7 +266,8 @@ button {
   height: 36px;
   background: none;
   border: none;
-  color: #FFFFFF;
+  /* 유틸리티 아이콘(관리용) — 별표/깃발 등 다른 아이콘들과 같은 기본 회색 톤(2026-09-15) */
+  color: var(--gray-600);
   cursor: pointer;
 }
 
@@ -983,14 +992,16 @@ button {
      버튼(예: 문장변형으로 이동)처럼 오해될 수 있다는 피드백으로 확대(2026-08-27) */
   gap: 14px;
   padding: 16px 20px;
-  background-color: var(--color-brand);
+  /* 2026-09-15: 브랜드 블루 배경 → 화면 배경과 같은 무채색(--color-surface)으로 전환.
+     .card-topbar와 같은 이유(반복 노출되는 큰 색면) — 아래 참고 */
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--gray-200);
   transition: background-color 0.15s ease;
 }
 
-/* 문장관리 화면의 선택 모드(다중 삭제)일 때 브랜드 네이비로 바뀌어 모드 전환을 알림 */
-.screen-topbar.selecting {
-  background-color: var(--color-brand-dark);
-}
+/* 문장관리 화면의 선택 모드(다중 삭제)일 때 배경은 그대로 두고(2026-09-15, 위와 같은
+   무채색 전환 원칙) 뒤로가기("취소")·타이틀("N개 선택") 텍스트 색으로만 모드 전환을 알림
+   — 아래 .screen-back-btn/.screen-topbar-title의 .selecting 스코프 규칙 참고 */
 
 .screen-back-btn {
   display: flex;
@@ -1000,9 +1011,13 @@ button {
   height: 32px;
   background: none;
   border: none;
-  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
-  color: #FFFFFF;
+  /* 유틸리티 아이콘(관리용) — 기본 회색, 선택 모드("취소" 텍스트)에서만 브랜드 네이비로 강조(2026-09-15) */
+  color: var(--gray-600);
   cursor: pointer;
+}
+
+.screen-topbar.selecting .screen-back-btn {
+  color: var(--color-brand-dark);
 }
 
 .screen-back-btn svg {
@@ -1021,7 +1036,8 @@ button {
   height: 32px;
   background: none;
   border: none;
-  color: #FFFFFF;
+  /* 유틸리티 아이콘 — 기본 회색(2026-09-15) */
+  color: var(--gray-600);
   cursor: pointer;
 }
 
@@ -1431,8 +1447,13 @@ button {
   pointer-events: none;
   font-size: 17px;
   font-weight: 700;
-  /* 상단바는 항상 브랜드 블루/네이비 배경이라 테마와 무관하게 흰색 고정 */
-  color: #FFFFFF;
+  /* 헤더가 무채색으로 바뀌며 일반 텍스트색으로 전환, 선택 모드("N개 선택")에서만
+     브랜드 네이비로 강조(2026-09-15) — 아래 .selecting 스코프 규칙 참고 */
+  color: var(--color-text-primary);
+}
+
+.screen-topbar.selecting .screen-topbar-title {
+  color: var(--color-brand-dark);
 }
 
 /* ==========================================================================
@@ -1447,7 +1468,8 @@ button {
   height: 32px;
   background: none;
   border: none;
-  color: #FFFFFF;
+  /* 유틸리티 아이콘(검색·선택 진입) — 기본 회색(2026-09-15) */
+  color: var(--gray-600);
   cursor: pointer;
 }
 
@@ -1472,7 +1494,9 @@ button {
   padding: 0 4px;
   background: none;
   border: none;
-  color: #FFFFFF;
+  /* 선택 모드 전용 텍스트 버튼(전체 선택/해제) — "취소"/"N개 선택"과 같은 톤으로
+     브랜드 네이비 유지(2026-09-15, 헤더 무채색 전환 이후에도 선택 모드 표시는 그대로) */
+  color: var(--color-brand-dark);
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
