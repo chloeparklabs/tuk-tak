@@ -166,6 +166,21 @@
         <button id="note-display-kr-btn" class="list-display-mode-btn" type="button" role="radio" aria-checked="false" data-display="kr">한글만</button>
         <button id="note-display-en-btn" class="list-display-mode-btn" type="button" role="radio" aria-checked="false" data-display="en">영어만</button>
       </div>
+      <div class="note-autoplay-bar">
+        <button id="note-autoplay-btn" class="note-autoplay-btn" type="button">
+          <span id="note-autoplay-icon" class="note-autoplay-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          </span>
+          <span id="note-autoplay-label">자동재생</span>
+        </button>
+        <div class="note-autoplay-wait">
+          <span class="note-autoplay-wait-label">대기시간 <span id="note-autoplay-wait-value">4초</span></span>
+          <div class="stepper">
+            <button id="note-autoplay-wait-dec-btn" class="stepper-btn" type="button" aria-label="대기시간 줄이기">&minus;</button>
+            <button id="note-autoplay-wait-inc-btn" class="stepper-btn" type="button" aria-label="대기시간 늘리기">+</button>
+          </div>
+        </div>
+      </div>
       <div id="note-study-list" class="note-study-list"></div>
     </div>
   </section>

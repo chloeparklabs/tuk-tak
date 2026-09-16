@@ -1205,6 +1205,72 @@ button {
   height: 22px;
 }
 
+/* 자동재생(2026-09-16) — 한국어를 순서대로 읽어주고 대기시간만큼 기다린 뒤 자동으로
+   다음 문장으로 넘어감. 표시방식 토글 바로 아래 배치, 좌우 여백은 토글 바와 동일 */
+.note-autoplay-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 16px 0;
+}
+
+.note-autoplay-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-brand-dark);
+  background-color: var(--color-base);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* 재생 중에는 정지 버튼으로 전환 — 카드 화면의 "확인" 탭후 상태와 같은 강조 원칙(accent-star) */
+.note-autoplay-btn.active {
+  background-color: var(--color-accent-star);
+  border-color: var(--color-accent-star);
+  /* 강조색 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
+  color: #FFFFFF;
+}
+
+.note-autoplay-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.note-autoplay-wait {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-autoplay-wait-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.note-autoplay-wait .stepper-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 15px;
+}
+
+/* 자동재생 중 지금 읽고 있는 문장 강조 — 배경은 theme-aware 톤(--gray-100)만 살짝 올리고
+   좌측에 브랜드 컬러 인셋 보더만 추가(고정 밝은 배경을 쓰지 않아 다크모드 텍스트
+   대비 문제가 생기지 않음, .en-text류 "항상 밝은 칩"과는 다른 패턴) */
+.note-study-item.auto-current {
+  background-color: var(--gray-100);
+  box-shadow: inset 3px 0 0 var(--color-brand);
+}
+
 /* ==========================================================================
    음성 메모 화면 (27번, 2026-09-14) — 문장 아이디어를 말로 빠르게 캡처
    ========================================================================== */

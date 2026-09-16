@@ -699,6 +699,12 @@ const noteStudyScreen = document.getElementById('note-study-screen');
 const noteStudyBackBtn = document.getElementById('note-study-back-btn');
 const noteStudyHomeBtn = document.getElementById('note-study-home-btn');
 const noteStudyListEl = document.getElementById('note-study-list');
+const noteAutoPlayBtn = document.getElementById('note-autoplay-btn');
+const noteAutoPlayIconEl = document.getElementById('note-autoplay-icon');
+const noteAutoPlayLabelEl = document.getElementById('note-autoplay-label');
+const noteAutoPlayWaitValueEl = document.getElementById('note-autoplay-wait-value');
+const noteAutoPlayWaitDecBtn = document.getElementById('note-autoplay-wait-dec-btn');
+const noteAutoPlayWaitIncBtn = document.getElementById('note-autoplay-wait-inc-btn');
 const voiceMemoOpenBtn = document.getElementById('voice-memo-open-btn');
 const voiceMemoScreen = document.getElementById('voice-memo-screen');
 const voiceMemoBackBtn = document.getElementById('voice-memo-back-btn');
@@ -866,6 +872,17 @@ function speakEnglish(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'en-US';
   window.speechSynthesis.speak(utterance);
+}
+
+// 노트형 학습 자동재생(아래)에서 한국어 문장을 읽어주는 용도 — speakEnglish와 같은 패턴이지만
+// utterance를 반환해 호출부에서 'onend'로 다 읽은 시점을 알 수 있게 함
+function speakKorean(text) {
+  if (!('speechSynthesis' in window) || !text) return null;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ko-KR';
+  window.speechSynthesis.speak(utterance);
+  return utterance;
 }
 
 cardSpeakerBtn.addEventListener('click', () => {
@@ -1171,6 +1188,8 @@ listDisplayModeBtns.forEach((btn) => {
     listDisplayMode = btn.dataset.display;
     localStorage.setItem(LIST_DISPLAY_MODE_KEY, listDisplayMode);
     applyListDisplayMode();
+    // 표시 모드가 바뀌면 자동재생 중이던 흐름과 맥락이 어긋날 수 있어 정지
+    stopNoteAutoPlay();
   });
 });
 
@@ -1193,6 +1212,8 @@ function renderNoteStudyList(ids) {
   noteStudyListEl.innerHTML = '';
   const idSet = new Set(ids);
   const items = sentences.filter((s) => idSet.has(String(s.id)));
+  // 자동재생(아래)이 목록과 같은 순서로 진행되도록 여기서 함께 기억해둠
+  noteStudyItems = items;
 
   items.forEach((s) => {
     const item = document.createElement('div');
@@ -1241,11 +1262,123 @@ listNoteStudyBtn.addEventListener('click', () => {
 });
 
 noteStudyBackBtn.addEventListener('click', () => {
+  stopNoteAutoPlay();
   noteStudyScreen.classList.add('hidden');
   listScreen.classList.remove('hidden');
 });
 
-noteStudyHomeBtn.addEventListener('click', goToCardScreen);
+noteStudyHomeBtn.addEventListener('click', () => {
+  stopNoteAutoPlay();
+  goToCardScreen();
+});
+
+// --- 자동재생: 한국어를 순서대로 읽어주고 몇 초 기다린 뒤 다음 문장으로 자동 이동.
+// 정답(영어)은 강제로 보여주지 않음 — "한글만" 모드로 켜두면 화면도 오디오도 모두
+// 한국어만 노출되는 완전한 recall 연습이 됨. 표시모드는 건드리지 않고 그대로 따름.
+const NOTE_AUTOPLAY_WAIT_KEY = 'tuktak_note_autoplay_wait_sec';
+const NOTE_AUTOPLAY_WAIT_MIN = 2;
+const NOTE_AUTOPLAY_WAIT_MAX = 10;
+const NOTE_AUTOPLAY_PLAY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+const NOTE_AUTOPLAY_PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>';
+
+let noteStudyItems = []; // renderNoteStudyList에서 채움 — 자동재생 순서의 기준
+let noteAutoPlaying = false;
+let noteAutoPlayIndex = 0;
+let noteAutoPlayTimer = null;
+let noteAutoPlayWaitSec = Number(localStorage.getItem(NOTE_AUTOPLAY_WAIT_KEY)) || 4;
+if (noteAutoPlayWaitSec < NOTE_AUTOPLAY_WAIT_MIN || noteAutoPlayWaitSec > NOTE_AUTOPLAY_WAIT_MAX) {
+  noteAutoPlayWaitSec = 4;
+}
+
+function renderNoteAutoPlayWait() {
+  noteAutoPlayWaitValueEl.textContent = `${noteAutoPlayWaitSec}초`;
+  noteAutoPlayWaitDecBtn.disabled = noteAutoPlayWaitSec <= NOTE_AUTOPLAY_WAIT_MIN;
+  noteAutoPlayWaitIncBtn.disabled = noteAutoPlayWaitSec >= NOTE_AUTOPLAY_WAIT_MAX;
+}
+renderNoteAutoPlayWait();
+
+noteAutoPlayWaitDecBtn.addEventListener('click', () => {
+  if (noteAutoPlayWaitSec <= NOTE_AUTOPLAY_WAIT_MIN) return;
+  noteAutoPlayWaitSec -= 1;
+  localStorage.setItem(NOTE_AUTOPLAY_WAIT_KEY, String(noteAutoPlayWaitSec));
+  renderNoteAutoPlayWait();
+});
+
+noteAutoPlayWaitIncBtn.addEventListener('click', () => {
+  if (noteAutoPlayWaitSec >= NOTE_AUTOPLAY_WAIT_MAX) return;
+  noteAutoPlayWaitSec += 1;
+  localStorage.setItem(NOTE_AUTOPLAY_WAIT_KEY, String(noteAutoPlayWaitSec));
+  renderNoteAutoPlayWait();
+});
+
+function updateNoteAutoPlayBtn() {
+  noteAutoPlayBtn.classList.toggle('active', noteAutoPlaying);
+  noteAutoPlayIconEl.innerHTML = noteAutoPlaying ? NOTE_AUTOPLAY_PAUSE_ICON : NOTE_AUTOPLAY_PLAY_ICON;
+  noteAutoPlayLabelEl.textContent = noteAutoPlaying ? '정지' : '자동재생';
+}
+
+function stopNoteAutoPlay() {
+  if (!noteAutoPlaying) return;
+  noteAutoPlaying = false;
+  if (noteAutoPlayTimer) {
+    clearTimeout(noteAutoPlayTimer);
+    noteAutoPlayTimer = null;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  noteStudyListEl.querySelectorAll('.note-study-item.auto-current').forEach((el) => {
+    el.classList.remove('auto-current');
+  });
+  updateNoteAutoPlayBtn();
+}
+
+function playNoteAutoPlayStep() {
+  if (!noteAutoPlaying) return;
+  if (noteAutoPlayIndex >= noteStudyItems.length) {
+    stopNoteAutoPlay();
+    return;
+  }
+
+  const sentence = noteStudyItems[noteAutoPlayIndex];
+  const itemEl = noteStudyListEl.children[noteAutoPlayIndex];
+
+  noteStudyListEl.querySelectorAll('.note-study-item.auto-current').forEach((el) => {
+    el.classList.remove('auto-current');
+  });
+  if (itemEl) {
+    itemEl.classList.add('auto-current');
+    itemEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  const advanceAfterWait = () => {
+    if (!noteAutoPlaying) return;
+    noteAutoPlayTimer = setTimeout(() => {
+      noteAutoPlayIndex += 1;
+      playNoteAutoPlayStep();
+    }, noteAutoPlayWaitSec * 1000);
+  };
+
+  const utterance = speakKorean(sentence.kr);
+  if (utterance) {
+    // 다 읽은 뒤에 대기시간을 시작 — 문장 길이와 무관하게 항상 같은 만큼 기다려줌
+    utterance.addEventListener('end', advanceAfterWait);
+    utterance.addEventListener('error', advanceAfterWait);
+  } else {
+    // 음성 합성 미지원 등으로 재생 자체가 안 되는 경우에도 진행은 계속되게
+    advanceAfterWait();
+  }
+}
+
+noteAutoPlayBtn.addEventListener('click', () => {
+  if (noteAutoPlaying) {
+    stopNoteAutoPlay();
+    return;
+  }
+  if (noteStudyItems.length === 0) return;
+  noteAutoPlaying = true;
+  noteAutoPlayIndex = 0;
+  updateNoteAutoPlayBtn();
+  playNoteAutoPlayStep();
+});
 
 // ==========================================================================
 // 음성 메모 (27번, 2026-09-14) — SpeechRecognition으로 문장 아이디어를 빠르게
