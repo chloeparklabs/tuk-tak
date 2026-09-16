@@ -1306,6 +1306,7 @@ function renderVoiceMemoList() {
     // 메모를 탭하면 그 텍스트를 한국어 칸에 채운 채 문장추가 폼으로 이동 —
     // 여기서 바로 삭제하지 않고, 실제로 "추가"가 성사되는 순간에만 지워짐
     item.addEventListener('click', () => {
+      stopVoiceMemoRecording();
       voiceMemoScreen.classList.add('hidden');
       openAddModal(null, { prefillKr: memo.text, sourceMemoId: memo.id });
     });
@@ -1329,6 +1330,9 @@ voiceMemoBackBtn.addEventListener('click', () => {
 voiceMemoSaveBtn.addEventListener('click', () => {
   const text = voiceMemoPreview.value.trim();
   if (!text) return;
+  // 녹음 중이었다면 저장과 동시에 정지 — 자동 재시작 로직 때문에 저장 후에도
+  // 마이크가 계속 켜진 채로 남아있는 문제 방지(2026-09-16 실기기 제보)
+  stopVoiceMemoRecording();
   voiceMemos.push({ id: Date.now().toString(), text, createdAt: new Date().toISOString() });
   saveVoiceMemos();
   voiceMemoPreview.value = '';
