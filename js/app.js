@@ -1332,6 +1332,7 @@ voiceMemoSaveBtn.addEventListener('click', () => {
   voiceMemos.push({ id: Date.now().toString(), text, createdAt: new Date().toISOString() });
   saveVoiceMemos();
   voiceMemoPreview.value = '';
+  voiceMemoPreview.placeholder = VOICE_MEMO_PLACEHOLDER;
   voiceMemoStatusEl.textContent = '탭해서 말하기';
   renderVoiceMemoList();
 });
@@ -1339,11 +1340,21 @@ voiceMemoSaveBtn.addEventListener('click', () => {
 // --- SpeechRecognition (음성 → 텍스트). iOS Safari 등 미지원 브라우저에서는
 // 마이크 버튼을 비활성화하고 안내 문구로 대체 ---
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const VOICE_MEMO_PLACEHOLDER = voiceMemoPreview.placeholder;
 let voiceMemoRecognition = null;
 let voiceMemoRecording = false;
+// 사용자가 정지 버튼을 눌렀는지(=자동 재시작하면 안 되는지) 구분하는 플래그
+let voiceMemoStopRequested = false;
+// 권한거부 등 재시작해도 소용없는 오류가 났는지
+let voiceMemoFatalError = false;
+// 이번 녹음 세션 시작 전 이미 미리보기 칸에 있던 텍스트(여러 번 나눠 말해도 이어붙이기 위함)
+let voiceMemoBaseText = '';
+// 이번 녹음 세션에서 확정된(interim이 아닌) 텍스트 누적
+let voiceMemoSessionFinalText = '';
 
 function stopVoiceMemoRecording() {
   if (voiceMemoRecognition && voiceMemoRecording) {
+    voiceMemoStopRequested = true;
     voiceMemoRecognition.stop();
   }
 }
@@ -1354,7 +1365,10 @@ if (!SpeechRecognitionCtor) {
 } else {
   voiceMemoRecognition = new SpeechRecognitionCtor();
   voiceMemoRecognition.lang = 'ko-KR';
-  voiceMemoRecognition.interimResults = false;
+  // 짧은 침묵에도 인식이 끊기지 않고 계속 이어지도록(연속 발화 지원)
+  voiceMemoRecognition.continuous = true;
+  // 확정 전 중간 결과도 실시간으로 보여줘 placeholder가 오래 남아있지 않도록
+  voiceMemoRecognition.interimResults = true;
   voiceMemoRecognition.maxAlternatives = 1;
 
   voiceMemoRecognition.addEventListener('start', () => {
@@ -1364,28 +1378,67 @@ if (!SpeechRecognitionCtor) {
   });
 
   voiceMemoRecognition.addEventListener('result', (e) => {
-    const transcript = e.results[0][0].transcript;
-    const existing = voiceMemoPreview.value.trim();
-    // 여러 번 나눠 말해도 이어붙여지도록(한 번의 멈춤=한 문장이라고 가정하지 않음)
-    voiceMemoPreview.value = existing ? `${existing} ${transcript}` : transcript;
+    let interimText = '';
+    // continuous 모드에서는 매 이벤트마다 전체 결과가 아니라 resultIndex 이후의
+    // 새 결과만 봐야 함 — 확정된 구간은 누적하고, 아직 확정 안 된 구간만 실시간 표시
+    for (let i = e.resultIndex; i < e.results.length; i += 1) {
+      const transcript = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        voiceMemoSessionFinalText = voiceMemoSessionFinalText
+          ? `${voiceMemoSessionFinalText} ${transcript}`
+          : transcript;
+      } else {
+        interimText += transcript;
+      }
+    }
+    const sessionText = interimText
+      ? (voiceMemoSessionFinalText ? `${voiceMemoSessionFinalText} ${interimText}` : interimText)
+      : voiceMemoSessionFinalText;
+    voiceMemoPreview.value = voiceMemoBaseText ? `${voiceMemoBaseText} ${sessionText}` : sessionText;
   });
 
-  voiceMemoRecognition.addEventListener('error', () => {
-    voiceMemoStatusEl.textContent = '인식하지 못했어요. 다시 시도해주세요';
+  voiceMemoRecognition.addEventListener('error', (e) => {
+    const fatalErrors = ['not-allowed', 'audio-capture', 'service-not-allowed'];
+    if (fatalErrors.includes(e.error)) {
+      voiceMemoFatalError = true;
+      voiceMemoStatusEl.textContent = '마이크 권한을 확인해주세요';
+    }
+    // no-speech 등 일시적 오류는 아래 'end'에서 자동 재시작으로 처리
   });
 
   voiceMemoRecognition.addEventListener('end', () => {
+    // 사용자가 멈춘 게 아니고 치명적 오류도 아니면, 브라우저가 자체적으로 끊은 것 —
+    // 이어서 녹음 중인 것처럼 자동으로 다시 시작(녹음이 중간에 꺼지는 문제 방지)
+    if (!voiceMemoStopRequested && !voiceMemoFatalError) {
+      try {
+        voiceMemoRecognition.start();
+        return;
+      } catch {
+        // 재시작 실패 시 아래로 내려가 평소처럼 종료 처리
+      }
+    }
     voiceMemoRecording = false;
+    voiceMemoStopRequested = false;
     voiceMemoRecordBtn.classList.remove('recording');
     if (voiceMemoStatusEl.textContent === '듣고 있어요...') {
       voiceMemoStatusEl.textContent = '탭해서 말하기';
+    }
+    if (!voiceMemoPreview.value.trim()) {
+      voiceMemoPreview.placeholder = VOICE_MEMO_PLACEHOLDER;
     }
   });
 
   voiceMemoRecordBtn.addEventListener('click', () => {
     if (voiceMemoRecording) {
+      voiceMemoStopRequested = true;
       voiceMemoRecognition.stop();
     } else {
+      voiceMemoStopRequested = false;
+      voiceMemoFatalError = false;
+      voiceMemoBaseText = voiceMemoPreview.value.trim();
+      voiceMemoSessionFinalText = '';
+      // 탭하는 즉시 안내문을 지워 녹음이 시작됐음을 바로 보여줌
+      voiceMemoPreview.placeholder = '';
       try {
         voiceMemoRecognition.start();
       } catch {
