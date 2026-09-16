@@ -867,11 +867,12 @@ cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfa
 // 언어는 'en-US' 고정(대부분 영어 학습 목적 전제) — "학습할 언어" 라벨로 일반화된
 // 다른 언어쌍을 넣은 경우 발음이 어색할 수 있으나, 언어 선택 UI는 범위 밖으로 남겨둠.
 function speakEnglish(text) {
-  if (!('speechSynthesis' in window) || !text) return;
+  if (!('speechSynthesis' in window) || !text) return null;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'en-US';
   window.speechSynthesis.speak(utterance);
+  return utterance;
 }
 
 // 노트형 학습 자동재생(아래)에서 한국어 문장을 읽어주는 용도 — speakEnglish와 같은 패턴이지만
@@ -1357,7 +1358,11 @@ function playNoteAutoPlayStep() {
     }, noteAutoPlayWaitSec * 1000);
   };
 
-  const utterance = speakKorean(sentence.kr);
+  // 읽어줄 언어는 현재 표시모드의 "보이는 텍스트"에 맞춤 — 한글만/전체보기는 한국어,
+  // 영어만 모드는 영어(2026-09-16, "영어만 탭에서도 한글로 읽어준다"는 제보로 보완:
+  // 영어만 모드는 영어를 보며 숨겨진 한국어를 떠올리는 역방향 recall이라 오디오도
+  // 화면에 보이는 언어와 맞춰야 앞뒤가 맞음)
+  const utterance = listDisplayMode === 'en' ? speakEnglish(sentence.en) : speakKorean(sentence.kr);
   if (utterance) {
     // 다 읽은 뒤에 대기시간을 시작 — 문장 길이와 무관하게 항상 같은 만큼 기다려줌
     utterance.addEventListener('end', advanceAfterWait);
