@@ -701,7 +701,6 @@ const noteStudyHomeBtn = document.getElementById('note-study-home-btn');
 const noteStudyListEl = document.getElementById('note-study-list');
 const noteAutoPlayBtn = document.getElementById('note-autoplay-btn');
 const noteAutoPlayIconEl = document.getElementById('note-autoplay-icon');
-const noteAutoPlayLabelEl = document.getElementById('note-autoplay-label');
 const noteAutoPlayWaitValueEl = document.getElementById('note-autoplay-wait-value');
 const noteAutoPlayWaitDecBtn = document.getElementById('note-autoplay-wait-dec-btn');
 const noteAutoPlayWaitIncBtn = document.getElementById('note-autoplay-wait-inc-btn');
@@ -1315,7 +1314,7 @@ noteAutoPlayWaitIncBtn.addEventListener('click', () => {
 function updateNoteAutoPlayBtn() {
   noteAutoPlayBtn.classList.toggle('active', noteAutoPlaying);
   noteAutoPlayIconEl.innerHTML = noteAutoPlaying ? NOTE_AUTOPLAY_PAUSE_ICON : NOTE_AUTOPLAY_PLAY_ICON;
-  noteAutoPlayLabelEl.textContent = noteAutoPlaying ? '정지' : '자동재생';
+  noteAutoPlayBtn.setAttribute('aria-label', noteAutoPlaying ? '자동재생 정지' : '자동재생 시작');
 }
 
 function stopNoteAutoPlay() {
