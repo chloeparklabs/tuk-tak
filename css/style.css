@@ -1532,9 +1532,11 @@ button {
   pointer-events: none;
   font-size: 20px;
   font-weight: 700;
-  /* 헤더가 무채색으로 바뀌며 일반 텍스트색으로 전환, 선택 모드("N개 선택")에서만
-     브랜드 네이비로 강조(2026-09-15) — 아래 .selecting 스코프 규칙 참고 */
-  color: var(--color-text-primary);
+  /* 헤더 아이콘들과 같은 톤으로 통일(2026-09-16), 선택 모드("N개 선택")에서만
+     브랜드 네이비로 강조 — 아래 .selecting 스코프 규칙 참고 */
+  color: var(--gray-600);
+  /* 자간을 살짝 넓게(2026-09-16) */
+  letter-spacing: 0.3px;
 }
 
 .screen-topbar.selecting .screen-topbar-title {

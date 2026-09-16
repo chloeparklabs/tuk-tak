@@ -1130,7 +1130,7 @@ pasteSubmitBtn.addEventListener('click', () => {
 // 기본: 별(즐겨찾기)/깃발(미암기) 토글 + 길게 누르면 해당 문장만 삭제
 // 선택 모드: 상단 "선택"으로 진입, 체크박스로 여러 개 골라 한 번에 삭제
 // ==========================================================================
-const LIST_BACK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+const LIST_BACK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
 const LIST_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const LONG_PRESS_MS = 550;
 // 문장변형 상세 화면의 "내 문장으로 추가" 버튼 아이콘(circle-plus), 추가 완료 시 LIST_CHECK_ICON으로 교체
