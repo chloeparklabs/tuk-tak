@@ -2383,7 +2383,7 @@ async function exportBackup() {
 }
 
 exportBackupInfoBtn.addEventListener('click', () => {
-  alert('지금 저장된 모든 문장을 파일(.tsv)로 이 기기에 저장합니다.\n나중에 "문장추가 > 파일 가져오기"로 다시 불러올 수 있어요.');
+  alert('지금 저장된 모든 문장을 파일(.tsv)로 이 기기에 저장합니다.\n나중에 "문장추가 > 파일로"로 다시 불러올 수 있어요.');
 });
 
 resetInfoBtn.addEventListener('click', () => {
