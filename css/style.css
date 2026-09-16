@@ -241,7 +241,7 @@ button {
 }
 
 .topbar-logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   /* 헤더가 무채색으로 바뀌며 로고만 브랜드 컬러를 유지 — 흰 배경 위 컬러 워드마크가
      오히려 더 또렷한 브랜드 표식 역할을 함(2026-09-15) */
@@ -1530,7 +1530,7 @@ button {
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   /* 헤더 아이콘들과 같은 톤으로 통일(2026-09-16), 선택 모드("N개 선택")에서만
      브랜드 네이비로 강조 — 아래 .selecting 스코프 규칙 참고 */
