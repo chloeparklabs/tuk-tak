@@ -1365,8 +1365,12 @@ if (!SpeechRecognitionCtor) {
 } else {
   voiceMemoRecognition = new SpeechRecognitionCtor();
   voiceMemoRecognition.lang = 'ko-KR';
-  // 짧은 침묵에도 인식이 끊기지 않고 계속 이어지도록(연속 발화 지원)
-  voiceMemoRecognition.continuous = true;
+  // continuous:true는 두지 않음 — 안드로이드 일부 기기에서 브라우저가 내부적으로도
+  // 세션을 계속 이어가려 시도하면서 아래 'end'의 수동 재시작과 서로 경합해
+  // 같은 구간이 중복 인식되거나(같은 말 반복) 세션이 짧게 꺼졌다 켜지는 문제가 있었음
+  // (2026-09-16 실기기 확인). 대신 매 발화가 끝날 때마다(continuous:false 기본 동작으로
+  // 자연히 'end'가 옴) 아래 'end' 핸들러가 즉시 재시작해 연속 녹음처럼 동작시킴 —
+  // 항상 하나의 세션만 살아있어 경합이 생기지 않음
   // 확정 전 중간 결과도 실시간으로 보여줘 placeholder가 오래 남아있지 않도록
   voiceMemoRecognition.interimResults = true;
   voiceMemoRecognition.maxAlternatives = 1;
@@ -1379,8 +1383,8 @@ if (!SpeechRecognitionCtor) {
 
   voiceMemoRecognition.addEventListener('result', (e) => {
     let interimText = '';
-    // continuous 모드에서는 매 이벤트마다 전체 결과가 아니라 resultIndex 이후의
-    // 새 결과만 봐야 함 — 확정된 구간은 누적하고, 아직 확정 안 된 구간만 실시간 표시
+    // 매 이벤트마다 전체 결과가 아니라 resultIndex 이후의 새 결과만 봐야 함 —
+    // 확정된 구간은 누적하고, 아직 확정 안 된 구간만 실시간 표시
     for (let i = e.resultIndex; i < e.results.length; i += 1) {
       const transcript = e.results[i][0].transcript;
       if (e.results[i].isFinal) {
