@@ -1528,10 +1528,6 @@ function exitSearchMode() {
 }
 
 function confirmDeleteSingle(id) {
-  if (sentences.length <= 1) {
-    alert('최소 1개의 문장은 있어야 합니다.');
-    return;
-  }
   const sentence = sentences.find((s) => String(s.id) === String(id));
   if (!sentence) return;
   if (!confirm(`"${sentence.kr}" 문장을 삭제하시겠습니까?`)) return;
@@ -1683,11 +1679,6 @@ listSearchInput.addEventListener('input', () => {
 
 listBulkDeleteBtn.addEventListener('click', () => {
   if (selectedIds.size === 0) return;
-  const remaining = sentences.length - selectedIds.size;
-  if (remaining < 1) {
-    alert('최소 1개의 문장은 있어야 합니다.');
-    return;
-  }
   if (!confirm(`선택한 문장 ${selectedIds.size}개를 삭제하시겠습니까?`)) return;
   selectedIds.forEach((id) => deleteSentence(id));
   exitSelectMode();
