@@ -1664,7 +1664,12 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  /* 좌우 패딩 16px→4px(2026-09-16) — 카드 바깥 테두리(화면 기준 16px)는 다른 화면의
+     버튼·안내문과 동일하게 유지한 채, 카드 자체의 내부 패딩만 줄여 텍스트 시작 위치를
+     32px(16+16)에서 20px(16+4)로 앞당김. 목적: (1) 카드 없는 일반 텍스트/버튼과 텍스트
+     시작 위치를 더 가깝게 맞추고 (2) 텍스트가 쓸 수 있는 가로 폭을 넓혀 줄바꿈이
+     더 적게 일어나도록 함(줄이 너무 짧아지는 것을 피함) */
+  padding: 14px 4px;
   background-color: var(--gray-50);
   border-radius: 12px;
   border: 1.5px solid transparent;
