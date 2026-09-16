@@ -1394,10 +1394,10 @@ button {
   justify-content: space-between;
   gap: 12px;
   /* 위아래 줄간격을 기존(14px)의 절반(7px)으로 축소(2026-09-15, "그리드가 들쭉날쭉해
-     보인다"는 피드백). 왼쪽 패딩은 한때 "저장된 메모" 타이틀과 정렬을 맞추려 0으로
-     뒀었으나, 그 타이틀 자체가 삭제되며 이유가 사라짐 → 문장관리 항목(.sentence-list-item)과
-     같은 좌우 대칭 16px로 복원(같은 날, 전체 화면 좌우 여백 16px 통일 작업의 일부) */
-  padding: 7px 16px;
+     보인다"는 피드백). 좌우 패딩은 문장관리/노트형 학습 목록과 같은 이유로 16px→4px로
+     축소(2026-09-16) — 카드 바깥 테두리(16px)는 유지한 채 내부 패딩만 줄여 텍스트
+     인셋을 32px→20px로 맞춤(.sentence-list-item/.note-study-item과 통일) */
+  padding: 7px 4px;
   background-color: var(--gray-50);
   border-radius: 12px;
   cursor: pointer;
