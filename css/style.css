@@ -1166,7 +1166,9 @@ button {
 .note-study-kr {
   font-size: var(--kr-font-size);
   font-weight: 600;
-  color: var(--color-text-primary);
+  /* 메인 카드 화면의 한국어 텍스트(.kr-text)와 색상 통일(2026-09-16) — font-size/weight는
+     이미 같았는데 색만 --color-text-primary(더 진함)를 써서 더 크고 진하게 보였음 */
+  color: var(--color-text-secondary);
   word-break: keep-all;
 }
 
