@@ -630,6 +630,7 @@ const importFileInput = document.getElementById('import-file-input');
 const importTabOpenBtn = document.getElementById('import-tab-open-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
+const pasteAiPromptCopyBtn = document.getElementById('paste-ai-prompt-copy-btn');
 const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const fontSizeDecBtn = document.getElementById('font-size-dec-btn');
 const fontSizeIncBtn = document.getElementById('font-size-inc-btn');
@@ -1087,6 +1088,24 @@ importFileInput.addEventListener('change', () => {
 });
 
 // --- 텍스트 붙여넣기 탭 (파일 저장 없이, 파일가져오기와 동일한 파서 재사용) ---
+
+// 도움말 화면의 AI 프롬프트 예시와 동일한 문구(손글씨 노트 사진 → 텍스트 변환용)
+const PASTE_TAB_AI_PROMPT = `사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.
+코드블록으로 써줘`;
+
+pasteAiPromptCopyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(PASTE_TAB_AI_PROMPT);
+    pasteAiPromptCopyBtn.textContent = '복사됨';
+    setTimeout(() => {
+      pasteAiPromptCopyBtn.textContent = 'AI 프롬프트 복사하기';
+    }, 1500);
+  } catch {
+    // 클립보드 API를 쓸 수 없는 환경(권한 거부 등) 대비
+    alert('복사에 실패했습니다. 도움말 > 문장 추가하기 항목에서 프롬프트를 직접 복사해주세요.');
+  }
+});
+
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = parseSentencesText(pasteTextarea.value);
   let addedCount = 0;
