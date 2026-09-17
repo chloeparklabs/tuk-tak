@@ -1982,26 +1982,25 @@ function renderVariationDetail(index) {
   // 카테고리(시제/진행형/인칭 등) 그룹 제목 없이 변형 항목을 하나의 목록으로 이어서 표시.
   // 태그는 "[대괄호]"로 구분, "시제" 카테고리 태그(현재/과거/미래/현재완료)만 단독으로는 뜻이 모호해
   // "~시제"를 붙임(예: 현재→현재시제) — 나머지(진행형/인칭/수/부정문/의문문)는 그 자체로 뜻이 분명해 그대로 둠.
-  // 한국어가 먼저 보이고 탭하면 영어로 플립(카드 화면의 "확인"과 같은 개념) — 2026-08-25 최초 구현,
-  // 2026-08-26 플립 애니메이션으로 전환. "탭해서 영어/한국어 보기" 안내는 처음엔 항목마다 넣었다가
-  // 매번 반복돼 번잡하다는 피드백으로 화면 상단에 한 번(.variation-list-intro)만 두는 것으로 변경.
-  // 별도 "원문" 강조박스는 2026-08-26 제거. 하늘색 배경은 처음엔 "원문과 내용이 같은 항목"에 고정
-  // 적용했으나, "영어로 보이고 있는 항목이 하늘색이어야지 항상 현재시제만 고정되는 건 이상하다"는
-  // 피드백으로 **지금 영어가 보이는(플립된) 항목**을 동적으로 강조하는 방식으로 전환(.variation-item-flipped,
-  // 탭할 때마다 플립 애니메이션과 함께 토글). 원문과 내용이 같은 항목(대부분 "현재시제")은 목록에서
-  // 이미 한국어 원문을 보고 들어온 것이므로 처음부터 영어가 보이는 상태로 시작 — 결과적으로 이 항목이
-  // 렌더링 직후에는 하늘색으로 보이지만, 사용자가 다른 항목을 플립하면 그쪽으로 하늘색이 옮겨감.
+  // 탭하면 한/영이 전환(카드 화면의 "확인"과 같은 개념) — 2026-08-25 최초 구현, 2026-08-26 플립
+  // 애니메이션으로 전환. "탭해서 영어/한국어 보기" 안내는 처음엔 항목마다 넣었다가 매번 반복돼
+  // 번잡하다는 피드백으로 화면 상단에 한 번(.variation-list-intro)만 두는 것으로 변경.
+  // 2026-09-17: "시제 학습이 핵심인데 한국어 시제가 죽 나열되면 학습 포인트가 안 느껴진다"는
+  // 피드백으로 전체 항목이 기본으로 영어가 보이는 상태로 시작하도록 변경(과거엔 원문과 일치하는
+  // 항목 하나만 영어로 시작). 하늘색 강조(.variation-item-flipped)는 원문과 일치하는 항목 1개에만
+  // 렌더링 시점에 고정 적용 — 이제는 탭할 때마다 켜졌다 꺼지는 동적 강조가 아니라, "이게 방금 목록에서
+  // 본 원문이다"를 계속 알려주는 고정 표식으로 성격이 바뀜(탭해서 한/영을 바꿔도 이 표식은 안 움직임).
   // 각 항목에 "내 문장으로 추가" 버튼(circle-plus)을 붙여 카드 학습 덱에 바로 추가 가능(2026-08-26) —
   // 이미 내 문장 목록에 똑같은 kr/en이 있으면(기본문장으로 이미 들어있는 경우 포함) 처음부터 체크 표시로
   // 시작해 중복 추가를 막음. addSentence()를 그대로 재사용, 추가된 문장은 기본문장이 아닌 일반 "내 문장"
   data.categories.forEach((category) => {
     category.items.forEach((item) => {
       const tagText = category.label === '시제' ? `${item.tag}시제` : item.tag;
-      const startFlipped = item.kr === data.kr && item.en === data.en;
+      const isOriginal = item.kr === data.kr && item.en === data.en;
       const alreadyAdded = sentences.some((s) => s.kr === item.kr && s.en === item.en);
 
       const itemEl = document.createElement('div');
-      itemEl.className = startFlipped ? 'variation-item variation-item-flipped' : 'variation-item';
+      itemEl.className = isOriginal ? 'variation-item variation-item-flipped' : 'variation-item';
 
       const headerEl = document.createElement('div');
       headerEl.className = 'variation-item-header';
@@ -2027,7 +2026,7 @@ function renderVariationDetail(index) {
       flipEl.className = 'variation-item-flip';
 
       const flipInnerEl = document.createElement('div');
-      flipInnerEl.className = startFlipped ? 'variation-item-flip-inner flipped' : 'variation-item-flip-inner';
+      flipInnerEl.className = 'variation-item-flip-inner flipped';
 
       const krEl = document.createElement('p');
       krEl.className = 'variation-item-kr';
@@ -2073,8 +2072,9 @@ variationDetailBodyEl.addEventListener('click', (e) => {
   const item = e.target.closest('.variation-item');
   if (!item) return;
 
-  const flipped = item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
-  item.classList.toggle('variation-item-flipped', flipped);
+  // 하늘색 강조(.variation-item-flipped)는 렌더링 시점에 원문과 일치하는 항목에만 고정 적용되는
+  // 표식이라(2026-09-17), 탭 시에는 플립 애니메이션만 토글하고 강조 클래스는 건드리지 않음
+  item.querySelector('.variation-item-flip-inner').classList.toggle('flipped');
 });
 
 // 하단 "선택한 문장 추가하기" 버튼 → 선택된 항목을 한 번에 addSentence()로 추가하고,
