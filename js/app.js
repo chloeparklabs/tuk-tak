@@ -1135,6 +1135,8 @@ const LIST_CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 const LONG_PRESS_MS = 550;
 // 문장변형 상세 화면의 "내 문장으로 추가" 버튼 아이콘(circle-plus), 추가 완료 시 LIST_CHECK_ICON으로 교체
 const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
+// 선택됨 상태(버튼 배경이 이미 파란 원으로 채워짐)에서는 원 테두리 없이 순수 "+"만 표시
+const VARIATION_ADD_ICON_SELECTED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
 // 문장관리 목록 항목의 "AI로 변형하기" 아이콘(sparkles) — 15-2, 별표/깃발과 달리 즉시 토글이 아니라
 // 새 화면(프롬프트 생성)으로 이동하는 무거운 동작이라 시각적으로 확실히 구분되는 모양을 사용
 const AI_VARIATION_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
@@ -2058,9 +2060,11 @@ variationDetailBodyEl.addEventListener('click', (e) => {
     if (variationSelectedIndexes.has(flatIndex)) {
       variationSelectedIndexes.delete(flatIndex);
       addBtn.classList.remove('selected');
+      addBtn.innerHTML = VARIATION_ADD_ICON;
     } else {
       variationSelectedIndexes.add(flatIndex);
       addBtn.classList.add('selected');
+      addBtn.innerHTML = VARIATION_ADD_ICON_SELECTED;
     }
     updateVariationDetailFooter();
     return;

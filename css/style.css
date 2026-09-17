@@ -2327,7 +2327,7 @@ button {
   background: none;
   border: none;
   border-radius: 50%;
-  color: var(--color-text-secondary);
+  color: var(--gray-600);
   cursor: pointer;
 }
 
