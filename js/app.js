@@ -1004,7 +1004,7 @@ function openAddModal(sentence, options) {
   } else {
     editingId = null;
     addModalTitleEl.textContent = '문장 추가';
-    addSubmitBtn.textContent = '추가';
+    addSubmitBtn.textContent = '추가하기';
     addKrInput.value = (options && options.prefillKr) || '';
     addModalTabsEl.classList.remove('hidden');
   }
