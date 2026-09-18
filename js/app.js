@@ -730,6 +730,7 @@ const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-k
 const aiVariationPromptTextarea = document.getElementById('ai-variation-prompt-textarea');
 const aiVariationCopyBtn = document.getElementById('ai-variation-copy-btn');
 const aiVariationGenerateBtn = document.getElementById('ai-variation-generate-btn');
+const aiVariationUsageInfoEl = document.getElementById('ai-variation-usage-info');
 const aiVariationPasteTextarea = document.getElementById('ai-variation-paste-textarea');
 const aiVariationPreviewBtn = document.getElementById('ai-variation-preview-btn');
 const aiVariationPreviewScreen = document.getElementById('ai-variation-preview-screen');
@@ -2159,6 +2160,35 @@ function buildAiVariationPrompt(sentence) {
 변형 요청: 현재시제, 과거시제, 미래시제, 현재완료시제, 2인칭, 3인칭 단수, 복수, 부정문, 의문문`;
 }
 
+// 평생 100개 한도 중 남은 개수 표시 — 로그인 안 됐거나 조회 실패하면 조용히 숨김(에러로 취급하지 않음,
+// 무료판(복붙) 사용자는 애초에 이 한도와 무관하므로 못 봐도 문제 없음)
+function renderAiVariationUsage(remaining, limit) {
+  if (typeof remaining !== 'number' || typeof limit !== 'number') {
+    aiVariationUsageInfoEl.classList.add('hidden');
+    return;
+  }
+  aiVariationUsageInfoEl.textContent = `AI 자동변형 ${remaining}/${limit}개 남음`;
+  aiVariationUsageInfoEl.classList.remove('hidden');
+}
+
+// Claude 호출 없이 Firestore만 읽는 조회 전용 엔드포인트(api/ai-variation-usage.js) — 비용 없음
+async function fetchAiVariationUsage() {
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
+    renderAiVariationUsage(null, null);
+    return;
+  }
+  try {
+    const idToken = await window.CloudSync.getIdToken();
+    const response = await fetch('/api/ai-variation-usage', {
+      headers: { authorization: `Bearer ${idToken}` },
+    });
+    const data = await response.json();
+    renderAiVariationUsage(response.ok ? data.remaining : null, response.ok ? data.limit : null);
+  } catch {
+    renderAiVariationUsage(null, null);
+  }
+}
+
 // 문장관리 목록 항목의 AI 아이콘 탭 → 그 문장으로 바로 프롬프트 화면 진입
 function openAiVariationPromptFor(sentence) {
   aiVariationSelectedSentence = { kr: sentence.kr, en: sentence.en };
@@ -2168,6 +2198,7 @@ function openAiVariationPromptFor(sentence) {
 
   listScreen.classList.add('hidden');
   aiVariationPromptScreen.classList.remove('hidden');
+  fetchAiVariationUsage();
 }
 
 // --- 프롬프트 복사 + 결과 붙여넣기 ---
@@ -2252,6 +2283,9 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
       alert(data.error || 'AI 변형 생성에 실패했습니다.');
       return;
     }
+
+    // 성공 응답이면 결과 개수와 무관하게(0개 포함) 최신 한도를 바로 반영
+    renderAiVariationUsage(data.remaining, data.limit);
 
     const parsed = parseSentencesText(data.text || '');
     if (parsed.length === 0) {

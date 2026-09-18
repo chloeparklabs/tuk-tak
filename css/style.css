@@ -2428,6 +2428,12 @@ button {
   color: var(--color-text-secondary);
 }
 
+.ai-variation-usage-info {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
 .ai-variation-toolbar {
   display: flex;
   align-items: center;

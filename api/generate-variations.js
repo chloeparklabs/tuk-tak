@@ -174,5 +174,5 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  res.status(200).json({ text: resultText, remaining });
+  res.status(200).json({ text: resultText, remaining, limit: AI_VARIATION_LIMIT });
 };

@@ -5606,3 +5606,31 @@ Anthropic API error: 400 {"type":"error","error":{"type":"invalid_request_error"
 ### 다음 작업 제안
 - 사용자 실기기 2차 확인 필요: 변형 판단 품질(9종 세분화+7가지 규칙)이 실사용에서 자연스러운지, "안녕하세요" 같은 문장에서 새 안내 문구가 뜨는지, 한도가 실제로 차감 안 되는지
 - 스토어 등록정보 마무리, 19번 PC 빠른입력 문서 재검토 항목은 계속 대기 중
+
+## 세션 기록: 2026-09-18 (이어서 8) — AI 자동변형 남은 한도 화면 표시 신규
+
+### 배경
+사용자가 "이건 나왔어(0개 결과 안내 문구). 한도는 어디에 나와?"라고 질문 — 서버는 매 응답에 `remaining`(평생 100개 중 남은 개수)을 담아 보내고 있었지만, **클라이언트가 그 값을 받기만 하고 화면에 표시하는 코드가 전혀 없었음**을 확인해 보고 → 사용자가 "추가해줘"로 승인.
+
+### 구현
+1. **`api/ai-variation-usage.js` 신규**: Claude API를 호출하지 않고 Firestore `users/{uid}.aiVariationCount`만 읽는 조회 전용 GET 엔드포인트(비용 없음). `Authorization: Bearer <ID토큰>` 검증 후 `{used, remaining, limit}` 반환. `api/generate-variations.js`와 인증 코드(firebase-admin 초기화+토큰 검증)가 거의 동일해 중복이지만, 파일이 2개뿐이고 5줄 남짓이라 공유 모듈로 분리하지 않고 그대로 둠
+2. **`api/generate-variations.js`**: 응답에 `limit` 필드 추가(`{text, remaining, limit}`) — 새 조회 엔드포인트와 필드명을 통일해 클라이언트가 같은 렌더 함수를 재사용할 수 있게 함
+3. **`js/app.js`**: `renderAiVariationUsage(remaining, limit)`(텍스트 갱신 또는 숨김)와 `fetchAiVariationUsage()`(비로그인/실패 시 조용히 숨김, 에러 alert 없음) 신규 추가. `openAiVariationPromptFor()`(AI 아이콘 탭해 프롬프트 화면 진입할 때)에서 항상 최신값을 조회해 표시, "AI로 바로 만들기" 클릭 후 성공 응답을 받으면(결과 0개인 경우 포함) 재조회 없이 응답에 이미 담긴 `remaining`/`limit`으로 즉시 갱신
+4. **`index.html`/`css/style.css`**: "AI로 바로 만들기" 버튼 바로 아래 `#ai-variation-usage-info`(작은 회색 텍스트, 기본 숨김) 신규 — 예: "AI 자동변형 87/100개 남음"
+
+### Claude 1차 확인
+`node -c`로 신규 파일 포함 3개 파일 문법 확인. Firestore 읽기 로직 자체는 `api/generate-variations.js`가 동일한 firebase-admin 버전·import 방식·IAM 권한으로 이미 프로덕션에서 검증된 패턴을 그대로 재사용한 것이라 별도 위험은 낮다고 판단. `vercel env pull`로 받은 서비스 계정 키로 로컬에서 직접 Firestore 읽기까지 재현해보려 했으나, `.env.production.local`에 담긴 멀티라인 JSON 값이 간이 dotenv 파서(수동 파싱, Node `--env-file` 둘 다)로 깨지는 문제만 반복돼(핵심 로직과 무관한 로컬 테스트 환경 이슈로 판단) 이 검증은 포기 — 실제 로그인 상태에서 화면에 값이 정확히 뜨는지는 사용자 실기기 확인이 필요. 테스트 시도 후 로컬 환경 파일은 정리 완료.
+
+### 반영
+- `api/ai-variation-usage.js`: 신규
+- `api/generate-variations.js`: 응답에 `limit` 필드 추가
+- `js/app.js`: 사용량 조회·표시 함수 추가, 프롬프트 화면 진입/생성 완료 시점에 연결
+- `index.html`/`css/style.css`: 사용량 표시 텍스트 요소 추가
+- `CLAUDE.md`: 15-2 항목에 이번 작업 기록
+- `PROGRESS.md`: 이번 작업 기록 추가
+- 커밋+push는 이어서 진행
+
+### 다음 작업 제안
+- 사용자 실기기 2차 확인 필요: AI 변형 프롬프트 화면 진입 시 남은 한도가 정확히 표시되는지, 생성 후(0개 포함) 숫자가 바로 갱신되는지
+- 위에서 대기 중인 변형 판단 품질 개선 2차 확인과 함께 진행 예정
+- 스토어 등록정보 마무리, 19번 PC 빠른입력 문서 재검토 항목은 계속 대기 중
