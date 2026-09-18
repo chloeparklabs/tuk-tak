@@ -2,6 +2,8 @@
 // 역할은 "프롬프트를 받아 Claude API에 전달하고 결과 텍스트만 돌려주는" 얇은 중계뿐 —
 // 프롬프트 생성(buildAiVariationPrompt)과 결과 파싱(parseSentencesText)은 js/app.js(무료판)의
 // 코드를 그대로 재사용하므로 이 서버는 그 형식을 전혀 몰라도 됨.
+// Claude 응답 자체는 tool_choice로 강제한 JSON 스키마(AI_VARIATION_TOOL)로 받아 형식 이탈을 막고,
+// 서버 내부에서만 그 결과를 "한국어\t영어" 텍스트로 재조립해 클라이언트와의 응답 계약을 그대로 유지한다.
 //
 // 한도: 평생(누적) 100개, 월별 리셋 없음(CLAUDE.md "무료 / 유료 버전 구분" 참고).
 // "요청 1회"가 아니라 "요청 성공 시 1회 차감" — Firestore 트랜잭션으로 확인+차감을 원자적으로 처리해
@@ -15,6 +17,36 @@ const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 
 const AI_VARIATION_LIMIT = 100;
+
+// 시스템 프롬프트 분리: "역할/출력 규칙"만 여기서 강제하고, 실제 과제 내용(원문·변형 요청 종류·
+// 자연스러움 판단 기준)은 기존 client의 buildAiVariationPrompt() 결과를 user 메시지로 그대로 전달한다
+// (무료판 프롬프트는 8월에 이미 검증된 것이라 손대지 않음).
+const AI_VARIATION_SYSTEM_PROMPT = '당신은 한국어-영어 문장 변형을 만드는 전문가입니다. 사용자 메시지에 담긴 원문과 요청 사항에 따라 자연스러운 변형 문장들을 만드세요. 반드시 submit_variations 도구를 호출해서만 답하고, 그 외의 설명이나 텍스트는 절대 덧붙이지 마세요.';
+
+// JSON 강제: 프롬프트로 "이 형식으로 답해줘"라고 부탁하는 대신, 이 스키마를 만족하는 도구 호출만
+// 하도록 API 차원에서 강제 — 코드블록 누락, 구분자 오류 등 형식 이탈 자체를 원천 차단한다.
+const AI_VARIATION_TOOL = {
+  name: 'submit_variations',
+  description: '변형된 한국어-영어 문장 쌍 목록을 제출한다.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      variations: {
+        type: 'array',
+        description: '자연스러운 변형 문장 목록',
+        items: {
+          type: 'object',
+          properties: {
+            kr: { type: 'string', description: '변형된 한국어 문장' },
+            en: { type: 'string', description: '변형된 영어 문장' },
+          },
+          required: ['kr', 'en'],
+        },
+      },
+    },
+    required: ['variations'],
+  },
+};
 
 function initFirebaseAdmin() {
   if (getApps().length > 0) return;
@@ -79,7 +111,11 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 2048,
+        max_tokens: 4096,
+        temperature: 0.3,
+        system: AI_VARIATION_SYSTEM_PROMPT,
+        tools: [AI_VARIATION_TOOL],
+        tool_choice: { type: 'tool', name: 'submit_variations' },
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -92,7 +128,16 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    resultText = (data.content || []).map((block) => block.text || '').join('\n');
+    const toolUseBlock = (data.content || []).find(
+      (block) => block.type === 'tool_use' && block.name === 'submit_variations'
+    );
+    const variations = Array.isArray(toolUseBlock?.input?.variations) ? toolUseBlock.input.variations : [];
+    // 클라이언트의 parseSentencesText()가 그대로 이해하는 "한국어\t영어" 줄바꿈 텍스트로 재조립 —
+    // 응답 계약(text 필드)이 이전과 동일해 js/app.js는 전혀 수정할 필요가 없다.
+    resultText = variations
+      .filter((v) => v && typeof v.kr === 'string' && typeof v.en === 'string' && v.kr.trim() && v.en.trim())
+      .map((v) => `${v.kr.trim()}\t${v.en.trim()}`)
+      .join('\n');
   } catch (err) {
     console.error('Anthropic API 호출 실패:', err);
     res.status(502).json({ error: 'AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
