@@ -2230,8 +2230,9 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
     }
 
     showAiVariationPreview(parsed);
-  } catch {
-    alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  } catch (err) {
+    // [임시 디버그] 원인 파악 후 일반 안내 문구로 되돌릴 예정
+    alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n[디버그] ' + (err && err.name) + ': ' + (err && err.message));
   } finally {
     aiVariationGenerateBtn.disabled = false;
     aiVariationGenerateBtn.textContent = 'AI로 바로 만들기';
