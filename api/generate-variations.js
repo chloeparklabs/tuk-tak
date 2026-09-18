@@ -6,22 +6,20 @@
 // 한도: 평생(누적) 100개, 월별 리셋 없음(CLAUDE.md "무료 / 유료 버전 구분" 참고).
 // "요청 1회"가 아니라 "요청 성공 시 1회 차감" — Firestore 트랜잭션으로 확인+차감을 원자적으로 처리해
 // 동시 요청으로 한도를 우회하는 경쟁 상태를 방지한다.
+//
+// firebase-admin v13+는 루트 require가 모듈형 API만 내보내(admin.apps/admin.auth()/admin.firestore()
+// 같은 옛 네임스페이스 방식은 존재하지 않음) — firebase-admin/app, /auth, /firestore 서브패스로 가져온다.
 
-const admin = require('firebase-admin');
+const { initializeApp, getApps, cert } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
+const { getFirestore } = require('firebase-admin/firestore');
 
 const AI_VARIATION_LIMIT = 100;
 
 function initFirebaseAdmin() {
-  if (admin.apps.length > 0) return admin.app();
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '';
-  console.error('[debug] FIREBASE_SERVICE_ACCOUNT_KEY raw length:', raw.length);
-  const serviceAccount = JSON.parse(raw);
-  console.error('[debug] parsed keys:', Object.keys(serviceAccount));
-  console.error('[debug] project_id:', serviceAccount.project_id);
-  console.error('[debug] private_key typeof:', typeof serviceAccount.private_key, 'length:', serviceAccount.private_key ? serviceAccount.private_key.length : 'N/A');
-  return admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+  if (getApps().length > 0) return;
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  initializeApp({ credential: cert(serviceAccount) });
 }
 
 module.exports = async function handler(req, res) {
@@ -46,7 +44,7 @@ module.exports = async function handler(req, res) {
   let uid;
   try {
     initFirebaseAdmin();
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    const decoded = await getAuth().verifyIdToken(idToken);
     uid = decoded.uid;
   } catch (err) {
     console.error('토큰 검증/Firebase Admin 초기화 실패:', err.message);
@@ -54,7 +52,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const userDocRef = admin.firestore().collection('users').doc(uid);
+  const userDocRef = getFirestore().collection('users').doc(uid);
 
   // 먼저 한도만 확인(트랜잭션 밖) — 이미 초과한 사용자는 비용이 드는 Claude API 호출 자체를 하지 않음
   try {
@@ -65,6 +63,7 @@ module.exports = async function handler(req, res) {
       return;
     }
   } catch (err) {
+    console.error('사용량 확인 실패:', err.message);
     res.status(500).json({ error: '사용량을 확인하는 중 오류가 발생했습니다.' });
     return;
   }
@@ -104,7 +103,7 @@ module.exports = async function handler(req, res) {
   // 트랜잭션으로 재확인+증가를 원자적으로 처리해 동시 요청으로 한도를 넘기지 못하게 방지.
   let remaining;
   try {
-    remaining = await admin.firestore().runTransaction(async (tx) => {
+    remaining = await getFirestore().runTransaction(async (tx) => {
       const snap = await tx.get(userDocRef);
       const currentCount = snap.exists ? snap.data().aiVariationCount || 0 : 0;
       const nextCount = currentCount + 1;
@@ -112,7 +111,7 @@ module.exports = async function handler(req, res) {
       return AI_VARIATION_LIMIT - nextCount;
     });
   } catch (err) {
-    console.error('사용량 기록 실패:', err);
+    console.error('사용량 기록 실패:', err.message);
     // 결과는 이미 생성됐으므로 카운트 반영 실패로 사용자 응답 자체를 막지는 않음
     remaining = null;
   }
