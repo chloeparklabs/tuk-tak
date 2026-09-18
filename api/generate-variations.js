@@ -19,9 +19,13 @@ const { getFirestore } = require('firebase-admin/firestore');
 const AI_VARIATION_LIMIT = 100;
 
 // 시스템 프롬프트 분리: "역할/출력 규칙"만 여기서 강제하고, 실제 과제 내용(원문·변형 요청 종류·
-// 자연스러움 판단 기준)은 기존 client의 buildAiVariationPrompt() 결과를 user 메시지로 그대로 전달한다
-// (무료판 프롬프트는 8월에 이미 검증된 것이라 손대지 않음).
-const AI_VARIATION_SYSTEM_PROMPT = '당신은 한국어-영어 문장 변형을 만드는 전문가입니다. 사용자 메시지에 담긴 원문과 요청 사항에 따라 자연스러운 변형 문장들을 만드세요. 반드시 submit_variations 도구를 호출해서만 답하고, 그 외의 설명이나 텍스트는 절대 덧붙이지 마세요.';
+// 자연스러움 판단 기준·예외 규칙)은 client의 buildAiVariationPrompt() 결과를 user 메시지로 그대로
+// 전달한다(무료판·유료판이 공유하는 프롬프트, js/app.js 참고).
+const AI_VARIATION_SYSTEM_PROMPT = '당신은 한국어-영어 문장 변형을 만드는 전문가입니다. 사용자 메시지에 담긴 원문과 요청 사항, 예외 규칙에 따라 자연스러운 변형 문장들을 만드세요. 반드시 submit_variations 도구를 호출해서만 답하고, 그 외의 설명이나 텍스트는 절대 덧붙이지 마세요.';
+
+// user 메시지(buildAiVariationPrompt)의 "변형 요청" 9개 카테고리와 정확히 같은 이름 —
+// 각 변형 항목이 어느 카테고리에 해당하는지 명시적으로 답하게 해 카테고리별 판단 규율을 강화한다.
+const AI_VARIATION_LABELS = ['현재시제', '과거시제', '미래시제', '현재완료시제', '2인칭', '3인칭 단수', '복수', '부정문', '의문문'];
 
 // JSON 강제: 프롬프트로 "이 형식으로 답해줘"라고 부탁하는 대신, 이 스키마를 만족하는 도구 호출만
 // 하도록 API 차원에서 강제 — 코드블록 누락, 구분자 오류 등 형식 이탈 자체를 원천 차단한다.
@@ -37,10 +41,11 @@ const AI_VARIATION_TOOL = {
         items: {
           type: 'object',
           properties: {
+            label: { type: 'string', enum: AI_VARIATION_LABELS, description: '이 변형이 해당하는 카테고리' },
             kr: { type: 'string', description: '변형된 한국어 문장' },
             en: { type: 'string', description: '변형된 영어 문장' },
           },
-          required: ['kr', 'en'],
+          required: ['label', 'kr', 'en'],
         },
       },
     },
