@@ -461,6 +461,7 @@ function addSentence(kr, en) {
   randomOrder.push(String(sentence.id));
   saveRandomOrder();
   saveSentences(sentences);
+  return sentence;
 }
 
 // 파일 가져오기/텍스트 붙여넣기 전용 중복 검사(2026-09-15) — 같은 파일·텍스트를 실수로
@@ -885,6 +886,7 @@ function renderCard() {
   if (aiVariationBankModeActive) {
     cardBankPromoteBtn.classList.toggle('promoted', !!sentence.promoted);
     cardBankPromoteBtn.innerHTML = sentence.promoted ? LIST_CHECK_ICON : VARIATION_ADD_ICON;
+    cardBankPromoteBtn.setAttribute('aria-label', sentence.promoted ? '내 카드덱에서 취소' : '내 카드덱에 추가');
   } else {
     cardStarBtn.classList.toggle('active', sentence.important);
     cardFlagBtn.classList.toggle('active', sentence.unfamiliar);
@@ -957,11 +959,22 @@ cardDeleteBtn.addEventListener('click', () => {
 
 // AI 변형 보관함 학습 모드 전용 — 별표/미암기/수정/삭제(sentences 대상) 대신 승격/보관함 삭제.
 // 승격해도 보관함에서 제거되지 않음(사용자 결정) — 재승격 방지로 promoted 플래그만 확인
+// 탭할 때마다 승격/취소 토글 — 실수로 눌렀을 때 되돌릴 수 있어야 한다는 사용자 피드백(2026-09-18)
+// 반영. 취소 시 promotedSentenceId로 메인 덱에서 그 문장을 정확히 찾아 제거(deleteSentence는
+// randomOrder 정리·currentIndex 보정까지 기존 삭제 로직을 그대로 재사용)
 cardBankPromoteBtn.addEventListener('click', () => {
   const item = getCardOrderedSentences()[currentIndex];
-  if (!item || item.promoted) return;
-  addSentence(item.kr, item.en);
-  item.promoted = true;
+  if (!item) return;
+
+  if (item.promoted) {
+    if (item.promotedSentenceId) deleteSentence(item.promotedSentenceId);
+    item.promoted = false;
+    item.promotedSentenceId = null;
+  } else {
+    const added = addSentence(item.kr, item.en);
+    item.promoted = true;
+    item.promotedSentenceId = added.id;
+  }
   saveAiVariationBank();
   renderCard();
 });
@@ -2280,7 +2293,7 @@ function saveAiVariationBank() {
 // 새 변형 문장을 보관함에 저장하고, 방금 저장한 항목의 id를 반환(호출부가 학습 세션 범위를
 // 그 배치로 한정할 때 사용)
 function addToAiVariationBank(kr, en) {
-  const item = { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), promoted: false };
+  const item = { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), promoted: false, promotedSentenceId: null };
   aiVariationBank.push(item);
   saveAiVariationBank();
   return item.id;
