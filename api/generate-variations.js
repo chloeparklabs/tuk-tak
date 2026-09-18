@@ -93,6 +93,7 @@ module.exports = async function handler(req, res) {
 
     const data = await response.json();
     resultText = (data.content || []).map((block) => block.text || '').join('\n');
+    console.error('[debug] Claude 응답 원문:', JSON.stringify(resultText).slice(0, 1500));
   } catch (err) {
     console.error('Anthropic API 호출 실패:', err);
     res.status(502).json({ error: 'AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
