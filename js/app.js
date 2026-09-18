@@ -753,16 +753,7 @@ const variationDetailBackBtn = document.getElementById('variation-detail-back-bt
 const variationDetailHomeBtn = document.getElementById('variation-detail-home-btn');
 const variationDetailBodyEl = document.getElementById('variation-detail-body');
 const variationAddSelectedBtn = document.getElementById('variation-add-selected-btn');
-const aiVariationPromptScreen = document.getElementById('ai-variation-prompt-screen');
-const aiVariationPromptBackBtn = document.getElementById('ai-variation-prompt-back-btn');
-const aiVariationPromptHomeBtn = document.getElementById('ai-variation-prompt-home-btn');
-const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
-const aiVariationPromptTextarea = document.getElementById('ai-variation-prompt-textarea');
-const aiVariationCopyBtn = document.getElementById('ai-variation-copy-btn');
-const aiVariationGenerateBtn = document.getElementById('ai-variation-generate-btn');
 const aiVariationUsageInfoEl = document.getElementById('ai-variation-usage-info');
-const aiVariationPasteTextarea = document.getElementById('ai-variation-paste-textarea');
-const aiVariationPreviewBtn = document.getElementById('ai-variation-preview-btn');
 const aiVariationPreviewScreen = document.getElementById('ai-variation-preview-screen');
 const aiVariationPreviewBackBtn = document.getElementById('ai-variation-preview-back-btn');
 const aiVariationPreviewHomeBtn = document.getElementById('ai-variation-preview-home-btn');
@@ -786,7 +777,6 @@ function goToCardScreen() {
 }
 
 variationDetailHomeBtn.addEventListener('click', goToCardScreen);
-aiVariationPromptHomeBtn.addEventListener('click', goToCardScreen);
 aiVariationPreviewHomeBtn.addEventListener('click', goToCardScreen);
 
 // ==========================================================================
@@ -1222,6 +1212,9 @@ const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="current
 // 선택됨 상태(버튼 배경이 이미 파란 원으로 채워짐)에서는 원 테두리 없이 순수 "+"만 표시
 // "+" 자체 크기는 VARIATION_ADD_ICON 안의 십자(M8 12h8 / M12 8v8)와 동일하게 맞춰 상태 전환 시 커 보이지 않게 함
 const VARIATION_ADD_ICON_SELECTED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
+// "내 문장 변형하기" 목록의 AI 아이콘(sparkles) — 2026-09-18 재도입. 프롬프트 화면 없이 이 아이콘
+// 탭 한 번으로 바로 AI 변형을 생성(generateAiVariationFor)
+const AI_VARIATION_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
 // 문장관리 목록 항목의 "발음 듣기" 아이콘(25번) — 카드 화면(24번)의 speakEnglish()를 그대로 재사용
 const SPEAKER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>';
 
@@ -2236,18 +2229,31 @@ function renderVariationMyList() {
       textWrap.appendChild(krEl);
       textWrap.appendChild(enEl);
       item.appendChild(textWrap);
+
+      const actions = document.createElement('div');
+      actions.className = 'sentence-list-actions';
+      const aiBtn = document.createElement('button');
+      aiBtn.type = 'button';
+      aiBtn.className = 'sentence-ai-btn';
+      aiBtn.setAttribute('aria-label', 'AI로 변형하기');
+      aiBtn.innerHTML = AI_VARIATION_ICON;
+      actions.appendChild(aiBtn);
+      item.appendChild(actions);
+
       variationMySentenceListEl.appendChild(item);
     });
   }
 
   renderAiVariationBankEntry();
+  fetchAiVariationUsage();
 }
 
 variationMySentenceListEl.addEventListener('click', (e) => {
-  const item = e.target.closest('.sentence-list-item');
-  if (!item) return;
+  const aiBtn = e.target.closest('.sentence-ai-btn');
+  if (!aiBtn) return;
+  const item = aiBtn.closest('.sentence-list-item');
   const sentence = sentences.find((s) => String(s.id) === item.dataset.id);
-  if (sentence) openAiVariationPromptFor(sentence);
+  if (sentence) generateAiVariationFor(sentence, aiBtn);
 });
 
 // "AI 변형 보관함 학습하기" 진입 버튼 — 보관함이 비어있으면 숨김(23번 필터 학습 버튼과 같은 패턴)
@@ -2266,15 +2272,16 @@ variationDetailBackBtn.addEventListener('click', () => {
 });
 
 // ==========================================================================
-// 15-2 AI 변형(무료판 안내형 파이프라인, 2026-09-18 진입 구조 재설계)
-// ① 더보기 > "문장변형" > "내 문장 변형하기" 탭에서 문장을 골라 진입(문장관리의 AI 아이콘은
-// 폐지 — 진입점을 문장변형 메뉴 하나로 통합) ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아
-// 붙여넣기(기존 parseSentencesText 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택)
-// ④ 선택 항목만 "AI 변형 보관함"(메인 카드덱과 분리된 영구 저장소)에 저장한 뒤, 방금 저장한
-// 항목들만 즉석으로(aiVariationBankModeActive) 카드 화면에서 학습 — 메인 덱과 안 섞여서 정렬을
-// 바꿔도 흩어지지 않음. 보관함 학습 화면에서 "내 카드덱에 추가"(승격)로 원하는 것만 메인 덱으로 옮길 수 있음
+// 15-2 AI 변형(유료판 전용, 2026-09-18 재설계): "무료판 안내형"(프롬프트 복사→외부 AI→결과 붙여넣기)
+// 흐름은 폐지됨 — "이 앱의 본연 기능은 문장 암기인데, AI 프롬프트 작성법까지 알려주는 건 범위를
+// 벗어난다"는 판단(사용자 의견). 이제 ① "문장변형 > 내 문장 변형하기" 탭의 문장 옆 AI 아이콘 탭
+// → 로그인 상태면 즉시 서버 호출(비로그인이면 안내만) ② 결과를 곧바로 미리보기 화면(체크박스
+// 다중선택)으로 ③ 선택 항목만 "AI 변형 보관함"(메인 카드덱과 분리된 영구 저장소)에 저장한 뒤,
+// 방금 저장한 항목들만 즉석으로(aiVariationBankModeActive) 카드 화면에서 학습 — 메인 덱과 안 섞여서
+// 정렬을 바꿔도 흩어지지 않음. 보관함 학습 화면에서 "내 카드덱에 추가"(승격)로 원하는 것만 메인
+// 덱으로 옮길 수 있음. 프롬프트 자체(buildAiVariationPrompt)는 서버로 보내는 용도로 계속 쓰이지만
+// 더 이상 화면에 노출되지 않음
 // ==========================================================================
-let aiVariationSelectedSentence = null;
 let aiVariationParsedItems = [];
 let aiVariationSelectedIndexes = new Set();
 
@@ -2326,8 +2333,7 @@ function buildAiVariationPrompt(sentence) {
 변형 요청: 현재시제, 과거시제, 미래시제, 현재완료시제, 2인칭, 3인칭 단수, 복수, 부정문, 의문문`;
 }
 
-// 평생 100개 한도 중 남은 개수 표시 — 로그인 안 됐거나 조회 실패하면 조용히 숨김(에러로 취급하지 않음,
-// 무료판(복붙) 사용자는 애초에 이 한도와 무관하므로 못 봐도 문제 없음)
+// 평생 100개 한도 중 남은 개수 표시 — 로그인 안 됐거나 조회 실패하면 조용히 숨김(에러로 취급하지 않음)
 function renderAiVariationUsage(remaining, limit) {
   if (typeof remaining !== 'number' || typeof limit !== 'number') {
     aiVariationUsageInfoEl.classList.add('hidden');
@@ -2355,56 +2361,15 @@ async function fetchAiVariationUsage() {
   }
 }
 
-// "문장변형 > 내 문장 변형하기" 목록의 문장 탭 → 그 문장으로 바로 프롬프트 화면 진입
-function openAiVariationPromptFor(sentence) {
-  aiVariationSelectedSentence = { kr: sentence.kr, en: sentence.en };
-  aiVariationSelectedKrEl.textContent = sentence.kr;
-  aiVariationPromptTextarea.value = buildAiVariationPrompt(sentence);
-  aiVariationPasteTextarea.value = '';
-
-  variationListScreen.classList.add('hidden');
-  aiVariationPromptScreen.classList.remove('hidden');
-  fetchAiVariationUsage();
-}
-
-// --- 프롬프트 복사 + 결과 붙여넣기 ---
-aiVariationPromptBackBtn.addEventListener('click', () => {
-  aiVariationPromptScreen.classList.add('hidden');
-  variationListScreen.classList.remove('hidden');
-});
-
-aiVariationCopyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(aiVariationPromptTextarea.value);
-    aiVariationCopyBtn.textContent = '복사됨';
-    setTimeout(() => {
-      aiVariationCopyBtn.textContent = '복사하기';
-    }, 1500);
-  } catch {
-    // 클립보드 API를 쓸 수 없는 환경(권한 거부 등) 대비 — 직접 선택해서 복사하도록 안내
-    aiVariationPromptTextarea.select();
-    alert('복사에 실패했습니다. 텍스트를 직접 선택해 복사해주세요.');
-  }
-});
-
-// 파싱된 변형 문장으로 미리보기 화면 전환(무료판 "붙여넣기→미리보기"와 유료판 "AI로 바로 만들기" 공용)
+// 파싱된 변형 문장으로 미리보기 화면 전환
 function showAiVariationPreview(parsed) {
   aiVariationParsedItems = parsed;
   aiVariationSelectedIndexes = new Set(parsed.map((_, i) => i)); // 기본값: 전체 선택
 
-  aiVariationPromptScreen.classList.add('hidden');
+  variationListScreen.classList.add('hidden');
   aiVariationPreviewScreen.classList.remove('hidden');
   renderAiVariationPreview();
 }
-
-aiVariationPreviewBtn.addEventListener('click', () => {
-  const parsed = parseSentencesText(aiVariationPasteTextarea.value);
-  if (parsed.length === 0) {
-    alert('붙여넣은 텍스트에서 문장을 찾지 못했습니다. 형식을 확인해주세요.');
-    return;
-  }
-  showAiVariationPreview(parsed);
-});
 
 // 요청 자체가 서버에 도달하기 전에 끊기는 경우(모바일 네트워크 일시 단절 등, getIdToken/fetch가
 // 예외를 던지는 경우)에만 1초 후 자동으로 한 번 더 시도 — 이미 서버까지 도달한 응답(4xx/5xx, 파싱 실패)은
@@ -2423,25 +2388,25 @@ async function requestAiVariations(prompt) {
   return { response, data: await response.json() };
 }
 
-// 15-2 유료판: 서버(api/generate-variations.js)가 프롬프트를 Claude API로 중계해 결과를 바로 받아옴
-// (평생 누적 100개 한도, 결제 게이팅은 이번 범위 밖 — 로그인만 하면 이용 가능)
-aiVariationGenerateBtn.addEventListener('click', async () => {
+// "내 문장 변형하기" 목록의 AI 아이콘 탭 → 프롬프트 화면 없이 곧바로 서버 호출(평생 누적 100개
+// 한도, 결제 게이팅은 이번 범위 밖 — 로그인만 하면 이용 가능). iconBtn은 요청 중 중복 탭 방지용
+async function generateAiVariationFor(sentence, iconBtn) {
   if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
-    alert('AI 자동생성은 로그인 후 이용할 수 있어요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.');
+    alert('AI 자동변형은 로그인 후 이용할 수 있어요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.');
     return;
   }
 
-  aiVariationGenerateBtn.disabled = true;
-  aiVariationGenerateBtn.textContent = '생성 중...';
+  const prompt = buildAiVariationPrompt(sentence);
+  iconBtn.disabled = true;
 
   try {
     let result;
     try {
-      result = await requestAiVariations(aiVariationPromptTextarea.value);
+      result = await requestAiVariations(prompt);
     } catch {
       // 네트워크 단절 등으로 요청 자체가 실패한 경우만 1초 뒤 한 번 더 시도
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      result = await requestAiVariations(aiVariationPromptTextarea.value);
+      result = await requestAiVariations(prompt);
     }
     const { response, data } = result;
 
@@ -2465,10 +2430,9 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
   } catch {
     alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   } finally {
-    aiVariationGenerateBtn.disabled = false;
-    aiVariationGenerateBtn.textContent = 'AI로 바로 만들기';
+    iconBtn.disabled = false;
   }
-});
+}
 
 // --- 3단계: 파싱 결과 미리보기 (체크박스 다중선택, 한/영 동시 노출) ---
 function renderAiVariationPreview() {
@@ -2511,7 +2475,7 @@ function renderAiVariationPreview() {
 
 aiVariationPreviewBackBtn.addEventListener('click', () => {
   aiVariationPreviewScreen.classList.add('hidden');
-  aiVariationPromptScreen.classList.remove('hidden');
+  variationListScreen.classList.remove('hidden');
 });
 
 aiVariationPreviewListEl.addEventListener('click', (e) => {
