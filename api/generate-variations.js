@@ -13,7 +13,12 @@ const AI_VARIATION_LIMIT = 100;
 
 function initFirebaseAdmin() {
   if (admin.apps.length > 0) return admin.app();
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '';
+  console.error('[debug] FIREBASE_SERVICE_ACCOUNT_KEY raw length:', raw.length);
+  const serviceAccount = JSON.parse(raw);
+  console.error('[debug] parsed keys:', Object.keys(serviceAccount));
+  console.error('[debug] project_id:', serviceAccount.project_id);
+  console.error('[debug] private_key typeof:', typeof serviceAccount.private_key, 'length:', serviceAccount.private_key ? serviceAccount.private_key.length : 'N/A');
   return admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
