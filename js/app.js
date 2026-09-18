@@ -2195,6 +2195,23 @@ aiVariationPreviewBtn.addEventListener('click', () => {
   showAiVariationPreview(parsed);
 });
 
+// 요청 자체가 서버에 도달하기 전에 끊기는 경우(모바일 네트워크 일시 단절 등, getIdToken/fetch가
+// 예외를 던지는 경우)에만 1초 후 자동으로 한 번 더 시도 — 이미 서버까지 도달한 응답(4xx/5xx, 파싱 실패)은
+// 재시도 대상이 아님(4xx/5xx는 재시도해도 같은 결과이고, 파싱 실패는 이미 한도가 차감됐을 수 있어 조용히
+// 다시 호출하면 사용자 모르게 한도를 더 소모하게 됨)
+async function requestAiVariations(prompt) {
+  const idToken = await window.CloudSync.getIdToken();
+  const response = await fetch('/api/generate-variations', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({ prompt }),
+  });
+  return { response, data: await response.json() };
+}
+
 // 15-2 유료판: 서버(api/generate-variations.js)가 프롬프트를 Claude API로 중계해 결과를 바로 받아옴
 // (평생 누적 100개 한도, 결제 게이팅은 이번 범위 밖 — 로그인만 하면 이용 가능)
 aiVariationGenerateBtn.addEventListener('click', async () => {
@@ -2207,16 +2224,15 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
   aiVariationGenerateBtn.textContent = '생성 중...';
 
   try {
-    const idToken = await window.CloudSync.getIdToken();
-    const response = await fetch('/api/generate-variations', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ prompt: aiVariationPromptTextarea.value }),
-    });
-    const data = await response.json();
+    let result;
+    try {
+      result = await requestAiVariations(aiVariationPromptTextarea.value);
+    } catch {
+      // 네트워크 단절 등으로 요청 자체가 실패한 경우만 1초 뒤 한 번 더 시도
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      result = await requestAiVariations(aiVariationPromptTextarea.value);
+    }
+    const { response, data } = result;
 
     if (!response.ok) {
       alert(data.error || 'AI 변형 생성에 실패했습니다.');
@@ -2230,9 +2246,8 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
     }
 
     showAiVariationPreview(parsed);
-  } catch (err) {
-    // [임시 디버그] 원인 파악 후 일반 안내 문구로 되돌릴 예정
-    alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n[디버그] ' + (err && err.name) + ': ' + (err && err.message));
+  } catch {
+    alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
   } finally {
     aiVariationGenerateBtn.disabled = false;
     aiVariationGenerateBtn.textContent = 'AI로 바로 만들기';
