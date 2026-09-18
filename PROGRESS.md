@@ -5345,3 +5345,41 @@ Claude 추천: 버튼 자체에 라벨을 되살리는 안(플로팅 위치는 �
 - **사용자 실기기 2차 확인**: 실제 Google 로그인 + "AI로 바로 만들기" 클릭까지 실사용 확인 필요(Vercel Production에 이미 `ANTHROPIC_API_KEY`/`FIREBASE_SERVICE_ACCOUNT_KEY` 등록돼 있어 배포하면 바로 동작함)
 - 스토어 등록정보 설정 마무리(11/11) — `reference/docs/스토어_등록정보_설명_초안_2026-09-17.docx` 검토 필요
 - 19번 PC 빠른입력 문서 남은 재검토 항목(구매의향 검증, 가격 재확인)
+
+## 세션 기록: 2026-09-18 (이어서) — 15-2 유료판 실기기 확인 중 인프라 문제 3+1가지 해결
+
+### 배경
+위 "15-2 유료판 코드 구현" 완료 후 사용자가 실기기에서 "AI로 바로 만들기"를 눌렀을 때 "로그인 정보가 유효하지 않습니다" 에러가 발생 — 로컬 Playwright 모킹 테스트로는 잡을 수 없는, 실제 Vercel/Firebase/Anthropic 연동 환경에서만 드러나는 문제였음. `vercel` CLI(이미 프로젝트에 링크돼 있었음)로 직접 진단.
+
+### 문제 1: Vercel 환경변수 값이 비어 있었음
+`vercel env pull`로 Production 환경변수를 직접 당겨보니 `ANTHROPIC_API_KEY`/`FIREBASE_SERVICE_ACCOUNT_KEY` 둘 다 이름만 등록되고 **실제 값은 빈 문자열**이었음. 사용자가 Vercel 대시보드에서 값을 붙여넣을 때(특히 여러 줄인 Firebase 서비스 계정 JSON) 브라우저 textarea에 값이 제대로 붙지 않는 문제가 반복됨("어제도 여러 차례 시도했는데 어쩌다 됐는지 모르겠다").
+- **해결**: 대시보드 대신 CLI로 `vercel env add <name> production < 파일경로` — 파일 내용을 표준입력으로 그대로 흘려보내는 방식으로 등록(사용자가 다운로드한 Firebase 서비스 계정 JSON 파일과 Anthropic API 키를 저장해둔 텍스트 파일 경로를 알려줘서 진행). 두 값 모두 재등록 성공 확인(`vercel env pull`로 길이 검증)
+
+### 문제 2: firebase-admin v14.x가 옛 네임스페이스 API를 지원하지 않음
+재배포 후에도 "로그인 정보가 유효하지 않습니다" 지속 → `vercel logs`로 실시간 로그 확인 결과 `Cannot read properties of undefined (reading 'length')`. `npm install firebase-admin`이 최신 v14.4.0을 설치했는데, 이 버전의 루트 `require('firebase-admin')`은 `admin.apps`/`admin.auth()`/`admin.firestore()`/`admin.credential.cert()` 같은 옛 네임스페이스 API를 더 이상 내보내지 않고 `initializeApp`/`getApps`/`cert` 등 최소 모듈형 API만 노출 — `admin.apps`가 `undefined`라 `.length` 접근 시 크래시.
+- **해결**: `api/generate-variations.js`를 `firebase-admin/app`(`initializeApp`, `getApps`, `cert`)·`firebase-admin/auth`(`getAuth`)·`firebase-admin/firestore`(`getFirestore`) 서브패스 기반 모듈형 API로 전면 수정. 로컬에서 실제 서비스 계정 JSON으로 `initializeApp`+`verifyIdToken` 호출까지 재현해 정상 동작 확인 후 배포
+
+### 문제 3: firebase-admin@14.x의 jose(ESM 전용) 의존성이 Vercel Node.js 런타임에서 로드 불가
+수정 후 재배포하자 이번엔 `FUNCTION_INVOCATION_FAILED`(500) 크래시. 로그 확인 결과 `Error [ERR_REQUIRE_ESM]: require() of ES Module .../jose/dist/webapi/index.js ... not supported`. firebase-admin@14.x → jwks-rsa@4.x → jose@6.x인데, jose v6는 `"type":"module"`인 순수 ESM 패키지(CJS `require` 조건 자체가 없음)라 CJS로 `require()`하는 jwks-rsa 코드가 실패.
+- **해결**: firebase-admin을 `^13.10.0`으로 다운그레이드(`npm install firebase-admin@13.10.0`) — 이 버전은 jwks-rsa@^3.1.0 → jose@^4.x를 사용하고, jose v4는 CJS/ESM 둘 다 지원하는 dual 패키지라 문제없음. 로컬에서 `npm ls jose`로 v4.15.9 확인 + `initializeApp`/`getFirestore`/`getAuth` 전부 정상 동작 재확인 후 배포
+
+### 문제 4: Firestore Admin SDK용 IAM 권한 누락
+위 3가지를 전부 고쳐 배포한 뒤에도 "사용량을 확인하는 중 오류가 발생했습니다" 계속 발생. 이번엔 `vercel logs`에 `사용량 확인 실패: 7 PERMISSION_DENIED: Missing or insufficient permissions.` 명확히 찍힘. 로컬에서 같은 서비스 계정으로 직접 Firestore 읽기를 재현해봐도 동일하게 실패 → Vercel과 무관한 순수 GCP IAM 권한 문제임을 확인.
+- **원인**: Admin SDK는 앱의 Firestore 보안 규칙(`request.auth.uid == uid`)을 완전히 우회하고 프로젝트 차원의 IAM 권한으로만 동작하는데, `firebase-adminsdk-fbsvc@tuk-tak-2c172.iam.gserviceaccount.com` 계정에 Firestore 관련 역할이 아예 비어 있었음(최근 구글이 새 프로젝트의 기본 서비스 계정에 넓은 권한을 자동으로 부여하지 않는 정책으로 바뀐 영향으로 추정)
+- **해결**: Google Cloud Console IAM 페이지(`console.cloud.google.com/iam-admin/iam?project=tuk-tak-2c172`)에서 이 서비스 계정에 **"Cloud Datastore 관리자"** 역할을 사용자가 직접 추가(Claude가 스크린샷을 보며 단계별로 안내: GCP 최초 접속 시 나오는 서비스 약관 동의 화면부터, 역할 지정 화면에서 "Datastore" 검색 → 역할 선택 → 저장까지)
+
+### 디버깅 방식
+매 단계 `vercel logs <deployment-url>`로 실시간 로그를 tail하면서, 가짜(형식만 맞춘) JWT로 curl 요청을 보내 "어느 단계까지 통과하고 어디서 막히는지"를 좁혀나가는 방식으로 진행 — 가짜 토큰이라도 "kid claim 없음" 같은 정상적인 Firebase 에러 메시지가 나오면 그 앞 단계(모듈 로딩, 서비스 계정 파싱)는 정상이라는 뜻이라 원인 격리에 유용했음. 중간에 임시로 추가한 디버그용 `console.error`(서비스 계정 파싱 상태, Claude 응답 원문 등)는 원인 확인 후 전부 제거하고 정상적인 에러 로깅(`err.message`만 기록)만 남김. `vercel --prod`로 CLI 직접 배포도 몇 차례 사용(GitHub 자동배포가 지연되는 경우 대비)
+
+### 최종 결과
+`https://tuk-tak-six.vercel.app/api/generate-variations`가 정상적으로 (1) Firebase ID 토큰 검증 (2) Firestore 한도 확인 (3) Claude API 호출 (4) 사용량 카운트 증가까지 전부 통과, 클라이언트에서 `parseSentencesText()`로 정상 파싱되어 미리보기 화면까지 도달하는 것을 확인 → **사용자 실기기 2차 확인 완료(2026-09-18, "성공했어")** — 15-2 유료판(AI 자동변형) 전체 완료.
+
+### 반영
+- `CLAUDE.md`: 15-2 항목에 4가지 문제와 해결 과정 상세 기록, 상단 브리핑 갱신(착수 중 목록에서 제거)
+- `PROGRESS.md`: 이번 작업 기록 추가
+- 커밋 이력: `56ab40e`(초기 구현) → `72ca611`/`284b69d`(디버그 로그 추가) → `6823ab2`(모듈형 API 수정) → `049b640`(firebase-admin 다운그레이드) → `5a2b9da`/`4d2cc5b`(Claude 응답 디버그 로그 추가·제거) — 전부 push 완료
+
+### 다음 작업 제안
+- 스토어 등록정보 설정 마무리(11/11) — `reference/docs/스토어_등록정보_설명_초안_2026-09-17.docx` 검토 필요
+- 19번 PC 빠른입력 문서 남은 재검토 항목(구매의향 검증, 가격 재확인)
+- 15-2 유료판 결제 게이팅(Google Play 인앱결제 붙이기)은 여전히 범위 밖 — 19번과 함께 인앱결제 붙이는 시점에 재논의
