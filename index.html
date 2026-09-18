@@ -79,20 +79,26 @@
       <p id="kr-text" class="kr-text"></p>
       <p id="en-text" class="en-text hidden"></p>
       <div id="card-mark-bar" class="card-mark-bar hidden">
-        <button id="card-star-btn" class="card-mark-btn" type="button" aria-label="중요 표시">
+        <button id="card-star-btn" class="card-mark-btn card-normal-only" type="button" aria-label="중요 표시">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
-        <button id="card-flag-btn" class="card-mark-btn" type="button" aria-label="미암기 표시">
+        <button id="card-flag-btn" class="card-mark-btn card-normal-only" type="button" aria-label="미암기 표시">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
         </button>
         <button id="card-speaker-btn" class="card-mark-btn" type="button" aria-label="정답 발음 듣기">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>
         </button>
         <span class="card-mark-divider"></span>
-        <button id="card-edit-btn" class="card-mark-btn" type="button" aria-label="문장 수정">
+        <button id="card-edit-btn" class="card-mark-btn card-normal-only" type="button" aria-label="문장 수정">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .622.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
         </button>
-        <button id="card-delete-btn" class="card-mark-btn" type="button" aria-label="문장 삭제">
+        <button id="card-delete-btn" class="card-mark-btn card-normal-only" type="button" aria-label="문장 삭제">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+        <button id="card-bank-promote-btn" class="card-mark-btn card-bank-only hidden" type="button" aria-label="내 카드덱에 추가">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        </button>
+        <button id="card-bank-delete-btn" class="card-mark-btn card-bank-only hidden" type="button" aria-label="보관함에서 삭제">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
         </button>
       </div>
@@ -210,7 +216,7 @@
     </div>
   </section>
 
-  <!-- 문장변형 체험 목록 화면 (읽기 전용, 확정 문장 10개) -->
+  <!-- 문장변형 화면 — 탭 2개: 기존 체험판(15-1, 확정 문장 10개)과 내 문장 AI 변형(15-2, 2026-09-18 재설계) -->
   <section id="variation-list-screen" class="screen hidden">
     <header class="screen-topbar">
       <button id="variation-list-back-btn" class="screen-back-btn" aria-label="뒤로가기">
@@ -218,8 +224,23 @@
       </button>
       <span class="screen-topbar-title">문장변형</span>
     </header>
-    <p class="variation-list-intro">문장을 탭하면<br />시제·인칭 등 다양한 변형을 볼 수 있어요</p>
-    <div id="variation-sentence-list" class="variation-card-list"></div>
+    <div id="variation-tabs" class="add-modal-tabs">
+      <button class="add-modal-tab-btn active" type="button" data-tab="demo">예시 둘러보기</button>
+      <button class="add-modal-tab-btn" type="button" data-tab="my">내 문장 변형하기</button>
+    </div>
+
+    <div id="variation-tab-demo" class="add-modal-tab-panel">
+      <p class="variation-list-intro">문장을 탭하면<br />시제·인칭 등 다양한 변형을 볼 수 있어요</p>
+      <div id="variation-sentence-list" class="variation-card-list"></div>
+    </div>
+
+    <div id="variation-tab-my" class="add-modal-tab-panel hidden">
+      <p class="variation-list-intro">변형하고 싶은 문장을 선택하세요</p>
+      <div id="variation-my-sentence-list" class="sentence-list"></div>
+      <div id="ai-variation-bank-entry" class="ai-variation-bank-entry hidden">
+        <button id="ai-variation-bank-study-btn" class="btn btn-outline modal-btn" type="button">AI 변형 보관함 학습하기 (<span id="ai-variation-bank-count">0</span>개)</button>
+      </div>
+    </div>
   </section>
 
   <!-- 문장변형 상세 화면: 원문 + 카테고리별 변형 나열 (열람형, 카드 넘기기 아님) -->
@@ -240,7 +261,7 @@
     </div>
   </section>
 
-  <!-- 15-2 AI 변형(무료판 안내형): 프롬프트 복사 + 결과 붙여넣기 (문장관리 항목의 AI 아이콘에서 바로 진입) -->
+  <!-- 15-2 AI 변형(무료판 안내형): 프롬프트 복사 + 결과 붙여넣기 (문장변형 > 내 문장 변형하기 탭에서 진입, 2026-09-18) -->
   <section id="ai-variation-prompt-screen" class="screen hidden">
     <header class="screen-topbar">
       <button id="ai-variation-prompt-back-btn" class="screen-back-btn" aria-label="뒤로가기">

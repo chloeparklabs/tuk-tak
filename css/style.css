@@ -1768,11 +1768,11 @@ button {
   flex-shrink: 0;
 }
 
-/* 별/깃발/AI 아이콘 3개가 한 줄에 들어가도록 32px→28px로 축소(2026-08-27,
-   15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용) */
+/* 별/깃발 아이콘 크기(2026-08-27, 15-1의 .variation-item-add-btn과 동일한 크기 규칙 재사용).
+   2026-09-18: 함께 있던 AI 변형 아이콘(.sentence-ai-btn)은 진입점이 "문장변형" 메뉴로 통합되며
+   폐지되고 구분선(.sentence-list-actions-divider)도 함께 제거됨 */
 .sentence-star-btn,
-.sentence-unfamiliar-btn,
-.sentence-ai-btn {
+.sentence-unfamiliar-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1787,8 +1787,7 @@ button {
 }
 
 .sentence-star-btn svg,
-.sentence-unfamiliar-btn svg,
-.sentence-ai-btn svg {
+.sentence-unfamiliar-btn svg {
   width: 18px;
   height: 18px;
 }
@@ -1802,16 +1801,6 @@ button {
 .sentence-star-btn.active svg,
 .sentence-unfamiliar-btn.active svg {
   fill: currentColor;
-}
-
-/* AI 변형 아이콘은 별/깃발과 달리 즉시 토글되는 상태가 아니라 새 화면으로 이동하는
-   동작이라 항상 같은 모양(활성/비활성 구분 없음), 구분선으로 두 그룹을 시각적으로 분리 */
-.sentence-list-actions-divider {
-  width: 1px;
-  height: 18px;
-  flex-shrink: 0;
-  background-color: var(--gray-200);
-  margin: 0 2px;
 }
 
 /* ==========================================================================
@@ -2165,6 +2154,28 @@ button {
   color: var(--color-text-primary);
   white-space: pre-wrap;
   overflow-x: auto;
+}
+
+/* ==========================================================================
+   문장변형 화면 — 탭 2개(예시 둘러보기 / 내 문장 변형하기, 2026-09-18)
+   ========================================================================== */
+/* 탭 버튼 자체 스타일(.add-modal-tab-btn)은 문장추가 화면과 완전히 공유 — 여기서는 좌우 여백만 추가
+   (문장추가는 부모 .add-body가 이미 패딩을 갖고 있지만, 이 화면은 tabs/panel을 화면 최상위에 바로
+   배치해 그 여백이 없음) */
+#variation-tabs {
+  padding: 12px 16px 0;
+}
+
+.ai-variation-bank-entry {
+  padding: 4px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+/* AI 변형 보관함 학습 모드의 "내 카드덱에 추가" 버튼 — 이미 승격된 항목은 accent-star 색으로
+   구분(별표/깃발의 .active와 같은 색 언어를 재사용하되, 아이콘을 채워버리면(fill) 원 안의
+   "+"가 배경색과 같아져 안 보이므로 별도 클래스로 배경/색만 전환하고 아이콘은 JS에서 체크로 교체) */
+#card-bank-promote-btn.promoted {
+  color: var(--color-accent-star);
+  background-color: var(--color-accent-star-bg);
 }
 
 /* ==========================================================================

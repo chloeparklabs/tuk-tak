@@ -440,10 +440,16 @@ const BACKUP_REMINDER_SENTENCE_COUNT = 100;
 // 정식 문장(sentences)과는 별개 데이터 — "완성"되면(문장추가 폼에서 실제로 추가되면) 여기서 제거됨
 const VOICE_MEMO_KEY = 'tuktak_voice_memos';
 
+// AI 변형 보관함(15-2 재설계, 2026-09-18) — "문장변형 > 내 문장 변형하기"에서 생성한 결과가 메인
+// 카드덱(sentences)에 바로 섞이지 않도록 완전히 분리된 영구 저장소. 로컬 전용(클라우드 백업 범위 밖).
+// 항목별 promoted 플래그로 "내 카드덱에 추가"(승격) 여부를 표시 — 승격해도 보관함에서 제거되지 않음
+const AI_VARIATION_BANK_KEY = 'tuktak_ai_variation_bank';
+
 let sortMode = DEFAULT_SORT_MODE;
 let randomOrder = [];
 let hideDefaultSentences = localStorage.getItem(HIDE_DEFAULT_KEY) === 'true';
 let voiceMemos = [];
+let aiVariationBank = [];
 let autoPlayPronunciation = localStorage.getItem(AUTO_PLAY_PRONUNCIATION_KEY) === 'true';
 
 const sentences = loadSentences();
@@ -578,9 +584,16 @@ function getOrderedSentences() {
   return [...visible];
 }
 
-// 카드 화면 전용 순서 — 미니 학습 중에는 방금 추가한 문장들로만 한정. 문장관리 목록 등
-// 다른 화면은 getOrderedSentences()를 그대로 쓰므로 미니 학습과 무관하게 항상 전체를 보여줌
+// 카드 화면 전용 순서 — 미니 학습/AI 변형 보관함 학습 중에는 각각의 별도 목록으로 한정.
+// 문장관리 목록 등 다른 화면은 getOrderedSentences()를 그대로 쓰므로 이 모드들과 무관하게 항상 전체를 보여줌
 function getCardOrderedSentences() {
+  if (aiVariationBankModeActive) {
+    if (aiVariationBankStudyIds) {
+      const byId = new Map(aiVariationBank.map((s) => [String(s.id), s]));
+      return aiVariationBankStudyIds.map((id) => byId.get(String(id))).filter(Boolean);
+    }
+    return aiVariationBank;
+  }
   if (miniSessionActive) {
     const byId = new Map(sentences.map((s) => [String(s.id), s]));
     return miniSessionIds.map((id) => byId.get(id)).filter(Boolean);
@@ -601,6 +614,11 @@ let revealed = false;
 // localStorage에 저장하지 않는 즉석 상태 — 앱을 껐다 켜면 항상 꺼져 있음
 let miniSessionActive = false;
 let miniSessionIds = [];
+
+// AI 변형 보관함 학습 모드 — aiVariationBankStudyIds가 null이면 보관함 전체, 배열이면 그 id들만
+// (방금 생성한 배치만 바로 학습하는 경우). 미니 학습과 마찬가지로 즉석 상태, 저장 안 함
+let aiVariationBankModeActive = false;
+let aiVariationBankStudyIds = null;
 
 // ==========================================================================
 // DOM 요소
@@ -690,6 +708,10 @@ const cardFlagBtn = document.getElementById('card-flag-btn');
 const cardSpeakerBtn = document.getElementById('card-speaker-btn');
 const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
+const cardBankPromoteBtn = document.getElementById('card-bank-promote-btn');
+const cardBankDeleteBtn = document.getElementById('card-bank-delete-btn');
+const cardNormalOnlyEls = document.querySelectorAll('.card-normal-only');
+const cardBankOnlyEls = document.querySelectorAll('.card-bank-only');
 const listFilterSection = document.getElementById('list-filter-section');
 const listFilterBtns = document.querySelectorAll('.list-filter-btn');
 const listCountInfoEl = document.getElementById('list-count-info');
@@ -718,6 +740,13 @@ const variationOpenBtn = document.getElementById('variation-open-btn');
 const variationListScreen = document.getElementById('variation-list-screen');
 const variationListBackBtn = document.getElementById('variation-list-back-btn');
 const variationSentenceListEl = document.getElementById('variation-sentence-list');
+const variationTabBtns = document.querySelectorAll('#variation-tabs .add-modal-tab-btn');
+const variationTabDemoPanel = document.getElementById('variation-tab-demo');
+const variationTabMyPanel = document.getElementById('variation-tab-my');
+const variationMySentenceListEl = document.getElementById('variation-my-sentence-list');
+const aiVariationBankEntryEl = document.getElementById('ai-variation-bank-entry');
+const aiVariationBankCountEl = document.getElementById('ai-variation-bank-count');
+const aiVariationBankStudyBtn = document.getElementById('ai-variation-bank-study-btn');
 const variationDetailScreen = document.getElementById('variation-detail-screen');
 const variationDetailBackBtn = document.getElementById('variation-detail-back-btn');
 const variationDetailHomeBtn = document.getElementById('variation-detail-home-btn');
@@ -821,6 +850,10 @@ function renderCard() {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
     cardMarkBar.classList.add('hidden');
+    // AI 변형 보관함 학습 중 마지막 항목까지 삭제하면 도달하는 케이스 — 평소 안내문과 구분
+    emptyStateMsg.innerHTML = aiVariationBankModeActive
+      ? '보관함에 저장된 변형 문장이 없습니다.'
+      : '문장이 없습니다.<br />더보기 &gt; 문장추가로 새 문장을 등록해주세요.';
     return;
   }
 
@@ -830,7 +863,11 @@ function renderCard() {
   }
 
   const sentence = ordered[currentIndex];
-  localStorage.setItem(LAST_SENTENCE_ID_KEY, String(sentence.id));
+  // "이어보기" 위치 저장은 메인 카드덱 전용 — 보관함 항목의 id는 sentences에 없어 저장하면
+  // 다음에 메인 카드덱으로 돌아올 때 이어보기가 깨짐
+  if (!aiVariationBankModeActive) {
+    localStorage.setItem(LAST_SENTENCE_ID_KEY, String(sentence.id));
+  }
   krTextEl.textContent = sentence.kr;
   enTextEl.textContent = sentence.en;
 
@@ -838,10 +875,20 @@ function renderCard() {
   cardEl.classList.toggle('revealed', revealed);
   checkBtn.classList.toggle('revealed', revealed);
 
-  // 마킹 아이콘(중요/미암기)은 정답을 확인한 뒤에만 노출
+  // 마킹 아이콘 바 노출은 정답을 확인한 뒤에만 — 보관함 모드에서는 별표/깃발/수정/삭제 대신
+  // 승격("내 카드덱에 추가")/보관함 삭제만 노출(별표·미암기 개념이 안 맞고, 기존 삭제는 sentences
+  // 배열 대상이라 이 모드에 그대로 못 씀)
   cardMarkBar.classList.toggle('hidden', !revealed);
-  cardStarBtn.classList.toggle('active', sentence.important);
-  cardFlagBtn.classList.toggle('active', sentence.unfamiliar);
+  cardNormalOnlyEls.forEach((el) => el.classList.toggle('hidden', aiVariationBankModeActive));
+  cardBankOnlyEls.forEach((el) => el.classList.toggle('hidden', !aiVariationBankModeActive));
+
+  if (aiVariationBankModeActive) {
+    cardBankPromoteBtn.classList.toggle('promoted', !!sentence.promoted);
+    cardBankPromoteBtn.innerHTML = sentence.promoted ? LIST_CHECK_ICON : VARIATION_ADD_ICON;
+  } else {
+    cardStarBtn.classList.toggle('active', sentence.important);
+    cardFlagBtn.classList.toggle('active', sentence.unfamiliar);
+  }
 }
 
 // 중요/미암기 토글 시 정렬 기준에 따라 순서가 바뀔 수 있어, 같은 문장이
@@ -906,6 +953,28 @@ cardDeleteBtn.addEventListener('click', () => {
   const sentence = getCardOrderedSentences()[currentIndex];
   if (!sentence) return;
   confirmDeleteSingle(sentence.id);
+});
+
+// AI 변형 보관함 학습 모드 전용 — 별표/미암기/수정/삭제(sentences 대상) 대신 승격/보관함 삭제.
+// 승격해도 보관함에서 제거되지 않음(사용자 결정) — 재승격 방지로 promoted 플래그만 확인
+cardBankPromoteBtn.addEventListener('click', () => {
+  const item = getCardOrderedSentences()[currentIndex];
+  if (!item || item.promoted) return;
+  addSentence(item.kr, item.en);
+  item.promoted = true;
+  saveAiVariationBank();
+  renderCard();
+});
+
+cardBankDeleteBtn.addEventListener('click', () => {
+  const item = getCardOrderedSentences()[currentIndex];
+  if (!item) return;
+  if (!confirm('이 변형 문장을 보관함에서 삭제할까요?')) return;
+  removeFromAiVariationBank(item.id);
+  if (aiVariationBankStudyIds) {
+    aiVariationBankStudyIds = aiVariationBankStudyIds.filter((id) => String(id) !== String(item.id));
+  }
+  renderCard();
 });
 
 // ==========================================================================
@@ -1140,9 +1209,6 @@ const VARIATION_ADD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="current
 // 선택됨 상태(버튼 배경이 이미 파란 원으로 채워짐)에서는 원 테두리 없이 순수 "+"만 표시
 // "+" 자체 크기는 VARIATION_ADD_ICON 안의 십자(M8 12h8 / M12 8v8)와 동일하게 맞춰 상태 전환 시 커 보이지 않게 함
 const VARIATION_ADD_ICON_SELECTED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><path d="M12 8v8"/></svg>';
-// 문장관리 목록 항목의 "AI로 변형하기" 아이콘(sparkles) — 15-2, 별표/깃발과 달리 즉시 토글이 아니라
-// 새 화면(프롬프트 생성)으로 이동하는 무거운 동작이라 시각적으로 확실히 구분되는 모양을 사용
-const AI_VARIATION_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>';
 // 문장관리 목록 항목의 "발음 듣기" 아이콘(25번) — 카드 화면(24번)의 speakEnglish()를 그대로 재사용
 const SPEAKER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/><path d="M19.364 18.364a9 9 0 0 0 0-12.728"/></svg>';
 
@@ -1619,6 +1685,7 @@ if (!SpeechRecognitionCtor) {
 }
 
 loadVoiceMemos();
+loadAiVariationBank();
 
 function updateListTopbar() {
   listTopbarEl.classList.toggle('selecting', selecting);
@@ -1776,19 +1843,8 @@ function renderSentenceList() {
       unfamiliarBtn.setAttribute('aria-label', '미암기 표시');
       unfamiliarBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
 
-      const divider = document.createElement('span');
-      divider.className = 'sentence-list-actions-divider';
-
-      const aiBtn = document.createElement('button');
-      aiBtn.type = 'button';
-      aiBtn.className = 'sentence-ai-btn';
-      aiBtn.setAttribute('aria-label', 'AI로 변형하기');
-      aiBtn.innerHTML = AI_VARIATION_ICON;
-
       actions.appendChild(starBtn);
       actions.appendChild(unfamiliarBtn);
-      actions.appendChild(divider);
-      actions.appendChild(aiBtn);
       item.appendChild(actions);
     }
 
@@ -1870,12 +1926,6 @@ sentenceListEl.addEventListener('click', (e) => {
     return;
   }
 
-  if (e.target.closest('.sentence-ai-btn')) {
-    const sentence = sentences.find((s) => String(s.id) === id);
-    if (sentence) openAiVariationPromptFor(sentence);
-    return;
-  }
-
   if (selecting) {
     if (selectedIds.has(id)) {
       selectedIds.delete(id);
@@ -1896,7 +1946,7 @@ sentenceListEl.addEventListener('pointerdown', (e) => {
   if (selecting) return;
   const item = e.target.closest('.sentence-list-item');
   if (!item) return;
-  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn') || e.target.closest('.sentence-ai-btn')) return;
+  if (e.target.closest('.sentence-star-btn') || e.target.closest('.sentence-unfamiliar-btn')) return;
 
   const id = item.dataset.id;
   clearTimeout(longPressTimer);
@@ -2106,6 +2156,10 @@ variationOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   variationListScreen.classList.remove('hidden');
   renderVariationList();
+  // 재진입할 때마다 항상 "예시 둘러보기" 탭으로 초기화(기존 15-1 진입 동작과 동일하게 유지)
+  variationTabBtns.forEach((b) => b.classList.toggle('active', b.dataset.tab === 'demo'));
+  variationTabDemoPanel.classList.remove('hidden');
+  variationTabMyPanel.classList.add('hidden');
 });
 
 variationListBackBtn.addEventListener('click', () => {
@@ -2121,22 +2175,121 @@ variationSentenceListEl.addEventListener('click', (e) => {
   renderVariationDetail(Number(item.dataset.index));
 });
 
+// --- 문장변형 화면 탭 전환("예시 둘러보기" / "내 문장 변형하기") ---
+variationTabBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    variationTabBtns.forEach((b) => b.classList.toggle('active', b === btn));
+    variationTabDemoPanel.classList.toggle('hidden', tab !== 'demo');
+    variationTabMyPanel.classList.toggle('hidden', tab !== 'my');
+    if (tab === 'my') renderVariationMyList();
+  });
+});
+
+// "내 문장 변형하기" 탭 — 전체 문장을 관리 아이콘 없이 훑어보고 탭하면 바로 AI 변형 프롬프트로 진입
+function renderVariationMyList() {
+  const list = getOrderedSentences();
+  variationMySentenceListEl.innerHTML = '';
+
+  if (list.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'sentence-list-empty-msg';
+    emptyMsg.textContent = '표시할 문장이 없습니다.';
+    variationMySentenceListEl.appendChild(emptyMsg);
+  } else {
+    list.forEach((s) => {
+      const item = document.createElement('div');
+      item.className = 'sentence-list-item';
+      item.dataset.id = String(s.id);
+
+      const textWrap = document.createElement('div');
+      textWrap.className = 'sentence-list-text';
+
+      if (s.source === 'default') {
+        const badge = document.createElement('span');
+        badge.className = 'sentence-badge-default';
+        badge.textContent = '기본';
+        textWrap.appendChild(badge);
+      }
+
+      const krEl = document.createElement('p');
+      krEl.className = 'sentence-list-kr';
+      krEl.textContent = s.kr;
+
+      const enEl = document.createElement('p');
+      enEl.className = 'sentence-list-en';
+      enEl.textContent = s.en;
+
+      textWrap.appendChild(krEl);
+      textWrap.appendChild(enEl);
+      item.appendChild(textWrap);
+      variationMySentenceListEl.appendChild(item);
+    });
+  }
+
+  renderAiVariationBankEntry();
+}
+
+variationMySentenceListEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.sentence-list-item');
+  if (!item) return;
+  const sentence = sentences.find((s) => String(s.id) === item.dataset.id);
+  if (sentence) openAiVariationPromptFor(sentence);
+});
+
+// "AI 변형 보관함 학습하기" 진입 버튼 — 보관함이 비어있으면 숨김(23번 필터 학습 버튼과 같은 패턴)
+function renderAiVariationBankEntry() {
+  aiVariationBankCountEl.textContent = String(aiVariationBank.length);
+  aiVariationBankEntryEl.classList.toggle('hidden', aiVariationBank.length === 0);
+}
+
+aiVariationBankStudyBtn.addEventListener('click', () => {
+  startAiVariationBankStudy(null, 'AI 변형 보관함');
+});
+
 variationDetailBackBtn.addEventListener('click', () => {
   variationDetailScreen.classList.add('hidden');
   variationListScreen.classList.remove('hidden');
 });
 
 // ==========================================================================
-// 15-2 AI 변형(무료판 안내형 파이프라인)
-// ① 문장관리 목록 각 항목의 AI 아이콘으로 바로 진입(원문 선택 화면 없음 — 문장관리 목록 자체가
-// 그 역할을 겸함, 2026-08-27 재설계) ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아 붙여넣기
-// (기존 parseSentencesText 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택)
-// ④ 선택 항목만 addSentence()로 추가한 뒤, 그 항목들만 임시로(miniSessionActive) 카드 화면에서
-// 즉석 학습
+// 15-2 AI 변형(무료판 안내형 파이프라인, 2026-09-18 진입 구조 재설계)
+// ① 더보기 > "문장변형" > "내 문장 변형하기" 탭에서 문장을 골라 진입(문장관리의 AI 아이콘은
+// 폐지 — 진입점을 문장변형 메뉴 하나로 통합) ② 프롬프트 생성+복사 → 외부 AI에서 결과를 받아
+// 붙여넣기(기존 parseSentencesText 재사용) ③ 파싱 결과 미리보기(체크박스 다중선택, 기본 전체 선택)
+// ④ 선택 항목만 "AI 변형 보관함"(메인 카드덱과 분리된 영구 저장소)에 저장한 뒤, 방금 저장한
+// 항목들만 즉석으로(aiVariationBankModeActive) 카드 화면에서 학습 — 메인 덱과 안 섞여서 정렬을
+// 바꿔도 흩어지지 않음. 보관함 학습 화면에서 "내 카드덱에 추가"(승격)로 원하는 것만 메인 덱으로 옮길 수 있음
 // ==========================================================================
 let aiVariationSelectedSentence = null;
 let aiVariationParsedItems = [];
 let aiVariationSelectedIndexes = new Set();
+
+function loadAiVariationBank() {
+  try {
+    aiVariationBank = JSON.parse(localStorage.getItem(AI_VARIATION_BANK_KEY) || '[]');
+  } catch {
+    aiVariationBank = [];
+  }
+}
+
+function saveAiVariationBank() {
+  localStorage.setItem(AI_VARIATION_BANK_KEY, JSON.stringify(aiVariationBank));
+}
+
+// 새 변형 문장을 보관함에 저장하고, 방금 저장한 항목의 id를 반환(호출부가 학습 세션 범위를
+// 그 배치로 한정할 때 사용)
+function addToAiVariationBank(kr, en) {
+  const item = { id: Date.now() + Math.random(), kr, en, createdAt: new Date().toISOString(), promoted: false };
+  aiVariationBank.push(item);
+  saveAiVariationBank();
+  return item.id;
+}
+
+function removeFromAiVariationBank(id) {
+  aiVariationBank = aiVariationBank.filter((s) => String(s.id) !== String(id));
+  saveAiVariationBank();
+}
 
 // 아래 7가지 예외 규칙은 15-1(문장변형 체험판) 87개 예문을 손수 만들 때 실제로 적용했던 판단 기준을
 // 일반화한 것(예: 9번 날씨 문장은 인칭·수 생략, 시간부사 있는 문장은 충돌 시제 생략 등) — 검증된
@@ -2189,14 +2342,14 @@ async function fetchAiVariationUsage() {
   }
 }
 
-// 문장관리 목록 항목의 AI 아이콘 탭 → 그 문장으로 바로 프롬프트 화면 진입
+// "문장변형 > 내 문장 변형하기" 목록의 문장 탭 → 그 문장으로 바로 프롬프트 화면 진입
 function openAiVariationPromptFor(sentence) {
   aiVariationSelectedSentence = { kr: sentence.kr, en: sentence.en };
   aiVariationSelectedKrEl.textContent = sentence.kr;
   aiVariationPromptTextarea.value = buildAiVariationPrompt(sentence);
   aiVariationPasteTextarea.value = '';
 
-  listScreen.classList.add('hidden');
+  variationListScreen.classList.add('hidden');
   aiVariationPromptScreen.classList.remove('hidden');
   fetchAiVariationUsage();
 }
@@ -2204,7 +2357,7 @@ function openAiVariationPromptFor(sentence) {
 // --- 프롬프트 복사 + 결과 붙여넣기 ---
 aiVariationPromptBackBtn.addEventListener('click', () => {
   aiVariationPromptScreen.classList.add('hidden');
-  listScreen.classList.remove('hidden');
+  variationListScreen.classList.remove('hidden');
 });
 
 aiVariationCopyBtn.addEventListener('click', async () => {
@@ -2390,25 +2543,56 @@ function endMiniSession() {
   renderCard();
 }
 
-miniSessionExitBtn.addEventListener('click', endMiniSession);
+// AI 변형 보관함 학습 — ids가 null이면 보관함 전체, 배열이면 그 id들만(예: 방금 생성한 배치).
+// 미니 학습과 같은 배너 UI를 재사용하되 완전히 별도 플래그(aiVariationBankModeActive)로 관리 —
+// 두 모드는 서로 다른 화면(미리보기 화면 vs 문장변형 화면)에서만 진입해 동시에 겹칠 일이 없음
+function startAiVariationBankStudy(ids, label) {
+  aiVariationBankModeActive = true;
+  aiVariationBankStudyIds = ids;
+  currentIndex = 0;
+  revealed = false;
+  goToCardScreen();
+  miniSessionBanner.classList.remove('hidden');
+  const count = ids ? ids.length : aiVariationBank.length;
+  miniSessionBannerText.textContent = `${label} · ${count}개`;
+  renderCard();
+}
 
-// 로고는 카드 화면(메인)에만 있으므로, 미니 학습 중일 때 로고를 눌러도 "종료"와
+function endAiVariationBankStudy() {
+  aiVariationBankModeActive = false;
+  aiVariationBankStudyIds = null;
+  currentIndex = 0;
+  revealed = false;
+  miniSessionBanner.classList.add('hidden');
+  renderCard();
+}
+
+miniSessionExitBtn.addEventListener('click', () => {
+  if (aiVariationBankModeActive) {
+    endAiVariationBankStudy();
+  } else {
+    endMiniSession();
+  }
+});
+
+// 로고는 카드 화면(메인)에만 있으므로, 미니 학습/AI 변형 보관함 학습 중일 때 로고를 눌러도 "종료"와
 // 동일하게 전체 덱으로 돌아가게 함(평소엔 이미 메인이라 아무 동작 없음)
 topbarLogoBtn.addEventListener('click', () => {
-  if (miniSessionActive) endMiniSession();
+  if (aiVariationBankModeActive) {
+    endAiVariationBankStudy();
+  } else if (miniSessionActive) {
+    endMiniSession();
+  }
 });
 
 aiVariationAddBtn.addEventListener('click', () => {
   if (aiVariationSelectedIndexes.size === 0) return;
 
   const toAdd = aiVariationParsedItems.filter((_, i) => aiVariationSelectedIndexes.has(i));
-  const beforeIds = new Set(sentences.map((s) => String(s.id)));
-  toAdd.forEach((item) => addSentence(item.kr, item.en));
-  const addedIds = sentences.map((s) => String(s.id)).filter((id) => !beforeIds.has(id));
+  const addedIds = toAdd.map((item) => addToAiVariationBank(item.kr, item.en));
 
   aiVariationPreviewScreen.classList.add('hidden');
-  cardScreen.classList.remove('hidden');
-  startMiniSession(addedIds);
+  startAiVariationBankStudy(addedIds, '방금 변형한 문장');
 });
 
 // ==========================================================================
