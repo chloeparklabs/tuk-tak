@@ -44,6 +44,7 @@ module.exports = async function handler(req, res) {
     const decoded = await admin.auth().verifyIdToken(idToken);
     uid = decoded.uid;
   } catch (err) {
+    console.error('토큰 검증/Firebase Admin 초기화 실패:', err.message);
     res.status(401).json({ error: '로그인 정보가 유효하지 않습니다.' });
     return;
   }
