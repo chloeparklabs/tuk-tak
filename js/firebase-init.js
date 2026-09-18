@@ -67,6 +67,11 @@ window.CloudSync = {
   restore: restoreSentences,
   deleteBackup,
   getCurrentUser: () => auth.currentUser,
+  // 15-2 유료판: 서버리스 함수 호출 시 본인 확인용 ID 토큰(Firebase Admin SDK가 검증)
+  getIdToken: () => {
+    if (!auth.currentUser) return Promise.reject(new Error('로그인이 필요합니다.'));
+    return auth.currentUser.getIdToken();
+  },
 };
 
 // js/app.js는 일반 스크립트라 이 모듈보다 먼저 실행될 수 있어(모듈 스크립트는

@@ -3,3 +3,4 @@ temp/
 
 .vercel
 .env*.local
+node_modules/

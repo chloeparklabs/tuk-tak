@@ -5303,3 +5303,45 @@ Claude 추천: 버튼 자체에 라벨을 되살리는 안(플로팅 위치는 �
 - **15-2 유료판 개발 착수** ("시작" 승인 시): 위 계획대로 `package.json`/`api/generate-variations.js`/`js/app.js`/`index.html` 순서로 구현
 - **스토어 등록정보 설정** (Play Console 10/11 → 11/11 마무리): 짧은/긴 설명(초안 완료, `reference/docs/스토어_등록정보_설명_초안_2026-09-17.docx`), 스크린샷 최소 2장, 아이콘, 피처 그래픽 준비 필요
 - 19번 PC 빠른입력 문서 남은 재검토 항목(구매의향 검증, 가격 재확인)은 여전히 대기 중
+
+## 세션 기록: 2026-09-18 — 15-2 유료판(AI 자동변형 서버 연동) 코드 구현
+
+### 배경
+2026-09-17 세션에서 확정된 15-2 유료판 개발 계획("시작" 승인 대기 상태)을 이번 세션에서 "시작" 승인받아 실제 구현.
+
+### 구현 내용
+1. **`package.json` 신규 + `firebase-admin` 설치** — 프로젝트 최초의 npm 의존성. `node_modules/`를 `.gitignore`에 추가, `package-lock.json`은 커밋(재현 가능한 설치를 위해). 프론트엔드는 여전히 빌드 없는 Vanilla JS/HTML/CSS 그대로 — 이 의존성은 `api/` 서버리스 함수 전용
+2. **`api/generate-variations.js` 신규(Vercel 서버리스 함수, CommonJS)**:
+   - `Authorization: Bearer <Firebase ID 토큰>` 헤더 검증(`firebase-admin`의 `verifyIdToken`)
+   - Firestore `users/{uid}.aiVariationCount`를 먼저 조회해 100 이상이면 **Claude API를 호출하지도 않고** 403 반환 — 이미 한도를 넘긴 사용자에게 비용이 드는 호출 자체를 막는 방어
+   - Claude API(`https://api.anthropic.com/v1/messages`, 모델 `claude-sonnet-5`) 호출
+   - **성공했을 때만** Firestore 트랜잭션(`runTransaction`)으로 카운트를 재확인+1 증가 — 동시에 여러 요청이 들어와도 한도를 우회하지 못하게 원자적으로 처리. 실패한 요청(API 에러 등)은 한도를 소모하지 않음
+   - 결과 텍스트+잔여 개수(`remaining`)를 JSON으로 반환
+3. **`js/firebase-init.js`**: `window.CloudSync`에 `getIdToken()` 신규 추가(로그인 안 돼 있으면 reject)
+4. **`js/app.js`**:
+   - 프롬프트 화면(`#ai-variation-prompt-screen`)에 "AI로 바로 만들기" 버튼(아웃라인 스타일) 추가 — 기존 "복사하기" 바로 아래
+   - 클릭 시: 로그인 안 돼 있으면 안내 alert만 띄우고 중단 → 로그인 상태면 ID 토큰 획득 → `/api/generate-variations` 호출(버튼은 "생성 중..."으로 바뀌며 비활성화) → 응답을 `parseSentencesText()`로 파싱 → 미리보기 화면 전환
+   - 무료판의 "붙여넣기→미리보기" 전환 로직(파싱 결과 세팅+화면 전환+렌더링)을 `showAiVariationPreview()` 함수로 공통 추출해 유료판 버튼과 함께 재사용(코드 중복 제거)
+   - 한도초과(403)·서버오류 등은 서버가 보낸 메시지를 그대로 alert로 안내, 프롬프트 화면에 그대로 남음(사용자가 재시도하거나 무료판 방식으로 전환 가능)
+5. **`index.html`**: 버튼 마크업 1줄 추가
+- **결제 게이팅은 계획대로 이번 범위 밖** — 로그인만 하면 누구나 사용 가능한 상태로 배포됨(Google Play 인앱결제 자체가 미착수)
+
+### Claude 1차 확인 (Playwright)
+서버 없는 정적 앱이라 스크래치패드에 `serve`+`playwright`(chromium, 이전 세션 캐시 재사용) 설치해 구동. 실제 Firebase 로그인·Claude API 키는 로컬에 없어(Vercel Production 환경에만 등록됨) `window.CloudSync`와 `fetch('/api/generate-variations')` 응답을 모킹해 클라이언트 로직만 검증:
+- 비로그인 상태에서 버튼 클릭 → API 호출 없이 로그인 안내 alert만 뜨는 것 확인
+- 로그인 상태에서 클릭 → 정확한 `Authorization: Bearer <토큰>` 헤더 + `{prompt}` 본문으로 요청되는 것 확인 → 서버가 코드블록으로 감싼 응답을 보내도 `parseSentencesText()`가 펜스 줄을 무시하고 정확히 파싱하는 것(2/2개 선택으로 미리보기 진입) 확인 → 요청 완료 후 버튼 라벨이 "AI로 바로 만들기"로 원복되는 것 확인
+- 지연 응답(800ms)으로 요청 중 버튼이 "생성 중..."+`disabled`인 것 별도 확인
+- 403(한도초과) 응답 시 서버가 보낸 안내문 그대로 alert로 뜨고, 화면 전환 없이 프롬프트 화면에 그대로 남아있는 것 확인
+- 무료판 "붙여넣기→미리보기→추가→미니 학습" 전체 플로우 회귀 테스트 — 리팩터링(`showAiVariationPreview` 추출) 후에도 정상 동작, 콘솔 에러 없음
+- 라이트/다크 스크린샷으로 새 버튼("AI로 바로 만들기", 아웃라인 스타일)이 "복사하기"/"미리보기" 버튼과 자연스럽게 어우러지는 것 확인
+- 전체 시나리오에서 콘솔 에러 없음(의도적으로 차단한 gstatic 네트워크 에러만 발생)
+
+### 반영
+- `CLAUDE.md`: 상단 브리핑 요약 2곳(15-2 유료판 진행 상태, "착수 중" 목록) + 체크리스트 15-2 항목 + "유료 기술 방향" + "기술 스택" 섹션 갱신
+- `PROGRESS.md`: 이번 작업 기록 추가
+- 커밋+push는 사용자 요청 대기 중
+
+### 다음 작업 제안
+- **사용자 실기기 2차 확인**: 실제 Google 로그인 + "AI로 바로 만들기" 클릭까지 실사용 확인 필요(Vercel Production에 이미 `ANTHROPIC_API_KEY`/`FIREBASE_SERVICE_ACCOUNT_KEY` 등록돼 있어 배포하면 바로 동작함)
+- 스토어 등록정보 설정 마무리(11/11) — `reference/docs/스토어_등록정보_설명_초안_2026-09-17.docx` 검토 필요
+- 19번 PC 빠른입력 문서 남은 재검토 항목(구매의향 검증, 가격 재확인)

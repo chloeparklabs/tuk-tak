@@ -729,6 +729,7 @@ const aiVariationPromptHomeBtn = document.getElementById('ai-variation-prompt-ho
 const aiVariationSelectedKrEl = document.getElementById('ai-variation-selected-kr');
 const aiVariationPromptTextarea = document.getElementById('ai-variation-prompt-textarea');
 const aiVariationCopyBtn = document.getElementById('ai-variation-copy-btn');
+const aiVariationGenerateBtn = document.getElementById('ai-variation-generate-btn');
 const aiVariationPasteTextarea = document.getElementById('ai-variation-paste-textarea');
 const aiVariationPreviewBtn = document.getElementById('ai-variation-preview-btn');
 const aiVariationPreviewScreen = document.getElementById('ai-variation-preview-screen');
@@ -2175,18 +2176,66 @@ aiVariationCopyBtn.addEventListener('click', async () => {
   }
 });
 
-aiVariationPreviewBtn.addEventListener('click', () => {
-  const parsed = parseSentencesText(aiVariationPasteTextarea.value);
-  if (parsed.length === 0) {
-    alert('붙여넣은 텍스트에서 문장을 찾지 못했습니다. 형식을 확인해주세요.');
-    return;
-  }
+// 파싱된 변형 문장으로 미리보기 화면 전환(무료판 "붙여넣기→미리보기"와 유료판 "AI로 바로 만들기" 공용)
+function showAiVariationPreview(parsed) {
   aiVariationParsedItems = parsed;
   aiVariationSelectedIndexes = new Set(parsed.map((_, i) => i)); // 기본값: 전체 선택
 
   aiVariationPromptScreen.classList.add('hidden');
   aiVariationPreviewScreen.classList.remove('hidden');
   renderAiVariationPreview();
+}
+
+aiVariationPreviewBtn.addEventListener('click', () => {
+  const parsed = parseSentencesText(aiVariationPasteTextarea.value);
+  if (parsed.length === 0) {
+    alert('붙여넣은 텍스트에서 문장을 찾지 못했습니다. 형식을 확인해주세요.');
+    return;
+  }
+  showAiVariationPreview(parsed);
+});
+
+// 15-2 유료판: 서버(api/generate-variations.js)가 프롬프트를 Claude API로 중계해 결과를 바로 받아옴
+// (평생 누적 100개 한도, 결제 게이팅은 이번 범위 밖 — 로그인만 하면 이용 가능)
+aiVariationGenerateBtn.addEventListener('click', async () => {
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
+    alert('AI 자동생성은 로그인 후 이용할 수 있어요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.');
+    return;
+  }
+
+  aiVariationGenerateBtn.disabled = true;
+  aiVariationGenerateBtn.textContent = '생성 중...';
+
+  try {
+    const idToken = await window.CloudSync.getIdToken();
+    const response = await fetch('/api/generate-variations', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ prompt: aiVariationPromptTextarea.value }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || 'AI 변형 생성에 실패했습니다.');
+      return;
+    }
+
+    const parsed = parseSentencesText(data.text || '');
+    if (parsed.length === 0) {
+      alert('AI가 만든 결과에서 문장을 찾지 못했습니다. "복사하기"로 직접 확인해주세요.');
+      return;
+    }
+
+    showAiVariationPreview(parsed);
+  } catch {
+    alert('AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  } finally {
+    aiVariationGenerateBtn.disabled = false;
+    aiVariationGenerateBtn.textContent = 'AI로 바로 만들기';
+  }
 });
 
 // --- 3단계: 파싱 결과 미리보기 (체크박스 다중선택, 한/영 동시 노출) ---
