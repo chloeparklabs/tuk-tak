@@ -2255,7 +2255,9 @@ aiVariationGenerateBtn.addEventListener('click', async () => {
 
     const parsed = parseSentencesText(data.text || '');
     if (parsed.length === 0) {
-      alert('AI가 만든 결과에서 문장을 찾지 못했습니다. "복사하기"로 직접 확인해주세요.');
+      // JSON 강제(tool_choice) 덕분에 이 경로는 형식 파싱 실패가 아니라 거의 항상 "AI가 변형할
+      // 부분이 없다고 판단"한 정상 케이스 — 서버도 이 경우 한도를 차감하지 않는다.
+      alert('이 문장은 이미 그 자체로 자연스러운 표현이라, 추가로 변형할 부분을 찾지 못했어요. 원문 그대로 사용하시면 됩니다.');
       return;
     }
 

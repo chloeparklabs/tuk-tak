@@ -91,11 +91,13 @@ module.exports = async function handler(req, res) {
 
   const userDocRef = getFirestore().collection('users').doc(uid);
 
-  // 먼저 한도만 확인(트랜잭션 밖) — 이미 초과한 사용자는 비용이 드는 Claude API 호출 자체를 하지 않음
+  // 먼저 한도만 확인(트랜잭션 밖) — 이미 초과한 사용자는 비용이 드는 Claude API 호출 자체를 하지 않음.
+  // 여기서 읽은 카운트는 아래에서 결과가 0개일 때(한도 미차감) remaining 계산에 재사용한다.
+  let countBeforeCall;
   try {
     const snap = await userDocRef.get();
-    const currentCount = snap.exists ? snap.data().aiVariationCount || 0 : 0;
-    if (currentCount >= AI_VARIATION_LIMIT) {
+    countBeforeCall = snap.exists ? snap.data().aiVariationCount || 0 : 0;
+    if (countBeforeCall >= AI_VARIATION_LIMIT) {
       res.status(403).json({ error: `AI 자동변형은 평생 ${AI_VARIATION_LIMIT}개까지 이용할 수 있어요. 이미 한도를 모두 사용했습니다.` });
       return;
     }
@@ -106,6 +108,7 @@ module.exports = async function handler(req, res) {
   }
 
   let resultText;
+  let validVariations = [];
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -135,13 +138,13 @@ module.exports = async function handler(req, res) {
     const toolUseBlock = (data.content || []).find(
       (block) => block.type === 'tool_use' && block.name === 'submit_variations'
     );
-    const variations = Array.isArray(toolUseBlock?.input?.variations) ? toolUseBlock.input.variations : [];
+    const rawVariations = Array.isArray(toolUseBlock?.input?.variations) ? toolUseBlock.input.variations : [];
+    validVariations = rawVariations.filter(
+      (v) => v && typeof v.kr === 'string' && typeof v.en === 'string' && v.kr.trim() && v.en.trim()
+    );
     // 클라이언트의 parseSentencesText()가 그대로 이해하는 "한국어\t영어" 줄바꿈 텍스트로 재조립 —
     // 응답 계약(text 필드)이 이전과 동일해 js/app.js는 전혀 수정할 필요가 없다.
-    resultText = variations
-      .filter((v) => v && typeof v.kr === 'string' && typeof v.en === 'string' && v.kr.trim() && v.en.trim())
-      .map((v) => `${v.kr.trim()}\t${v.en.trim()}`)
-      .join('\n');
+    resultText = validVariations.map((v) => `${v.kr.trim()}\t${v.en.trim()}`).join('\n');
   } catch (err) {
     console.error('Anthropic API 호출 실패:', err);
     res.status(502).json({ error: 'AI 변형 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
@@ -149,20 +152,26 @@ module.exports = async function handler(req, res) {
   }
 
   // 실제로 호출이 성공했을 때만 한도를 차감 — 실패한 요청은 소모하지 않음.
-  // 트랜잭션으로 재확인+증가를 원자적으로 처리해 동시 요청으로 한도를 넘기지 못하게 방지.
+  // 변형 결과가 0개인 경우(원문이 이미 완전한 표현이라 Claude가 변형할 게 없다고 정상 판단한 케이스)도
+  // 사용자에게 아무 결과도 못 준 것이므로 한도를 소모하지 않는다.
+  // 결과가 있을 때만 트랜잭션으로 재확인+증가를 원자적으로 처리해 동시 요청으로 한도를 넘기지 못하게 방지.
   let remaining;
-  try {
-    remaining = await getFirestore().runTransaction(async (tx) => {
-      const snap = await tx.get(userDocRef);
-      const currentCount = snap.exists ? snap.data().aiVariationCount || 0 : 0;
-      const nextCount = currentCount + 1;
-      tx.set(userDocRef, { aiVariationCount: nextCount }, { merge: true });
-      return AI_VARIATION_LIMIT - nextCount;
-    });
-  } catch (err) {
-    console.error('사용량 기록 실패:', err.message);
-    // 결과는 이미 생성됐으므로 카운트 반영 실패로 사용자 응답 자체를 막지는 않음
-    remaining = null;
+  if (validVariations.length === 0) {
+    remaining = AI_VARIATION_LIMIT - countBeforeCall;
+  } else {
+    try {
+      remaining = await getFirestore().runTransaction(async (tx) => {
+        const snap = await tx.get(userDocRef);
+        const currentCount = snap.exists ? snap.data().aiVariationCount || 0 : 0;
+        const nextCount = currentCount + 1;
+        tx.set(userDocRef, { aiVariationCount: nextCount }, { merge: true });
+        return AI_VARIATION_LIMIT - nextCount;
+      });
+    } catch (err) {
+      console.error('사용량 기록 실패:', err.message);
+      // 결과는 이미 생성됐으므로 카운트 반영 실패로 사용자 응답 자체를 막지는 않음
+      remaining = null;
+    }
   }
 
   res.status(200).json({ text: resultText, remaining });
