@@ -112,7 +112,6 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 4096,
-        temperature: 0.3,
         system: AI_VARIATION_SYSTEM_PROMPT,
         tools: [AI_VARIATION_TOOL],
         tool_choice: { type: 'tool', name: 'submit_variations' },

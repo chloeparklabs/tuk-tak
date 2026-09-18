@@ -5496,3 +5496,30 @@ CLAUDE.md 문서 작성 규칙(색상 없음, `PAGE`/`NUMPAGES` Word 필드 코�
 - 실제 Claude API의 tool_choice 강제 응답까지 검증하려면 배포 후 실사용이 필요 — **사용자 실기기 2차 확인 대기 중**(형식 문제는 간헐적이라 재현이 쉽지 않으므로, 재시도 보완과 마찬가지로 "틈틈이 써보며" 확인)
 - few-shot 예시 추가는 보류 — JSON 강제·시스템 프롬프트 분리 적용 후 실제로 "변형 판단이 이상하다"는 사례가 관찰되면 그때 재검토
 - 스토어 등록정보 설정 마무리(11/11), 19번 PC 빠른입력 문서 남은 재검토 항목은 계속 대기 중
+
+## 세션 기록: 2026-09-18 (이어서 5) — 배포 직후 회귀 발견·수정: `temperature`가 Sonnet 5 미지원 파라미터였음
+
+### 문제 발생
+위 응답 형식 안정성 보완(JSON 강제+시스템 프롬프트 분리+temperature 조정)을 커밋+push한 직후, 사용자가 "생성오류 났어"로 즉시 제보. `vercel logs https://tuk-tak-six.vercel.app`로 실시간 로그 확인.
+
+### 원인
+```
+Anthropic API error: 400 {"type":"error","error":{"type":"invalid_request_error","message":"`temperature` is deprecated for this model."},"request_id":"..."}
+```
+3가지 개선안 중 하나였던 `temperature: 0.3`이 Claude Sonnet 5 모델에서는 아예 지원되지 않는(요청 자체를 거부하는) 파라미터였음 — Claude API 호출이 매번 400으로 실패해 생성 기능 전체가 먹통이 된 것. 직전 Claude 1차 확인(로컬 단위 테스트)은 "응답 변환 로직"만 모킹해서 검증했지, 실제 Anthropic API가 이 요청 바디를 받아주는지는 검증 범위 밖이었음 — 이런 종류의 버그는 로컬 테스트로는 절대 못 잡고 실제 API 호출이 필요해, 사용자 실기기 확인이 정확히 이 결함을 잡아낸 사례.
+
+### 수정
+`api/generate-variations.js`에서 `temperature: 0.3` 필드를 완전히 제거(다른 필드는 그대로). 문법 확인(`node -c`) 후 즉시 커밋+push.
+
+### 결과
+이번에 실제로 유지된 개선은 **JSON 강제(tool_choice)+시스템 프롬프트 분리 2가지**뿐. temperature 조정은 이 모델에서 시도 자체가 불가능해 폐기.
+
+### 반영
+- `api/generate-variations.js`: `temperature` 필드 제거
+- `CLAUDE.md`: 상단 브리핑 + 15-2 체크리스트 항목에 이 회귀와 수정 기록
+- `PROGRESS.md`: 이번 작업 기록 추가
+- 커밋+push 완료
+
+### 다음 작업 제안
+- 수정된 버전으로 다시 "AI로 바로 만들기" 눌러 정상 생성되는지 실기기 재확인 필요
+- 나머지는 이전과 동일: 스토어 등록정보 마무리, 19번 문서 재검토 항목
