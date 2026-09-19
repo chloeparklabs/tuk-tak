@@ -906,8 +906,8 @@ cardStarBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleImpo
 cardFlagBtn.addEventListener('click', () => toggleCurrentSentenceFlag(toggleUnfamiliar));
 
 // 정답 발음 듣기(TTS) — 기기 내장 SpeechSynthesis 사용, 서버 비용 없음.
-// 언어는 'en-US' 고정(대부분 영어 학습 목적 전제) — "학습할 언어" 라벨로 일반화된
-// 다른 언어쌍을 넣은 경우 발음이 어색할 수 있으나, 언어 선택 UI는 범위 밖으로 남겨둠.
+// 언어는 'en-US' 고정 — 이 앱은 영어 암기 앱으로 명시적으로 범위를 확정했으므로(2026-09-19,
+// "다른 언어 학습자를 위한 여지 남기기" 철회 — CLAUDE.md 참고) 언어 선택 UI는 필요 없음.
 function speakEnglish(text) {
   if (!('speechSynthesis' in window) || !text) return null;
   window.speechSynthesis.cancel();

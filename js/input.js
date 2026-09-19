@@ -99,7 +99,7 @@ function createInputRow() {
   const enInput = document.createElement('textarea');
   enInput.rows = 1;
   enInput.className = 'input-en';
-  enInput.placeholder = '학습어';
+  enInput.placeholder = '영어';
 
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
