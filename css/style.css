@@ -7,6 +7,11 @@
   --color-brand-dark: #0C447C;  /* Brand Navy */
   --color-point: #D85A30;       /* Point Coral — 사용 보류 */
 
+  /* CTA 버튼 채움색(확인/제출/플래시카드 학습/자동재생 등 큰 채움 버튼 전용, 2026-09-19) —
+     라이트모드는 기존 브랜드 색과 동일한 기본값, 다크모드에서만 아래 [data-theme="dark"]에서 재정의 */
+  --color-cta-fill: var(--color-brand);
+  --color-cta-pressed: var(--color-brand-dark);
+
   /* Surface */
   --color-base: #FFFFFF;
   --color-surface: #F4F6F8;
@@ -64,6 +69,26 @@
   --gray-700: #B0BCCB;
   --gray-800: #E2E8F0;
   --gray-900: #F1F5F9;
+
+  /* 확인/제출/플래시카드 학습/자동재생 등 큰 채움 버튼 — 쨍한 브랜드 블루를 그대로 채우면
+     남색 톤 배경 위에서 유독 튀어 보여, 훨씬 어두운 남색으로 톤다운(2026-09-19). 글자는
+     계속 흰색 고정이라 오히려 더 또렷하게 도드라짐 */
+  --color-cta-fill: #163B5E;
+  --color-cta-pressed: #0B2138;
+}
+
+/* 위 CTA 버튼들은 배경이 어두워진 만큼, 테두리를 배경보다 한 톤 밝은 블루로 둘러 경계를
+   또렷하게 함(2026-09-19) — 라이트모드는 테두리색이 배경과 같아 사실상 안 보이던 기존 방식
+   그대로 유지, 다크모드에만 이 규칙을 추가로 얹음 */
+[data-theme="dark"] #check-btn,
+[data-theme="dark"] #check-btn.revealed {
+  border-color: #5B9FE8;
+}
+
+[data-theme="dark"] .modal-btn-submit,
+[data-theme="dark"] .list-filter-study-btn,
+[data-theme="dark"] .note-autoplay-fab {
+  border: 1.5px solid #5B9FE8;
 }
 
 /* 모달 제목/스테퍼 버튼은 라이트 모드에서 var(--color-brand-dark)(진한 남색)를 텍스트 색으로
@@ -788,15 +813,16 @@ button {
   border-color: var(--gray-200);
 }
 
-/* 확인: 탭 전 Brand Blue 채움 → 탭 후(정답 노출) Brand Navy 채움 */
+/* 확인: 탭 전 Brand Blue 채움 → 탭 후(정답 노출) Brand Navy 채움
+   (다크모드는 --color-cta-fill/--color-cta-pressed로 톤다운 — 위 [data-theme="dark"] 참고) */
 #check-btn {
-  background-color: var(--color-brand);
+  background-color: var(--color-cta-fill);
   border-color: var(--color-brand);
   color: #FFFFFF;
 }
 
 #check-btn.revealed {
-  background-color: var(--color-brand-dark);
+  background-color: var(--color-cta-pressed);
   border-color: var(--color-brand-dark);
 }
 
@@ -977,7 +1003,7 @@ button {
 }
 
 .modal-btn-submit {
-  background-color: var(--color-brand);
+  background-color: var(--color-cta-fill);
   /* 브랜드 블루 배경 위 텍스트라 테마와 무관하게 흰색 고정 */
   color: #FFFFFF;
 }
@@ -1240,7 +1266,7 @@ button {
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
-  background-color: var(--color-brand);
+  background-color: var(--color-cta-fill);
   border: none;
   border-radius: 999px;
   color: #FFFFFF;
@@ -1509,7 +1535,7 @@ button {
   font-weight: 600;
   font-family: inherit;
   color: #FFFFFF;
-  background: var(--color-brand);
+  background: var(--color-cta-fill);
   border: none;
   border-radius: 999px;
   cursor: pointer;
