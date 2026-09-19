@@ -10,7 +10,7 @@
   /* Surface */
   --color-base: #FFFFFF;
   --color-surface: #F4F6F8;
-  --color-surface-dark: #14171C;
+  --color-surface-dark: #0F172A;
   --color-chip-answer: #E6F1FB;
 
   /* Text */
@@ -43,35 +43,46 @@
 /* 설정 > 글자 크기 5단계는 js/app.js에서 위 변수 값을 인라인으로 갱신 */
 
 /* 다크모드: html[data-theme="dark"]에서 배경/텍스트/그레이스케일을 반전 (브랜드 블루/네이비/코럴/Accent는 유지)
-   그레이스케일·텍스트 다크값은 새 컬러가이드에 아직 없어 잠정 추정치 — 실제 디자인 확정 시 교체 필요 (CLAUDE.md 참고) */
+   2026-09-19 재조정: 완전 무채색(회색-검정)이 순백 텍스트와 부딪혀 대비가 너무 세다는 피드백으로,
+   레퍼런스 사이트(brittanychiang.com, Tailwind slate 팔레트)를 참고해 배경·그레이스케일·텍스트를
+   전부 브랜드와 같은 계열의 남색 톤으로 통일 — 명도차는 비슷해도 색조가 섞여 훨씬 부드럽게 느껴짐.
+   정식 디자인 가이드가 나온 건 아니라 여전히 잠정치(CLAUDE.md 참고) */
 [data-theme="dark"] {
-  --color-base: #14171C;
-  --color-surface: #14171C;
+  --color-base: #0F172A;
+  --color-surface: #0F172A;
 
-  --color-text-primary: #E7EAEE;
-  --color-text-secondary: #9AA6B2;
+  --color-text-primary: #E2E8F0;
+  --color-text-secondary: #94A3B8;
 
-  --gray-50: #1C2027;
-  --gray-100: #262B33;
-  --gray-200: #333944;
-  --gray-300: #4B5563;
-  --gray-400: #5C6672;
-  --gray-500: #78828E;
-  --gray-600: #9AA6B2;
-  --gray-700: #B4BEC8;
-  --gray-800: #E7EAEE;
-  --gray-900: #F5F7FA;
+  --gray-50: #1B2330;
+  --gray-100: #232D3D;
+  --gray-200: #2F3B4E;
+  --gray-300: #47566D;
+  --gray-400: #5B6B82;
+  --gray-500: #7385A0;
+  --gray-600: #94A3B8;
+  --gray-700: #B0BCCB;
+  --gray-800: #E2E8F0;
+  --gray-900: #F1F5F9;
 }
 
 /* 모달 제목/스테퍼 버튼은 라이트 모드에서 var(--color-brand-dark)(진한 남색)를 텍스트 색으로
    쓰기 때문에 다크 배경 위에서는 시인성이 떨어짐 → 다크모드에서만 밝은 색으로 전환.
-   .en-text는 자체 하이라이트 칩(--color-chip-answer, 항상 밝은 배경) 위에 있어 제외 */
+   .en-text는 별도의 다크모드 전용 배경/텍스트 규칙이 있어 제외(아래 참고) */
 [data-theme="dark"] .stepper-btn,
 [data-theme="dark"] .help-accordion-header,
 [data-theme="dark"] .screen-topbar-text-btn,
 [data-theme="dark"] .screen-topbar.selecting .screen-back-btn,
 [data-theme="dark"] .screen-topbar.selecting .screen-topbar-title {
   color: var(--color-text-primary);
+}
+
+/* 카드 정답 박스(.en-text)는 라이트모드에서 --color-chip-answer(항상 밝은 하늘색) 고정 배경을
+   쓰는데, 다크모드에서는 이 값을 그대로 두면 거의 검은 배경 위에 흰 박스가 뜬 것처럼 보여
+   대비가 과했음(2026-09-19) — 브랜드 블루를 저채도로 얹은 톤다운 배경으로 다크모드만 재정의 */
+[data-theme="dark"] .en-text {
+  background-color: rgba(55, 138, 221, 0.16);
+  color: #DCE9FA;
 }
 
 /* ==========================================================================

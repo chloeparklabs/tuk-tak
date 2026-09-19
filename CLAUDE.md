@@ -492,7 +492,8 @@
 
 #### Dark Mode
 - 새 가이드에 다크모드 값이 없어 `css/style.css`에 **잠정 추정치**로 구현(2026-08-18) — 기존 2026-08-12 다크모드 매핑(옛 그레이스케일 기준)에서 톤을 이어받아 새 변수명에 맞게 확장한 값. 정식 디자인 확정 시 교체 필요
-- 확정된 것: `--color-surface-dark`(`#14171C`)가 다크모드 배경, `--color-brand`/`--color-brand-dark`/`--color-point`/`--color-accent-star`/`--color-accent-star-bg`/`--color-text-muted`는 다크모드에서도 라이트 모드와 같은 값 유지
+- **2026-09-19 재조정**: "다크모드가 대비가 너무 세다"는 피드백으로, 완전 무채색(회색-검정 배경+거의 순백 텍스트) 조합을 레퍼런스 사이트(brittanychiang.com, Tailwind slate 팔레트)를 참고해 **배경·그레이스케일·텍스트를 전부 브랜드와 같은 남색 계열 톤으로 통일**하는 방향으로 변경 — 명도차는 비슷해도 색조가 섞여 훨씬 부드럽게 느껴짐. 배경(`--color-base`/`--color-surface`/`--color-surface-dark`) `#14171C`→`#0F172A`, 본문 텍스트(`--color-text-primary`) `#E7EAEE`→`#E2E8F0`, 보조 텍스트(`--color-text-secondary`/`--gray-600`) `#9AA6B2`→`#94A3B8`, 그레이 10단계 전체를 같은 남색 계열로 재조정. 카드 정답 박스(`.en-text`)도 다크모드에서 항상 밝은 고정 하늘색(`--color-chip-answer`)을 그대로 쓰면 거의 검은 배경 위에 흰 박스가 뜬 것처럼 튀는 문제가 있어, 다크모드 전용 규칙(브랜드 블루 저채도 틴트 `rgba(55,138,221,0.16)` 배경 + 밝은 블루 텍스트 `#DCE9FA`)으로 별도 재정의. 검색 폼 박스·문장변형 하이라이트·백업 리마인더 배너 등 `--color-chip-answer`의 다른 사용처는 이번 범위에서 제외(카드 정답 박스만 지적됨). 여전히 정식 디자인 가이드는 아니라 잠정치. Claude 1차 확인(Playwright, 카드/문장관리/설정 화면 다크모드 스크린샷) 완료 → 사용자 실기기 2차 확인 대기 중
+- 확정된 것: `--color-brand`/`--color-brand-dark`/`--color-point`/`--color-accent-star`/`--color-accent-star-bg`/`--color-text-muted`는 다크모드에서도 라이트 모드와 같은 값 유지
 
 #### CSS 변수 선언 규칙
 - 모든 CSS 변수는 `css/style.css` 상단의 `:root {}` 블록에만 선언
