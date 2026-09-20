@@ -49,64 +49,76 @@
 /* 설정 > 글자 크기 5단계는 js/app.js에서 위 변수 값을 인라인으로 갱신 */
 
 /* 다크모드: html[data-theme="dark"]에서 배경/텍스트/그레이스케일을 반전 (브랜드 블루/네이비/코럴/Accent는 유지)
-   2026-09-19 재조정: 완전 무채색(회색-검정)이 순백 텍스트와 부딪혀 대비가 너무 세다는 피드백으로,
-   레퍼런스 사이트(brittanychiang.com, Tailwind slate 팔레트)를 참고해 배경·그레이스케일·텍스트를
-   전부 브랜드와 같은 계열의 남색 톤으로 통일 — 명도차는 비슷해도 색조가 섞여 훨씬 부드럽게 느껴짐.
-   정식 디자인 가이드가 나온 건 아니라 여전히 잠정치(CLAUDE.md 참고) */
+   2026-09-19 1차 재조정: 완전 무채색이 대비가 너무 세다는 피드백으로 남색 계열로 통일(#0F172A 기준).
+   2026-09-20 2차 재조정: 이번엔 "배경에 파란기가 너무 강하다"는 반대 피드백 — 배경 후보 4종을
+   실제 컴포넌트 목업으로 비교한 뒤, 색상(H222°)·밝기(L11%)는 유지하고 채도만 47%→25%로 낮춘
+   값(#151923)을 채택. 그레이스케일 10단계·본문 텍스트도 같은 비율(×25/47)로 채도만 낮춰 재계산해
+   전체 톤을 통일. 이와 별개로 CTA 버튼(확인 등)은 배경에 거의 묻히던 기존 방식이 "존재감 없다"는
+   지적으로 완전히 새로 설계 — 아래 별도 섹션 참고. 정식 디자인 가이드는 아직 아니라 잠정치(CLAUDE.md 참고) */
 [data-theme="dark"] {
-  --color-base: #0F172A;
-  --color-surface: #0F172A;
+  --color-base: #151923;
+  --color-surface: #151923;
 
-  --color-text-primary: #E2E8F0;
-  --color-text-secondary: #94A3B8;
+  --color-text-primary: #E5E8ED;
+  --color-text-secondary: #9CA4B0;
 
-  --gray-50: #1B2330;
-  --gray-100: #232D3D;
-  --gray-200: #2F3B4E;
-  --gray-300: #47566D;
-  --gray-400: #5B6B82;
-  --gray-500: #7385A0;
-  --gray-600: #94A3B8;
-  --gray-700: #B0BCCB;
-  --gray-800: #E2E8F0;
-  --gray-900: #F1F5F9;
+  --gray-50: #20242B;
+  --gray-100: #292E37;
+  --gray-200: #363D47;
+  --gray-300: #505864;
+  --gray-400: #646D79;
+  --gray-500: #7E8795;
+  --gray-600: #9CA4B0;
+  --gray-700: #B6BDC5;
+  --gray-800: #E5E8ED;
+  --gray-900: #F3F5F7;
 
-  /* 확인/제출/플래시카드 학습/자동재생 등 큰 채움 버튼 — 쨍한 브랜드 블루를 그대로 채우면
-     남색 톤 배경 위에서 유독 튀어 보여, 훨씬 어두운 남색으로 톤다운(2026-09-19).
-     "글자가 레퍼런스보다 덜 환해 보인다"는 재확인 후, 계산해보니 글자 밝기 자체보다
-     버튼 배경이 페이지 배경(#0F172A)보다 밝게 떠 있어 대비가 덜 나온 게 원인이라
-     페이지 배경에 거의 붙을 만큼 더 낮춤 — 버튼 구분은 테두리가 전담 */
-  --color-cta-fill: #111A2C;
-  --color-cta-pressed: #0F172A;
-  /* 흰색 글자가 어두운 채움 위에서 너무 튄다는 피드백으로, 테두리와 같은 밝은 블루로
-     변경(2026-09-19) — 참고 이미지(어두운 채움+한 톤 밝은 테두리·글자 스타일)와 같은 원칙 */
-  --color-cta-text: #5B9FE8;
+  /* 즐겨찾기/미암기 활성 아이콘·"미니 학습 중" 배너 등이 쓰는 크림색 배경(라이트 전용 값 #FAEEDA)이
+     다크모드에서 전혀 재정의돼 있지 않아, 새까만 배경 위에 밝은 크림색 패치로 튀는 문제를 발견
+     (2026-09-20) — 정답 박스(.en-text)에 이미 쓴 방식과 같은 원리로 저채도 틴트 배경+밝은 글자로 톤다운.
+     변수 하나만 바꿔도 이 값을 쓰는 모든 칩(별표/깃발/배너/AI 보관함 승격 아이콘 등)에 자동 반영됨 */
+  --color-accent-star-bg: rgba(186, 117, 23, 0.18);
+  --color-accent-star: #E0A552;
+
+  /* 확인/제출/플래시카드 학습/자동재생 CTA — 2026-09-20 전면 재설계.
+     "탭 전"은 배경과 거의 안 보이게 섞는 대신 눈에 띄는 채움(#1A2434)+쨍한 글자(#3993FF)로
+     존재감을 줌(사용자가 직접 골라본 톤이 기존 안보다 훨씬 편안하다고 확인). "탭 후"(정답 노출,
+     #check-btn.revealed 전용)는 다크모드 특성상 더 어두워지면 오히려 안 보이므로, 반대로 아주
+     살짝만 더 밝게 하고 테두리를 새로 둘러 "확인됨" 신호를 줌 */
+  --color-cta-fill: #1A2434;
+  --color-cta-pressed: #202D40;
+  --color-cta-text: #3993FF;
 }
 
-/* 위 CTA 버튼들은 배경이 어두워진 만큼, 테두리를 배경보다 한 톤 밝은 블루로 둘러 경계를
-   또렷하게 함(2026-09-19) — 라이트모드는 테두리색이 배경과 같아 사실상 안 보이던 기존 방식
-   그대로 유지, 다크모드에만 이 규칙을 추가로 얹음. .note-autoplay-fab.active(자동재생 중,
-   accent-star 호박색 배경)는 이 CTA 블루 체계와 무관한 별개 색이라 테두리 대상에서 제외 */
-[data-theme="dark"] #check-btn,
+/* 확인 버튼만 탭 전/후 두 상태가 있어 테두리로 상태 변화를 표시 — 탭 전은 테두리 없음(배경 채움만),
+   탭 후에만 테두리 등장(2026-09-20). 나머지 3개 CTA(제출/플래시카드 학습/자동재생)는 상태 전환이
+   없는 단발성 버튼이라 전부 "탭 전" 스타일(테두리 없음)로 통일 — 기존에 다크모드에서만 추가하던
+   합성 테두리 규칙은 삭제, 라이트모드와 마찬가지로 border 없음 */
+[data-theme="dark"] #check-btn {
+  border-color: transparent;
+}
+
 [data-theme="dark"] #check-btn.revealed {
   border-color: #5B9FE8;
 }
 
-[data-theme="dark"] .modal-btn-submit,
-[data-theme="dark"] .list-filter-study-btn,
-[data-theme="dark"] .note-autoplay-fab:not(.active) {
-  border: 1.5px solid #5B9FE8;
+/* 모달 제목/스테퍼 버튼은 라이트 모드에서 var(--color-brand-dark)(진한 남색)를 텍스트 색으로
+   쓰기 때문에 다크 배경 위에서는 시인성이 떨어짐 → 다크모드 전용 색으로 전환.
+   .en-text는 별도의 다크모드 전용 배경/텍스트 규칙이 있어 제외(아래 참고).
+   2026-09-20: 그동안 색을 포기하고 밝은 회색(--color-text-primary)으로 때웠던 인터랙티브
+   요소(스테퍼 버튼·탭 텍스트 버튼·선택모드 강조)는, 이제 다크에서도 잘 보이는 액티브 블루
+   (#5B9FE8)가 생겨서 실제 색을 되살림 — "색이 사라져 밋밋하다"는 느낌의 원인 중 하나였음.
+   단, 제목(.help-accordion-header)은 링크가 아니라 heading이라 컬러를 주면 오히려 어색해
+   중립색 유지 */
+[data-theme="dark"] .help-accordion-header {
+  color: var(--color-text-primary);
 }
 
-/* 모달 제목/스테퍼 버튼은 라이트 모드에서 var(--color-brand-dark)(진한 남색)를 텍스트 색으로
-   쓰기 때문에 다크 배경 위에서는 시인성이 떨어짐 → 다크모드에서만 밝은 색으로 전환.
-   .en-text는 별도의 다크모드 전용 배경/텍스트 규칙이 있어 제외(아래 참고) */
 [data-theme="dark"] .stepper-btn,
-[data-theme="dark"] .help-accordion-header,
 [data-theme="dark"] .screen-topbar-text-btn,
 [data-theme="dark"] .screen-topbar.selecting .screen-back-btn,
 [data-theme="dark"] .screen-topbar.selecting .screen-topbar-title {
-  color: var(--color-text-primary);
+  color: #5B9FE8;
 }
 
 /* 카드 정답 박스(.en-text)는 라이트모드에서 --color-chip-answer(항상 밝은 하늘색) 고정 배경을
@@ -114,6 +126,50 @@
    대비가 과했음(2026-09-19) — 브랜드 블루를 저채도로 얹은 톤다운 배경으로 다크모드만 재정의 */
 [data-theme="dark"] .en-text {
   background-color: rgba(55, 138, 221, 0.16);
+  color: #DCE9FA;
+}
+
+/* 2026-09-20: .en-text 외에도 --color-chip-answer(항상 밝은 하늘색)를 배경으로 쓰는 곳이
+   3곳 더 있었음(백업 리마인더 배너/검색 폼 박스/문장변형 하이라이트) — 전부 새까만 배경 위에
+   밝은 하늘색 patch로 튀는 같은 문제라 .en-text와 동일한 톤다운 원리를 적용. 이 컴포넌트들은
+   배경뿐 아니라 그 안의 글자색도 "항상 밝은 배경"을 전제로 리터럴 다크네이비(#1E2A38 등)를
+   써두고 있어서, 배경만 톤다운하면 어두운 배경 위에 어두운 글자가 남아 오히려 안 보이게 됨
+   — 배경+글자를 함께 재정의 */
+[data-theme="dark"] .backup-reminder-banner {
+  background-color: rgba(55, 138, 221, 0.16);
+}
+
+[data-theme="dark"] .backup-reminder-title {
+  color: #DCE9FA;
+}
+
+[data-theme="dark"] .backup-reminder-desc {
+  color: #9DBBE0;
+}
+
+[data-theme="dark"] .list-search-box {
+  background-color: rgba(55, 138, 221, 0.16);
+}
+
+[data-theme="dark"] .list-search-box-icon {
+  color: #9DBBE0;
+}
+
+[data-theme="dark"] .list-search-input {
+  color: #DCE9FA;
+}
+
+[data-theme="dark"] .list-search-input::placeholder {
+  color: #9DBBE0;
+}
+
+[data-theme="dark"] .variation-item.variation-item-flipped {
+  background-color: rgba(55, 138, 221, 0.16);
+}
+
+[data-theme="dark"] .variation-item-flipped .variation-item-tag,
+[data-theme="dark"] .variation-item-flipped .variation-item-kr,
+[data-theme="dark"] .variation-item-flipped .variation-item-en {
   color: #DCE9FA;
 }
 
@@ -289,6 +345,7 @@ button {
   /* 헤더가 무채색으로 바뀌며 로고만 브랜드 컬러를 유지 — 흰 배경 위 컬러 워드마크가
      오히려 더 또렷한 브랜드 표식 역할을 함(2026-09-15) */
   color: var(--color-brand);
+  /* 다크모드는 아래 [data-theme="dark"] .topbar-logo에서 별도 색으로 재정의 */
   /* 자간 0.5px→-1px로 조정(2026-09-15) */
   letter-spacing: -1px;
   cursor: pointer;
@@ -296,6 +353,14 @@ button {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+/* 다크모드에서는 로고도 라이트모드의 쨍한 브랜드 블루 대신 액티브 블루로 전환
+   (2026-09-20) — 어두운 배경에서 더 선명하고 눈부심이 덜함. 라이트/다크의 로고 색이
+   달라지는 트레이드오프는 있지만, 다크 UI에서는 흔한 절충(원색을 그대로 쓰면 과포화로
+   보임) */
+[data-theme="dark"] .topbar-logo {
+  color: #5B9FE8;
 }
 
 .topbar-more {
@@ -333,6 +398,16 @@ button {
   flex-direction: column;
   gap: 4px;
   z-index: 10;
+}
+
+/* 2026-09-20: 다크모드에서 --color-base가 페이지 배경과 완전히 같은 값이라 드롭다운이
+   바탕과 구분되지 않던 문제 — 배경을 한 톤 밝게(--gray-100) + 테두리 추가로 경계를 줌.
+   기존 그림자(어두운 색)는 이미 어두운 배경 위에서 안 보이므로 다크에서는 더 짙고
+   퍼지는 그림자로 교체 */
+[data-theme="dark"] .more-menu {
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .settings-row {
@@ -447,6 +522,13 @@ button {
   color: #FFFFFF;
 }
 
+/* 2026-09-20: "확인 버튼과 같은 스타일로" 요청 — CTA 변수를 그대로 재사용해 확인 버튼
+   (탭 전)과 항상 같은 톤을 유지 */
+[data-theme="dark"] .mode-select-btn.active {
+  background-color: var(--color-cta-fill);
+  color: var(--color-cta-text);
+}
+
 /* ==========================================================================
    출제/정렬 순서 선택 (세로 라디오 목록)
    ========================================================================== */
@@ -503,8 +585,17 @@ button {
   color: var(--color-brand-dark);
 }
 
+/* 2026-09-20: 다크에서 안 보여 포기했던 색을 액티브 블루로 복원(위 .stepper-btn 등과 같은 원리) */
 [data-theme="dark"] .sort-option-btn.active {
-  color: var(--color-text-primary);
+  color: #5B9FE8;
+}
+
+[data-theme="dark"] .sort-option-btn.active .sort-option-radio {
+  border-color: #5B9FE8;
+}
+
+[data-theme="dark"] .sort-option-btn.active .sort-option-radio::after {
+  background-color: #5B9FE8;
 }
 
 .more-menu-item {
@@ -866,6 +957,15 @@ button {
   border-color: var(--gray-200);
   color: var(--gray-300);
   cursor: not-allowed;
+}
+
+/* 2026-09-20: 다크모드에서 배경(--color-base)이 페이지와 같은 값+글자(--color-brand-dark
+   진한 남색)가 어두운 배경 위에서 거의 안 보여, "AI 프롬프트 복사하기" 등 .btn-outline
+   버튼 전반이 테두리 선만 보이고 내용은 안 읽히던 문제 — 테두리는 그대로 두고 배경·글자만
+   확인 버튼(탭 전)과 같은 톤으로 채워 존재감을 줌. 비활성 버튼은 제외(기존처럼 흐릿하게 유지) */
+[data-theme="dark"] .btn-outline:not(:disabled) {
+  background-color: #1A2434;
+  color: #3993FF;
 }
 
 .btn-outline:disabled:active {
@@ -1508,12 +1608,13 @@ button {
   border-bottom-color: var(--color-brand-dark);
 }
 
-/* 브랜드 네이비가 다크 배경과 대비 1.8:1로 거의 안 보임 → 다크모드에서만 밝은 색으로 전환
-   (.modal-title 등에서 이미 겪은 것과 같은 문제, 2026-08-21) */
+/* 브랜드 네이비가 다크 배경과 대비 1.8:1로 거의 안 보임 → 다크모드 전용 색으로 전환
+   (.modal-title 등에서 이미 겪은 것과 같은 문제, 2026-08-21).
+   2026-09-20: 중립색(--color-text-primary)으로 포기했던 것을 액티브 블루로 복원 */
 [data-theme="dark"] .list-filter-btn.active,
 [data-theme="dark"] .add-modal-tab-btn.active {
-  color: var(--color-text-primary);
-  border-bottom-color: var(--color-text-primary);
+  color: #5B9FE8;
+  border-bottom-color: #5B9FE8;
 }
 
 /* 현재 활성 필터 탭 기준 문장 개수 안내 — 탭과 구분선 사이, 은은하되 읽히는 정도로 */
@@ -1972,6 +2073,19 @@ button {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+
+/* 2026-09-20: .btn-outline과 같은 이유(배경=페이지와 동일, 글자=진한 남색이라 다크 배경 위에
+   안 보임)로 백업내보내기/초기화/지금 백업/클라우드 문장으로 교체/클라우드 백업 삭제 등
+   설정 화면 버튼 전반이 안 읽히던 문제 — 테두리는 그대로 두고 배경·글자만 채움.
+   경고 변형(.settings-action-group-warning)은 테두리·글자색을 accent-star로 따로 덮어써
+   그대로 유지되므로 배경만 공유해도 괜찮음 */
+[data-theme="dark"] .settings-action-group {
+  background-color: #1A2434;
+}
+
+[data-theme="dark"] .settings-action-main {
+  color: #3993FF;
 }
 
 /* "?" 설명 버튼 — 원형 물음표 아이콘(lucide circle-help 자체가 이미 원 안에 물음표)만
