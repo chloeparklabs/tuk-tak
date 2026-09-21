@@ -1665,14 +1665,14 @@ button {
 }
 
 /* 2026-09-21: 아웃라인 대신 확인 버튼과 같은 CTA 토큰(--color-cta-fill/--color-cta-text)으로
-   채워 플래시카드 학습 버튼과 같은 색이 되도록 변경 — color/background/border 재정의를 없애고
-   .list-filter-study-btn 값을 그대로 상속. 대신 "보조 액션"이라는 시각적 구분은 색 대신
+   채워 플래시카드 학습 버튼과 같은 색이 되도록 변경. 대신 "보조 액션"이라는 시각적 구분은
    크기/비율로 줌: 전체 폭 대신 auto 폭으로 가운데 정렬해 짧게, 세로 패딩을 늘려 더 두꺼운
-   알약형으로 */
+   알약형으로. 추가 피드백으로 테두리(브랜드 블루) 복원 + 좌우 여백 2배(28px→56px)로 가로 확장 */
 .list-note-study-btn {
   align-self: center;
   width: auto;
-  padding: 12px 28px;
+  padding: 12px 56px;
+  border: 1.5px solid var(--color-brand);
 }
 
 /* 선택 모드일 때는 뒤로가기 아이콘 대신 "취소" 텍스트로 전환 */
