@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.chloeparklabs.tuktak",
+    "sha256_cert_fingerprints": ["81:B3:11:46:71:01:7E:4A:2A:97:4C:7E:E1:CF:80:62:C7:40:60:A8:98:3D:17:74:7F:19:CE:AB:85:E2:A3:DE"]
+  }
+}]
