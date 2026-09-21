@@ -1373,9 +1373,10 @@ button {
 }
 
 /* 2026-09-21: --gray-500(다크 #7E8795)가 전반적으로 밝아진 다크모드 팔레트 안에서는 유독
-   칙칙해 보여, 이 아이콘만 다크모드에서 한 단계 밝은 --gray-700(#B6BDC5)로 전환 */
+   칙칙해 보여, 이 아이콘만 다크모드에서 밝게 전환(--gray-700 1차 → 추가 피드백으로
+   --gray-800(#E5E8ED)로 재조정) */
 [data-theme="dark"] .note-study-speaker-btn {
-  color: var(--gray-700);
+  color: var(--gray-800);
 }
 
 /* lucide volume-2 아이콘의 그림 높이가 짧은 문제(24번에서 확인) — 여기서도 동일 보정
@@ -1513,10 +1514,11 @@ button {
   cursor: pointer;
 }
 
-/* 2026-09-21: .note-study-speaker-btn/.settings-info-btn과 같은 이유로 다크모드에서만 한 단계 밝게 */
+/* 2026-09-21: .note-study-speaker-btn/.settings-info-btn과 같은 이유로 다크모드에서만 밝게
+   (--gray-700 1차 → 추가 피드백으로 --gray-800 재조정) */
 [data-theme="dark"] .voice-memo-record-btn {
-  color: var(--gray-700);
-  border-color: var(--gray-700);
+  color: var(--gray-800);
+  border-color: var(--gray-800);
 }
 
 .voice-memo-record-btn svg {
@@ -2164,9 +2166,10 @@ button {
   cursor: pointer;
 }
 
-/* 2026-09-21: .note-study-speaker-btn과 같은 이유로 다크모드에서만 한 단계 밝게 */
+/* 2026-09-21: .note-study-speaker-btn과 같은 이유로 다크모드에서만 밝게
+   (--gray-700 1차 → 추가 피드백으로 --gray-800 재조정) */
 [data-theme="dark"] .settings-info-btn {
-  color: var(--gray-700);
+  color: var(--gray-800);
 }
 
 .settings-info-btn svg {
