@@ -109,6 +109,9 @@
 [data-theme="dark"] #prev-btn,
 [data-theme="dark"] #next-btn {
   border-color: #404650;
+  /* 2026-09-21: 확인 버튼과 같은 --color-cta-fill을 공유하다 보니 구분이 약하다는 피드백 —
+     이전/다음 전용으로 더 어두운 배경(같은 색상 H~220°, 밝기만 25%→17%)을 따로 지정 */
+  background-color: #1B263C;
 }
 
 [data-theme="dark"] #check-btn.revealed {
