@@ -5,6 +5,7 @@
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
 const loginBtn = document.getElementById('login-btn');
+const headerAccountEl = document.getElementById('header-account');
 const logoutBtn = document.getElementById('logout-btn');
 const userEmailEl = document.getElementById('user-email');
 const inputRowsEl = document.getElementById('input-rows');
@@ -47,7 +48,7 @@ window.addEventListener('resize', () => {
 
 // 입력 글자 크기 조절 — 문장이 길어 타이핑할 때 글자를 크게 보고 싶은 경우를 위함(localStorage로 재방문해도 유지)
 const FONT_SIZE_STORAGE_KEY = 'tuktak_input_font_size';
-const FONT_SIZE_DEFAULT = 15;
+const FONT_SIZE_DEFAULT = 18;
 const FONT_SIZE_MIN = 13;
 const FONT_SIZE_MAX = 25;
 const FONT_SIZE_STEP = 2;
@@ -445,6 +446,8 @@ function renderAuthView(user) {
   const isLoggedIn = !!user;
   loginView.classList.toggle('hidden', isLoggedIn);
   dashboardView.classList.toggle('hidden', !isLoggedIn);
+  loginBtn.classList.toggle('hidden', isLoggedIn);
+  headerAccountEl.classList.toggle('hidden', !isLoggedIn);
   if (isLoggedIn) {
     userEmailEl.textContent = user.email;
     loadManageList();
