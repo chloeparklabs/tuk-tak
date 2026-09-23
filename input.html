@@ -74,71 +74,75 @@
         <p class="panel-desc">Google 계정으로 로그인하면 여기서 입력한 문장이 클라우드에 저장되고, 폰의 Tuk Tak 앱에서 "클라우드에서 복원"으로 불러올 수 있어요. 오른쪽 위 "Google로 로그인" 버튼을 눌러주세요.</p>
       </section>
 
-      <!-- 로그인 상태: 빠른 입력 + 클라우드 저장 -->
-      <section id="dashboard-view" class="panel hidden">
-        <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
-        <div class="section-heading-static">
-          <span class="section-badge section-badge--add" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-          </span>
-          <h2 class="section-title">새 문장 추가</h2>
-        </div>
-
-        <!-- 파일 가져오기(CSV/TSV/TXT) / 텍스트 붙여넣기(카메라로 찍은 문장을 AI가 텍스트로 만들어준 것 등을
-             바로 붙여넣을 때 유용, 2026-09-14) — 둘 다 아래 목록에 새 행으로 채워 넣고, 저장은 별도로 진행 -->
-        <div class="subsection">
-          <h3 class="subsection-label">가져오기</h3>
-          <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
-          <div id="import-dropzone" class="import-dropzone" tabindex="0" role="button" aria-label="파일 가져오기 (CSV/TSV/TXT)">
-            <svg class="import-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-            <p class="import-dropzone-text">여기로 파일을 끌어놓거나 <span class="import-dropzone-link">클릭해서 가져오기</span></p>
-            <p class="import-dropzone-hint">CSV · TSV · TXT · 한국어와 영어를 탭 또는 쉼표로 구분</p>
+      <!-- 로그인 상태: 빠른 입력 + 클라우드 저장. "새 문장 추가"와 "기존 문장 관리"는 서로 다른
+           작업이라 흰 카드를 2개로 분리(2026-09-23) — 카드 사이는 .dashboard-sections의 gap으로 구분 -->
+      <div id="dashboard-view" class="dashboard-sections hidden">
+        <section class="panel">
+          <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
+          <div class="section-heading-static">
+            <span class="section-badge section-badge--add" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            </span>
+            <h2 class="section-title">새 문장 추가</h2>
           </div>
-          <p id="import-result" class="import-result hidden"></p>
-          <button id="paste-toggle-btn" class="btn-text paste-toggle-link" type="button" aria-expanded="false" aria-controls="paste-panel">또는 텍스트로 붙여넣기</button>
-          <div id="paste-panel" class="paste-panel hidden">
-            <p class="panel-desc">한 줄에 문장 하나씩, 한국어와 영어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
-            <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
-            <button id="paste-submit-btn" class="btn-outline" type="button">가져오기</button>
+
+          <!-- 파일 가져오기(CSV/TSV/TXT) / 텍스트 붙여넣기(카메라로 찍은 문장을 AI가 텍스트로 만들어준 것 등을
+               바로 붙여넣을 때 유용, 2026-09-14) — 둘 다 아래 목록에 새 행으로 채워 넣고, 저장은 별도로 진행 -->
+          <div class="subsection">
+            <h3 class="subsection-label">가져오기</h3>
+            <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
+            <div id="import-dropzone" class="import-dropzone" tabindex="0" role="button" aria-label="파일 가져오기 (CSV/TSV/TXT)">
+              <svg class="import-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <p class="import-dropzone-text">여기로 파일을 끌어놓거나 <span class="import-dropzone-link">클릭해서 가져오기</span></p>
+              <p class="import-dropzone-hint">CSV · TSV · TXT · 한국어와 영어를 탭 또는 쉼표로 구분</p>
+            </div>
+            <p id="import-result" class="import-result hidden"></p>
+            <button id="paste-toggle-btn" class="btn-text paste-toggle-link" type="button" aria-expanded="false" aria-controls="paste-panel">또는 텍스트로 붙여넣기</button>
+            <div id="paste-panel" class="paste-panel hidden">
+              <p class="panel-desc">한 줄에 문장 하나씩, 한국어와 영어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
+              <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
+              <button id="paste-submit-btn" class="btn-outline" type="button">가져오기</button>
+            </div>
           </div>
-        </div>
 
-        <div class="subsection">
-          <h3 class="subsection-label">직접 입력</h3>
-          <div id="input-rows" class="input-rows"></div>
-        </div>
-
-        <hr class="section-divider" />
+          <div class="subsection">
+            <h3 class="subsection-label">직접 입력</h3>
+            <div id="input-rows" class="input-rows"></div>
+          </div>
+        </section>
 
         <!-- 클라우드에 저장된 기존 문장 관리: 조회 + 수정 + 삭제. 문장이 많으면 화면을 다 채워
              위의 "새 문장 추가"를 찾기 어려워질 수 있어 기본은 접어두고, 필요할 때만 펼쳐봄(2026-09-13) -->
-        <div class="section-heading">
-          <button id="manage-toggle-btn" class="section-toggle-btn" type="button" aria-expanded="false" aria-controls="manage-content">
-            <span class="section-toggle-label">
-              <span class="section-badge section-badge--cloud" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        <section class="panel">
+          <div class="section-heading">
+            <button id="manage-toggle-btn" class="section-toggle-btn" type="button" aria-expanded="false" aria-controls="manage-content">
+              <span class="section-toggle-label">
+                <span class="section-badge section-badge--cloud" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                </span>
+                <h2 class="section-title">클라우드에 저장된 문장 (<span id="manage-count">0</span>개)</h2>
               </span>
-              <h2 class="section-title">클라우드에 저장된 문장 (<span id="manage-count">0</span>개)</h2>
-            </span>
-            <svg class="section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <button id="manage-refresh-btn" class="btn-text" type="button">클라우드에서 다시 불러오기</button>
-        </div>
-        <div id="manage-content" class="hidden">
-          <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
-          <div id="manage-rows" class="input-rows"></div>
-          <!-- 문장이 많으면 한꺼번에 다 그리는 대신 일정 개수씩만 보여줌(2026-09-14) — 안 보이는
-               나머지도 DOM에는 그대로 남아있어 저장 시 정상 포함됨(위 manage-rows 주석 참고) -->
-          <button id="manage-load-more-btn" class="btn-outline hidden" type="button"></button>
-          <p id="manage-empty" class="panel-desc hidden"></p>
-        </div>
+              <svg class="section-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <button id="manage-refresh-btn" class="btn-text" type="button">클라우드에서 다시 불러오기</button>
+          </div>
+          <div id="manage-content" class="hidden">
+            <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
+            <div id="manage-rows" class="input-rows"></div>
+            <!-- 문장이 많으면 한꺼번에 다 그리는 대신 일정 개수씩만 보여줌(2026-09-14) — 안 보이는
+                 나머지도 DOM에는 그대로 남아있어 저장 시 정상 포함됨(위 manage-rows 주석 참고) -->
+            <button id="manage-load-more-btn" class="btn-outline hidden" type="button"></button>
+            <p id="manage-empty" class="panel-desc hidden"></p>
+          </div>
+        </section>
+      </div>
 
-        <!-- 목록이 길어져도 저장 버튼을 찾기 쉽도록 화면 하단에 고정(2026-09-14) -->
-        <div class="save-bar">
-          <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
-          <p id="status-text" class="status-text"></p>
-        </div>
-      </section>
+      <!-- 두 카드 중 하나가 아니라 양쪽 변경사항을 함께 저장하는 공통 기능이라 카드 밖,
+           화면 하단에 고정된 독립 바로 배치(2026-09-23) -->
+      <div id="save-bar" class="save-bar hidden">
+        <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
+        <p id="status-text" class="status-text"></p>
+      </div>
     </main>
   </div>
 

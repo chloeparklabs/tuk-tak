@@ -12,6 +12,7 @@ const settingsToggleBtn = document.getElementById('settings-toggle-btn');
 const settingsPopoverEl = document.getElementById('settings-popover');
 const userEmailEl = document.getElementById('user-email');
 const inputRowsEl = document.getElementById('input-rows');
+const saveBarEl = document.getElementById('save-bar');
 const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
 const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
@@ -511,6 +512,7 @@ function renderAuthView(user) {
   const isLoggedIn = !!user;
   loginView.classList.toggle('hidden', isLoggedIn);
   dashboardView.classList.toggle('hidden', !isLoggedIn);
+  saveBarEl.classList.toggle('hidden', !isLoggedIn);
   loginBtn.classList.toggle('hidden', isLoggedIn);
   headerAccountEl.classList.toggle('hidden', !isLoggedIn);
   if (isLoggedIn) {

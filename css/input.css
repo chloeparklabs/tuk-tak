@@ -157,6 +157,13 @@ body {
   }
 }
 
+/* "새 문장 추가"/"클라우드에 저장된 문장"은 서로 다른 작업이라 흰 카드를 분리, 카드 사이 간격만 담당 */
+.dashboard-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .panel-desc {
   font-size: 15px;
   line-height: 1.6;
@@ -259,12 +266,6 @@ body {
   font-weight: 700;
   color: #0C447C;
   margin: 0;
-}
-
-.section-divider {
-  border: none;
-  border-top: 1px solid #D9D9D9;
-  margin: 32px 0;
 }
 
 .section-toggle-btn {
@@ -397,17 +398,18 @@ body {
   color: #FFFFFF;
 }
 
+/* 2026-09-23: 참고 이미지(번호 섹션형 폼)처럼 소제목과 간격을 넉넉히 둬서 "가져오기"/
+   "직접 입력"이 각자 다른 블록임을 분명히 함 — 기존 12px 캡션 스타일(대문자+자간)은
+   본문과 위계 구분이 잘 안 된다는 피드백으로 일반 제목 톤으로 전환 */
 .subsection {
-  margin-bottom: 24px;
+  margin-bottom: 36px;
 }
 
 .subsection-label {
-  margin: 0 0 10px;
-  font-size: 12px;
+  margin: 0 0 14px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.4px;
-  color: #7C8A96;
-  text-transform: uppercase;
+  color: #1E2A38;
 }
 
 .import-dropzone {
@@ -580,33 +582,17 @@ body {
   cursor: pointer;
 }
 
-/* 목록이 길어져도 저장 버튼을 화면 하단에 계속 떠 있게 함(2026-09-14) — .panel의
-   패딩을 상쇄하는 음수 마진으로 카드 바닥에 딱 붙는 형태, 구분선+그림자로 위쪽 콘텐츠와
-   분리. .panel의 반응형 padding/border-radius 값과 짝을 맞춰야 함(아래 미디어쿼리 참고) */
+/* 목록이 길어져도 저장 버튼을 찾기 쉽도록 화면 하단에 고정(2026-09-14) — 카드 2개로
+   분리된 뒤로는 어느 한쪽에 속한 버튼이 아니라 둘 다 저장하는 공통 기능이라, 카드 밖의
+   독립된 floating 바로 변경(2026-09-23, 이제 .panel 패딩을 상쇄할 필요 없어 단순해짐) */
 .save-bar {
   position: sticky;
-  bottom: 0;
-  margin: 24px -40px -40px;
-  padding: 16px 40px calc(16px + env(safe-area-inset-bottom));
+  bottom: 16px;
+  margin-top: 24px;
+  padding: 16px 24px calc(16px + env(safe-area-inset-bottom));
   background-color: #FFFFFF;
-  border-top: 1px solid #ECECEC;
-  box-shadow: 0 -4px 12px rgba(20, 23, 28, 0.06);
-  border-radius: 0 0 16px 16px;
-}
-
-@media (max-width: 1024px) {
-  .save-bar {
-    margin: 24px -32px -32px;
-    padding: 16px 32px calc(16px + env(safe-area-inset-bottom));
-  }
-}
-
-@media (max-width: 480px) {
-  .save-bar {
-    margin: 20px -20px -20px;
-    padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
-    border-radius: 0 0 12px 12px;
-  }
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(20, 23, 28, 0.12);
 }
 
 .btn-primary:disabled {
@@ -666,7 +652,7 @@ body {
 
 [data-theme="dark"] .save-bar {
   background-color: #1E222A;
-  border-top-color: #333944;
+  border: 1px solid #333944;
   box-shadow: none;
 }
 
@@ -679,10 +665,6 @@ body {
   color: #F4F6F8;
 }
 
-[data-theme="dark"] .section-divider {
-  border-top-color: #333944;
-}
-
 [data-theme="dark"] .section-toggle-icon {
   color: #A6A6A6;
 }
@@ -692,7 +674,7 @@ body {
 }
 
 [data-theme="dark"] .subsection-label {
-  color: #A6A6A6;
+  color: #F4F6F8;
 }
 
 [data-theme="dark"] .import-dropzone {
