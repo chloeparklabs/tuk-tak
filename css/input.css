@@ -112,10 +112,18 @@ body {
   z-index: 10;
   min-width: 220px;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   background-color: #FFFFFF;
   border: 1px solid #D9D9D9;
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(20, 23, 28, 0.12);
+}
+
+.settings-row-fontsize + .settings-row-fontsize {
+  padding-top: 16px;
+  border-top: 1px solid #D9D9D9;
 }
 
 .page-logo {
@@ -361,6 +369,34 @@ body {
   cursor: not-allowed;
 }
 
+.mode-select {
+  display: flex;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-select-btn {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #4B5D6B;
+  background-color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+}
+
+.mode-select-btn:not(:last-child) {
+  border-right: 1.5px solid #D9D9D9;
+}
+
+.mode-select-btn.active {
+  background-color: #378ADD;
+  color: #FFFFFF;
+}
+
 .subsection {
   margin-bottom: 24px;
 }
@@ -590,139 +626,164 @@ body {
   display: none !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #14171C;
-    color: #F4F6F8;
-  }
+/* 화면모드 수동 선택(시스템/라이트/다크) 지원을 위해 미디어쿼리 대신 속성 선택자 사용
+   (2026-09-23) — js/input.js가 <html data-theme="dark|light">를 직접 설정, "시스템" 선택 시엔
+   OS 설정을 읽어 같은 속성값으로 반영하므로 아래는 결과값(dark)에만 반응하면 됨 */
+[data-theme="dark"] body {
+  background-color: #14171C;
+  color: #F4F6F8;
+}
 
-  .page-subtitle {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .page-subtitle {
+  color: #A6A6A6;
+}
 
-  .page-header {
-    background-color: #1E222A;
-    border-bottom-color: #333944;
-  }
+[data-theme="dark"] .page-header {
+  background-color: #1E222A;
+  border-bottom-color: #333944;
+}
 
-  .header-icon-btn {
-    border-color: #333944;
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .header-icon-btn {
+  border-color: #333944;
+  color: #A6A6A6;
+}
 
-  .settings-popover {
-    background-color: #1E222A;
-    border-color: #333944;
-    box-shadow: none;
-  }
+[data-theme="dark"] .settings-popover {
+  background-color: #1E222A;
+  border-color: #333944;
+  box-shadow: none;
+}
 
-  .panel {
-    background-color: #1E222A;
-    box-shadow: none;
-    border: 1px solid #333944;
-  }
+[data-theme="dark"] .settings-row-fontsize + .settings-row-fontsize {
+  border-top-color: #333944;
+}
 
-  .save-bar {
-    background-color: #1E222A;
-    border-top-color: #333944;
-    box-shadow: none;
-  }
+[data-theme="dark"] .panel {
+  background-color: #1E222A;
+  box-shadow: none;
+  border: 1px solid #333944;
+}
 
-  .panel-desc,
-  .user-email {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .save-bar {
+  background-color: #1E222A;
+  border-top-color: #333944;
+  box-shadow: none;
+}
 
-  .section-title {
-    color: #F4F6F8;
-  }
+[data-theme="dark"] .panel-desc,
+[data-theme="dark"] .user-email {
+  color: #A6A6A6;
+}
 
-  .section-divider {
-    border-top-color: #333944;
-  }
+[data-theme="dark"] .section-title {
+  color: #F4F6F8;
+}
 
-  .section-toggle-icon {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .section-divider {
+  border-top-color: #333944;
+}
 
-  .section-badge--cloud {
-    background-color: #4B5D6B;
-  }
+[data-theme="dark"] .section-toggle-icon {
+  color: #A6A6A6;
+}
 
-  .subsection-label {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .section-badge--cloud {
+  background-color: #4B5D6B;
+}
 
-  .import-dropzone {
-    border-color: #333944;
-  }
+[data-theme="dark"] .subsection-label {
+  color: #A6A6A6;
+}
 
-  .import-dropzone:hover,
-  .import-dropzone:focus-visible,
-  .import-dropzone.dragover {
-    border-color: #378ADD;
-    background-color: rgba(55, 138, 221, 0.16);
-  }
+[data-theme="dark"] .import-dropzone {
+  border-color: #333944;
+}
 
-  .import-dropzone-icon {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .import-dropzone:hover,
+[data-theme="dark"] .import-dropzone:focus-visible,
+[data-theme="dark"] .import-dropzone.dragover {
+  border-color: #378ADD;
+  background-color: rgba(55, 138, 221, 0.16);
+}
 
-  .import-dropzone-text {
-    color: #F4F6F8;
-  }
+[data-theme="dark"] .import-dropzone-icon {
+  color: #A6A6A6;
+}
 
-  .import-dropzone-hint {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .import-dropzone-text {
+  color: #F4F6F8;
+}
 
-  .import-result {
-    color: #7CB4EE;
-  }
+[data-theme="dark"] .import-dropzone-hint {
+  color: #A6A6A6;
+}
 
-  .input-row {
-    border-color: #333944;
-  }
+[data-theme="dark"] .import-result {
+  color: #7CB4EE;
+}
 
-  .font-size-control-label {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .input-row {
+  border-color: #333944;
+}
 
-  .font-size-sample {
-    color: #A6A6A6;
-  }
+[data-theme="dark"] .font-size-control-label {
+  color: #A6A6A6;
+}
 
-  .font-size-dot {
-    background-color: #333944;
-  }
+[data-theme="dark"] .font-size-sample {
+  color: #A6A6A6;
+}
 
-  .stepper {
-    border-color: #333944;
-  }
+[data-theme="dark"] .font-size-dot {
+  background-color: #333944;
+}
 
-  .stepper-btn {
-    color: #5B9FE8;
-    background-color: #1E222A;
-  }
+[data-theme="dark"] .stepper {
+  border-color: #333944;
+}
 
-  .stepper-btn:first-child {
-    border-right-color: #333944;
-  }
+[data-theme="dark"] .stepper-btn {
+  color: #5B9FE8;
+  background-color: #1E222A;
+}
 
-  .input-kr,
-  .input-en,
-  .paste-textarea {
-    background-color: #14171C;
-    color: #F4F6F8;
-    border-color: #333944;
-  }
+[data-theme="dark"] .stepper-btn:first-child {
+  border-right-color: #333944;
+}
 
-  .btn-google {
-    border-color: #333944;
-    color: #F4F6F8;
-  }
+[data-theme="dark"] .mode-select {
+  border-color: #333944;
+}
 
-  .status-text {
-    color: #7CB4EE;
-  }
+[data-theme="dark"] .mode-select-btn {
+  background-color: #1E222A;
+  color: #A6A6A6;
+}
+
+[data-theme="dark"] .mode-select-btn:not(:last-child) {
+  border-right-color: #333944;
+}
+
+/* [data-theme="dark"] .mode-select-btn과 특이도가 같아 소스 순서로 밀리는 문제 방지 —
+   .active 상태는 라이트/다크 공통으로 항상 이 값을 이겨야 하므로 명시적으로 재정의 */
+[data-theme="dark"] .mode-select-btn.active {
+  background-color: #378ADD;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .input-kr,
+[data-theme="dark"] .input-en,
+[data-theme="dark"] .paste-textarea {
+  background-color: #14171C;
+  color: #F4F6F8;
+  border-color: #333944;
+}
+
+[data-theme="dark"] .btn-google {
+  border-color: #333944;
+  color: #F4F6F8;
+}
+
+[data-theme="dark"] .status-text {
+  color: #7CB4EE;
 }

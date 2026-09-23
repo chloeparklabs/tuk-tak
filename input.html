@@ -25,8 +25,8 @@
           <span id="user-email" class="user-email"></span>
           <button id="logout-btn" class="btn-text" type="button">로그아웃</button>
         </div>
-        <!-- 입력 글자 크기 설정 — 로그인 상태(입력칸이 실제로 보일 때)에서만 노출 -->
-        <div id="header-settings" class="header-settings hidden">
+        <!-- 화면모드는 로그인과 무관하게 항상 적용되는 설정이라 로그인 상태와 무관하게 노출 -->
+        <div id="header-settings" class="header-settings">
           <button id="settings-toggle-btn" class="header-icon-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="settings-popover" aria-label="설정">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
           </button>
@@ -49,6 +49,16 @@
                   <button id="font-size-decrease" class="stepper-btn" type="button" aria-label="글자 작게">&minus;</button>
                   <button id="font-size-increase" class="stepper-btn" type="button" aria-label="글자 크게">+</button>
                 </div>
+              </div>
+            </div>
+            <div class="settings-row-fontsize">
+              <div class="settings-row-top">
+                <span class="font-size-control-label">화면모드</span>
+              </div>
+              <div class="mode-select" role="radiogroup" aria-label="화면모드 선택">
+                <button id="mode-system-btn" class="mode-select-btn" type="button" role="radio" data-mode="system">시스템</button>
+                <button id="mode-light-btn" class="mode-select-btn" type="button" role="radio" data-mode="light">라이트</button>
+                <button id="mode-dark-btn" class="mode-select-btn" type="button" role="radio" data-mode="dark">다크</button>
               </div>
             </div>
           </div>

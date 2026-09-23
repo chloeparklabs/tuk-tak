@@ -32,6 +32,7 @@ const manageRefreshBtn = document.getElementById('manage-refresh-btn');
 const manageToggleBtn = document.getElementById('manage-toggle-btn');
 const manageContentEl = document.getElementById('manage-content');
 const manageLoadMoreBtn = document.getElementById('manage-load-more-btn');
+const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
 
 const TRASH_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
 
@@ -49,6 +50,45 @@ window.addEventListener('resize', () => {
   resizeGrowTimer = setTimeout(() => {
     document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
   }, 100);
+});
+
+// 화면모드(시스템/라이트/다크) — 메인 앱(js/app.js)과 같은 방식. 다만 기본값은 메인 앱의
+// 'light'가 아니라 'system'으로 둠 — 이 페이지는 원래부터 media query로 시스템 설정만
+// 따르고 있었으므로, 수동 토글 도입 이전 사용자가 보던 화면과 기본 동작을 그대로 유지하기 위함
+const THEME_STORAGE_KEY = 'tuktak_input_theme';
+const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+let themeMode = 'system';
+
+function resolveTheme(mode) {
+  if (mode === 'system') return systemDarkQuery.matches ? 'dark' : 'light';
+  return mode;
+}
+
+function applyThemeMode(mode) {
+  themeMode = mode;
+  document.documentElement.setAttribute('data-theme', resolveTheme(mode));
+  modeSelectBtns.forEach((btn) => {
+    const isActive = btn.dataset.mode === mode;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-checked', String(isActive));
+  });
+}
+
+const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+applyThemeMode(['system', 'light', 'dark'].includes(savedTheme) ? savedTheme : 'system');
+
+modeSelectBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, btn.dataset.mode);
+    applyThemeMode(btn.dataset.mode);
+  });
+});
+
+// 시스템 모드 선택 중에는 기기의 다크모드 설정이 바뀌면 이 페이지도 실시간으로 따라감
+systemDarkQuery.addEventListener('change', () => {
+  if (themeMode === 'system') {
+    document.documentElement.setAttribute('data-theme', resolveTheme('system'));
+  }
 });
 
 // 입력 글자 크기 조절 — 폰 앱 설정 화면(5단계 도트 + 스테퍼)과 같은 방식으로 통일(2026-09-23)
@@ -473,11 +513,6 @@ function renderAuthView(user) {
   dashboardView.classList.toggle('hidden', !isLoggedIn);
   loginBtn.classList.toggle('hidden', isLoggedIn);
   headerAccountEl.classList.toggle('hidden', !isLoggedIn);
-  headerSettingsEl.classList.toggle('hidden', !isLoggedIn);
-  if (!isLoggedIn) {
-    settingsPopoverEl.classList.add('hidden');
-    settingsToggleBtn.setAttribute('aria-expanded', 'false');
-  }
   if (isLoggedIn) {
     userEmailEl.textContent = user.email;
     loadManageList();
