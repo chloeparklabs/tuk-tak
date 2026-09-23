@@ -31,11 +31,24 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
           </button>
           <div id="settings-popover" class="settings-popover hidden">
-            <div class="font-size-control">
-              <span class="font-size-control-label">입력 글자 크기</span>
-              <div class="font-size-control-buttons">
-                <button id="font-size-decrease" class="font-size-btn" type="button" aria-label="글자 작게">가-</button>
-                <button id="font-size-increase" class="font-size-btn" type="button" aria-label="글자 크게">가+</button>
+            <!-- 폰 앱 설정 화면과 같은 방식(예시 글자 크기로 실시간 확인 + 5단계 점 + 스테퍼) -->
+            <div class="settings-row-fontsize">
+              <div class="settings-row-top">
+                <span class="font-size-control-label">입력 글자 크기</span>
+                <span id="font-size-sample" class="font-size-sample">가</span>
+              </div>
+              <div class="settings-row-bottom">
+                <div class="font-size-dots">
+                  <span class="font-size-dot" data-index="1"></span>
+                  <span class="font-size-dot" data-index="2"></span>
+                  <span class="font-size-dot" data-index="3"></span>
+                  <span class="font-size-dot" data-index="4"></span>
+                  <span class="font-size-dot" data-index="5"></span>
+                </div>
+                <div class="stepper">
+                  <button id="font-size-decrease" class="stepper-btn" type="button" aria-label="글자 작게">&minus;</button>
+                  <button id="font-size-increase" class="stepper-btn" type="button" aria-label="글자 크게">+</button>
+                </div>
               </div>
             </div>
           </div>

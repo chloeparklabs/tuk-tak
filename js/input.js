@@ -16,6 +16,8 @@ const saveBtn = document.getElementById('save-btn');
 const statusTextEl = document.getElementById('status-text');
 const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
+const fontSizeSampleEl = document.getElementById('font-size-sample');
+const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const importFileInput = document.getElementById('import-file-input');
 const importDropzoneEl = document.getElementById('import-dropzone');
 const importResultEl = document.getElementById('import-result');
@@ -49,34 +51,39 @@ window.addEventListener('resize', () => {
   }, 100);
 });
 
-// 입력 글자 크기 조절 — 문장이 길어 타이핑할 때 글자를 크게 보고 싶은 경우를 위함(localStorage로 재방문해도 유지)
-const FONT_SIZE_STORAGE_KEY = 'tuktak_input_font_size';
-const FONT_SIZE_DEFAULT = 18;
-const FONT_SIZE_MIN = 13;
-const FONT_SIZE_MAX = 25;
-const FONT_SIZE_STEP = 2;
+// 입력 글자 크기 조절 — 폰 앱 설정 화면(5단계 도트 + 스테퍼)과 같은 방식으로 통일(2026-09-23)
+const FONT_SIZE_STORAGE_KEY = 'tuktak_input_font_size_index';
+const FONT_SIZE_LEVELS = [14, 16, 18, 20, 22];
+const DEFAULT_FONT_SIZE_INDEX = 3; // 18px
 
-function applyFontSize(size) {
+function applyFontSize(index) {
+  const fontSizeIndex = Math.min(Math.max(index, 1), FONT_SIZE_LEVELS.length);
+  const size = FONT_SIZE_LEVELS[fontSizeIndex - 1];
+
   document.documentElement.style.setProperty('--input-font-size', `${size}px`);
-  fontSizeDecreaseBtn.disabled = size <= FONT_SIZE_MIN;
-  fontSizeIncreaseBtn.disabled = size >= FONT_SIZE_MAX;
+  fontSizeSampleEl.style.fontSize = `${size}px`;
+  fontSizeDots.forEach((dot) => {
+    dot.classList.toggle('active', Number(dot.dataset.index) === fontSizeIndex);
+  });
+  fontSizeDecreaseBtn.disabled = fontSizeIndex === 1;
+  fontSizeIncreaseBtn.disabled = fontSizeIndex === FONT_SIZE_LEVELS.length;
   // 글자 크기가 바뀌면 기존 문장들의 줄바꿈 수도 달라질 수 있어 높이를 다시 계산
   document.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);
+  return fontSizeIndex;
 }
 
-const savedFontSize = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY), 10);
-let currentFontSize = Number.isFinite(savedFontSize) ? savedFontSize : FONT_SIZE_DEFAULT;
-applyFontSize(currentFontSize);
+const savedFontSizeIndex = parseInt(localStorage.getItem(FONT_SIZE_STORAGE_KEY), 10);
+let currentFontSizeIndex = applyFontSize(
+  FONT_SIZE_LEVELS[savedFontSizeIndex - 1] ? savedFontSizeIndex : DEFAULT_FONT_SIZE_INDEX
+);
 
 fontSizeDecreaseBtn.addEventListener('click', () => {
-  currentFontSize = Math.max(FONT_SIZE_MIN, currentFontSize - FONT_SIZE_STEP);
-  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSize);
-  applyFontSize(currentFontSize);
+  currentFontSizeIndex = applyFontSize(currentFontSizeIndex - 1);
+  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSizeIndex);
 });
 fontSizeIncreaseBtn.addEventListener('click', () => {
-  currentFontSize = Math.min(FONT_SIZE_MAX, currentFontSize + FONT_SIZE_STEP);
-  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSize);
-  applyFontSize(currentFontSize);
+  currentFontSizeIndex = applyFontSize(currentFontSizeIndex + 1);
+  localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSizeIndex);
 });
 
 // 설정(톱니바퀴) 팝오버 — 지금은 입력 글자 크기 하나뿐이라 더보기 메뉴 대신 가벼운 팝오버로 노출
