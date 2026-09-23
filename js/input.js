@@ -7,6 +7,9 @@ const dashboardView = document.getElementById('dashboard-view');
 const loginBtn = document.getElementById('login-btn');
 const headerAccountEl = document.getElementById('header-account');
 const logoutBtn = document.getElementById('logout-btn');
+const headerSettingsEl = document.getElementById('header-settings');
+const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+const settingsPopoverEl = document.getElementById('settings-popover');
 const userEmailEl = document.getElementById('user-email');
 const inputRowsEl = document.getElementById('input-rows');
 const saveBtn = document.getElementById('save-btn');
@@ -74,6 +77,21 @@ fontSizeIncreaseBtn.addEventListener('click', () => {
   currentFontSize = Math.min(FONT_SIZE_MAX, currentFontSize + FONT_SIZE_STEP);
   localStorage.setItem(FONT_SIZE_STORAGE_KEY, currentFontSize);
   applyFontSize(currentFontSize);
+});
+
+// 설정(톱니바퀴) 팝오버 — 지금은 입력 글자 크기 하나뿐이라 더보기 메뉴 대신 가벼운 팝오버로 노출
+settingsToggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isHidden = settingsPopoverEl.classList.contains('hidden');
+  settingsPopoverEl.classList.toggle('hidden', !isHidden);
+  settingsToggleBtn.setAttribute('aria-expanded', String(isHidden));
+});
+
+document.addEventListener('click', (e) => {
+  if (settingsPopoverEl.classList.contains('hidden')) return;
+  if (headerSettingsEl.contains(e.target)) return;
+  settingsPopoverEl.classList.add('hidden');
+  settingsToggleBtn.setAttribute('aria-expanded', 'false');
 });
 
 function makeSentence(kr, en) {
@@ -448,6 +466,11 @@ function renderAuthView(user) {
   dashboardView.classList.toggle('hidden', !isLoggedIn);
   loginBtn.classList.toggle('hidden', isLoggedIn);
   headerAccountEl.classList.toggle('hidden', !isLoggedIn);
+  headerSettingsEl.classList.toggle('hidden', !isLoggedIn);
+  if (!isLoggedIn) {
+    settingsPopoverEl.classList.add('hidden');
+    settingsToggleBtn.setAttribute('aria-expanded', 'false');
+  }
   if (isLoggedIn) {
     userEmailEl.textContent = user.email;
     loadManageList();

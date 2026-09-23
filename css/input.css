@@ -80,6 +80,48 @@ body {
   gap: 12px;
 }
 
+/* 톱니바퀴로 여는 설정 팝오버 — 지금은 "입력 글자 크기" 하나뿐이라 더보기(⋮) 메뉴 대신
+   가벼운 아이콘+팝오버로 구성(2026-09-23) */
+.header-settings {
+  position: relative;
+}
+
+.header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+  color: #4B5D6B;
+  cursor: pointer;
+}
+
+.header-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.settings-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  min-width: 220px;
+  padding: 16px;
+  background-color: #FFFFFF;
+  border: 1px solid #D9D9D9;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20, 23, 28, 0.12);
+}
+
+.settings-popover .font-size-control {
+  margin-bottom: 0;
+}
+
 .page-logo {
   font-size: 24px;
   font-weight: 700;
@@ -527,6 +569,17 @@ body {
   .page-header {
     background-color: #1E222A;
     border-bottom-color: #333944;
+  }
+
+  .header-icon-btn {
+    border-color: #333944;
+    color: #A6A6A6;
+  }
+
+  .settings-popover {
+    background-color: #1E222A;
+    border-color: #333944;
+    box-shadow: none;
   }
 
   .panel {

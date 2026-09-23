@@ -25,6 +25,21 @@
           <span id="user-email" class="user-email"></span>
           <button id="logout-btn" class="btn-text" type="button">로그아웃</button>
         </div>
+        <!-- 입력 글자 크기 설정 — 로그인 상태(입력칸이 실제로 보일 때)에서만 노출 -->
+        <div id="header-settings" class="header-settings hidden">
+          <button id="settings-toggle-btn" class="header-icon-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="settings-popover" aria-label="설정">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+          </button>
+          <div id="settings-popover" class="settings-popover hidden">
+            <div class="font-size-control">
+              <span class="font-size-control-label">입력 글자 크기</span>
+              <div class="font-size-control-buttons">
+                <button id="font-size-decrease" class="font-size-btn" type="button" aria-label="글자 작게">가-</button>
+                <button id="font-size-increase" class="font-size-btn" type="button" aria-label="글자 크게">가+</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -38,15 +53,6 @@
 
       <!-- 로그인 상태: 빠른 입력 + 클라우드 저장 -->
       <section id="dashboard-view" class="panel hidden">
-        <!-- 입력 글자 크기 조절: 아래 두 섹션(새 문장 추가/관리) 모두에 적용됨 -->
-        <div class="font-size-control">
-          <span class="font-size-control-label">입력 글자 크기</span>
-          <div class="font-size-control-buttons">
-            <button id="font-size-decrease" class="font-size-btn" type="button" aria-label="글자 작게">가-</button>
-            <button id="font-size-increase" class="font-size-btn" type="button" aria-label="글자 크게">가+</button>
-          </div>
-        </div>
-
         <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
         <div class="section-heading-static">
           <span class="section-badge section-badge--add" aria-hidden="true">
