@@ -13,7 +13,8 @@ const statusTextEl = document.getElementById('status-text');
 const fontSizeDecreaseBtn = document.getElementById('font-size-decrease');
 const fontSizeIncreaseBtn = document.getElementById('font-size-increase');
 const importFileInput = document.getElementById('import-file-input');
-const importFileBtn = document.getElementById('import-file-btn');
+const importDropzoneEl = document.getElementById('import-dropzone');
+const importResultEl = document.getElementById('import-result');
 const pasteToggleBtn = document.getElementById('paste-toggle-btn');
 const pastePanel = document.getElementById('paste-panel');
 const pasteTextarea = document.getElementById('paste-textarea');
@@ -212,28 +213,61 @@ function buildImportStatusText(addedCount, skippedCount) {
     : `${addedCount}개 문장을 불러왔습니다. 확인 후 "변경사항 저장"을 눌러주세요.`;
 }
 
-importFileBtn.addEventListener('click', () => {
+// 드롭존 바로 아래에 가져오기 결과를 표시(저장 상태를 알리는 하단 status-text와는 별개)
+function showImportResult(text) {
+  importResultEl.textContent = text;
+  importResultEl.classList.remove('hidden');
+}
+
+function handleImportFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const parsed = window.parseSentencesText(String(reader.result));
+    if (parsed.length === 0) {
+      showImportResult('파일에서 문장을 찾지 못했습니다.');
+      return;
+    }
+    const { addedCount, skippedCount } = insertParsedRows(parsed);
+    showImportResult(buildImportStatusText(addedCount, skippedCount));
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+importDropzoneEl.addEventListener('click', () => {
   importFileInput.click();
+});
+
+importDropzoneEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  e.preventDefault();
+  importFileInput.click();
+});
+
+['dragenter', 'dragover'].forEach((evt) => {
+  importDropzoneEl.addEventListener(evt, (e) => {
+    e.preventDefault();
+    importDropzoneEl.classList.add('dragover');
+  });
+});
+
+['dragleave', 'dragend'].forEach((evt) => {
+  importDropzoneEl.addEventListener(evt, () => {
+    importDropzoneEl.classList.remove('dragover');
+  });
+});
+
+importDropzoneEl.addEventListener('drop', (e) => {
+  e.preventDefault();
+  importDropzoneEl.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleImportFile(file);
 });
 
 importFileInput.addEventListener('change', () => {
   const file = importFileInput.files[0];
   if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    const parsed = window.parseSentencesText(String(reader.result));
-    if (parsed.length === 0) {
-      statusTextEl.textContent = '파일에서 문장을 찾지 못했습니다.';
-      importFileInput.value = '';
-      return;
-    }
-
-    const { addedCount, skippedCount } = insertParsedRows(parsed);
-    statusTextEl.textContent = buildImportStatusText(addedCount, skippedCount);
-    importFileInput.value = '';
-  };
-  reader.readAsText(file, 'UTF-8');
+  handleImportFile(file);
+  importFileInput.value = '';
 });
 
 // 텍스트 붙여넣기 — 카메라로 찍은 문장을 AI가 텍스트로 만들어준 결과 등을 파일로 저장하지
@@ -249,12 +283,12 @@ pasteToggleBtn.addEventListener('click', () => {
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = window.parseSentencesText(pasteTextarea.value);
   if (parsed.length === 0) {
-    statusTextEl.textContent = '붙여넣은 텍스트에서 문장을 찾지 못했습니다.';
+    showImportResult('붙여넣은 텍스트에서 문장을 찾지 못했습니다.');
     return;
   }
 
   const { addedCount, skippedCount } = insertParsedRows(parsed);
-  statusTextEl.textContent = buildImportStatusText(addedCount, skippedCount);
+  showImportResult(buildImportStatusText(addedCount, skippedCount));
   pasteTextarea.value = '';
   pastePanel.classList.add('hidden');
   pasteToggleBtn.setAttribute('aria-expanded', 'false');
