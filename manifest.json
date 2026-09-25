@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "TukTak",
   "short_name": "TukTak",
   "description": "한국어 문장을 보고 영어로 알아맞추는 암기 학습 앱",
-  "start_url": "./index.html",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#378ADD",
   "theme_color": "#0C447C",
