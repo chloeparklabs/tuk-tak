@@ -6372,3 +6372,34 @@ Claude는 hex 계산으로 대비 변화만 검증(로컬에 Playwright 등 브�
 4. 테스터 10명(현재 실질 1~4명) 채우기 계속 진행 — 스몰뎁 신뢰점수를 봉사참여로 쌓아 노출도 높이는 것도 병행 고려
 5. `input.html` 디자인 변경분 사용자 실기기 최종 확인(계속 대기 중)
 6. 결제 게이팅(18+19+15-2 유료 번들) — 여전히 미착수
+
+---
+
+## 세션: 2026-09-25 — TWA/PWA 주소창 노출 버그 근본원인 발견+수정, 크롬 PWA 경로 해결 확인
+
+### 문제
+2026-09-23 세션에서 미해결로 남겨뒀던 TWA 주소창(Chrome 사이트 정보 패널) 노출 버그를 다시 조사. 당시 남겨둔 가설 (a)(시간 경과로 자연 해결)는 2일 경과 후에도 재현되어 기각.
+
+### 조사 과정
+1. **가설 (b) 검증** — pwabuilder가 실제 TWA가 아닌 Custom Tab 폴백으로 빌드했을 가능성을 확인하기 위해, Downloads 폴더에 남아있던 pwabuilder 산출물(`TukTak - Google Play package (1)/TukTak.apk`)을 직접 압축 해제해 `AndroidManifest.xml`/`resources.arsc`를 점검. `androidx.browser`(TWA 라이브러리), `LauncherActivity`/`DelegationService` 정상 존재, `asset_statements`도 정확한 값으로 박제돼 있음을 확인 — **가설 (b) 기각, pwabuilder 빌드는 정상**
+2. **안드로이드 설정 확인** — 설정 > 앱 > TukTak > 기본으로 설정 > "지원되는 웹 주소"에서 `tuk-tak-six.vercel.app` 개별 토글이 꺼져있는 것 발견(참고용으로 남겨둠, 최종적으론 근본 원인 아니었음)
+3. **진짜 근본 원인** — 사용자가 가져온 별도 진단 리포트의 가설이 적중: `manifest.json`에 `scope`/`id`가 선언돼 있지 않았고 `start_url`이 상대경로 `"./index.html"`였음. `vercel.json`엔 리다이렉트 설정 없고 `curl -I`로 `/index.html`과 `/` 모두 실제로는 301 없이 200 직접 응답함을 확인해, "Vercel이 index.html을 /로 리다이렉트해서 깨진다"는 하위 가설은 기각됐지만, **scope/id 미선언 자체가 원인**이라는 상위 가설은 유효했음
+
+### 수정
+`manifest.json`에 `"id": "/"`, `"scope": "/"` 추가, `"start_url"`을 `"./index.html"` → `"/"`로 변경. 커밋 `c69de49`, push+Vercel 배포 확인 완료.
+
+### 해결 확정 (부분)
+사용자가 기존 앱 삭제 후 크롬 "앱 설치"로 재설치 → **정상 설치(주소창 없이 풀스크린) 확인**. 단, 이번에 확인된 건 **크롬 브라우저로 직접 설치한 PWA(WebAPK) 경로**만이고, **Play 스토어/비공개테스트로 배포된 TWA 네이티브 앱(`com.chloeparklabs.tuktak`)은 아직 별도 확인 안 됨**. TWA는 런타임에 크롬이 라이브 manifest.json을 fetch해서 scope를 판정하는 구조라 AAB 재빌드 없이도 이 fix가 적용될 가능성이 높지만, 실측 전까지는 가정임.
+
+### 반영
+- `manifest.json`: 커밋 `c69de49`, push+배포 완료
+- Claude 메모리 `project_play_console_launch_pipeline` 갱신(2026-09-25 섹션 추가, frontmatter description 갱신)
+- `MEMORY.md` 인덱스 갱신
+
+### 다음 세션 시작 시 최우선
+1. **Play 스토어/비공개테스트 TWA 앱(`com.chloeparklabs.tuktak`)에서도 주소창 버그가 사라졌는지 실기기 확인** — 안 풀렸으면 AAB 재빌드+재제출 필요
+2. 스몰뎁에서 매칭된 3명 이메일을 Play Console 테스터 목록에 추가 + "웹에서 참여" 링크 전달, 사용자도 그 3명의 앱을 설치해 맞품앗이 완료
+3. 버전 2(1.0.0.1) Google 검토 결과 확인
+4. 테스터 10명(현재 실질 1~4명) 채우기 계속 진행
+5. `input.html` 디자인 변경분 사용자 실기기 최종 확인(계속 대기 중)
+6. 결제 게이팅(18+19+15-2 유료 번들) — 여전히 미착수
