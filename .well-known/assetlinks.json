@@ -4,6 +4,7 @@
     "namespace": "android_app",
     "package_name": "com.chloeparklabs.tuktak",
     "sha256_cert_fingerprints": [
+      "80:62:FA:4C:CF:1E:39:43:08:45:AA:5D:1D:79:FA:28:6C:3B:B0:3B:C0:2F:48:E4:D5:8D:3F:DB:6C:82:8C:06",
       "7E:DF:08:83:CE:0A:32:97:FE:E2:C8:24:0D:08:78:E5:73:F0:79:31:6C:1B:DF:F4:5F:BF:3A:58:0C:3A:4E:52",
       "81:B3:11:46:71:01:7E:4A:2A:97:4C:7E:E1:CF:80:62:C7:40:60:A8:98:3D:17:74:7F:19:CE:AB:85:E2:A3:DE"
     ]
