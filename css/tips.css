@@ -11,10 +11,16 @@ body {
   color: #1E2A38;
 }
 
-/* 헤더: 화면 전체 폭 흰 바, 좌측 로고 + 우측 로그인/계정 영역 */
+/* 헤더: 화면 전체 폭, 좌측 로고 + 우측 로그인/계정 영역. 콘텐츠가 길어질 예정이라 항상 상단에
+   고정(sticky)하고, 나중에 본문에 색이 들어와도 위화감 없도록 반투명+블러로 떠있는 느낌을 줌 */
 .page-header {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #ECECEC;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(217, 217, 217, 0.6);
 }
 
 .page-header-inner {
@@ -232,8 +238,8 @@ body {
   }
 
   .page-header {
-    background-color: #1A1E25;
-    border-bottom-color: #2A2E36;
+    background-color: rgba(26, 30, 37, 0.75);
+    border-bottom-color: rgba(42, 46, 54, 0.6);
   }
 
   .panel {

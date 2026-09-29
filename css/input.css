@@ -35,16 +35,8 @@ body {
 /* 화면 전체 폭을 쓰는 흰 헤더 바 — 로고/화면이름(좌)과 로그인·로그아웃(우)을 항상 화면 최상단에 고정 노출.
    내부 .page-header-inner만 .page와 같은 max-width/패딩으로 맞춰 본문과 좌우 정렬을 일치시킴(2026-09-23) */
 .page-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   background-color: #FFFFFF;
   border-bottom: 1px solid #ECECEC;
-}
-
-/* 스크롤로 상단에서 떨어졌을 때만 그림자를 더해 "떠있는" 느낌을 줌(js/input.js가 토글) */
-.page-header--scrolled {
-  box-shadow: 0 4px 16px rgba(20, 23, 28, 0.12);
 }
 
 .page-header-inner {
