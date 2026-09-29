@@ -1,0 +1,266 @@
+/* 공개 대문 페이지(tips.html, 검색엔진 노출 대상) 전용 스타일 — css/input.css와 독립적, 공유 클래스 없음 */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #F4F6F8;
+  color: #1E2A38;
+}
+
+/* 헤더: 화면 전체 폭 흰 바, 좌측 로고 + 우측 로그인/계정 영역 */
+.page-header {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #ECECEC;
+}
+
+.page-header-inner {
+  max-width: 1296px;
+  margin: 0 auto;
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .page-header-inner {
+    max-width: 850px;
+    padding: 16px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header-inner {
+    padding: 14px 16px;
+  }
+}
+
+.page-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0C447C;
+}
+
+.page-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #4B5D6B;
+}
+
+/* 로그인 상단 안내 배너 — 브랜드 블루 배경 위 흰 글자, 항상 고정 노출 */
+.hero-banner {
+  background-color: #378ADD;
+}
+
+.hero-banner p {
+  max-width: 1296px;
+  margin: 0 auto;
+  padding: 24px 48px;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .hero-banner p {
+    max-width: 850px;
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-banner p {
+    padding: 18px 16px;
+    font-size: 15px;
+  }
+}
+
+.page {
+  max-width: 1296px;
+  margin: 0 auto;
+  padding: 56px 48px 100px;
+}
+
+@media (max-width: 1024px) {
+  .page {
+    max-width: 850px;
+    padding: 40px 24px 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 28px 16px 64px;
+  }
+}
+
+.panel {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(20, 23, 28, 0.08);
+}
+
+@media (max-width: 1024px) {
+  .panel {
+    padding: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 20px;
+    border-radius: 12px;
+  }
+}
+
+.tips-section + .tips-section {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #ECECEC;
+}
+
+.tips-section h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0C447C;
+}
+
+.tips-section p {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #1E2A38;
+}
+
+.tips-section p:last-child {
+  margin-bottom: 0;
+}
+
+.tips-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tips-section li {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #1E2A38;
+}
+
+.tips-faq-item + .tips-faq-item {
+  margin-top: 20px;
+}
+
+.tips-faq-q {
+  font-weight: 700;
+}
+
+.tips-faq-a {
+  color: #4B5D6B !important;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: none;
+  border: 1.5px solid #D9D9D9;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1E2A38;
+  cursor: pointer;
+}
+
+.btn-google svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: #378ADD;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+/* 로그인 후 노출되는 input.html 바로가기 — 이 페이지의 유일한 게이팅 CTA라 눈에 띄게 채움 처리 */
+.btn-primary-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #378ADD;
+  color: #FFFFFF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #14171C;
+    color: #F4F6F8;
+  }
+
+  .page-header {
+    background-color: #1A1E25;
+    border-bottom-color: #2A2E36;
+  }
+
+  .panel {
+    background-color: #1A1E25;
+    box-shadow: none;
+  }
+
+  .tips-section + .tips-section {
+    border-top-color: #2A2E36;
+  }
+
+  .tips-section p,
+  .tips-section li {
+    color: #F4F6F8;
+  }
+
+  .tips-faq-a {
+    color: #9CA4B0 !important;
+  }
+
+  .user-email {
+    color: #9CA4B0;
+  }
+
+  .btn-google {
+    background-color: #1A2434;
+    border-color: #2A2E36;
+    color: #3993FF;
+  }
+}
