@@ -576,7 +576,7 @@ body {
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -600,6 +600,7 @@ body {
   padding: 16px 48px calc(16px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 16px;
 }
 
