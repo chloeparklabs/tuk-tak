@@ -11,7 +11,7 @@
   <header class="page-header">
     <div class="page-header-inner">
       <div class="page-header-left">
-        <span class="page-logo">TUK TAK</span>
+        <a href="tips.html" class="page-logo">TUK TAK</a>
         <span class="page-subtitle">PC 빠른 문장 입력</span>
       </div>
       <div class="page-header-right">
@@ -136,14 +136,16 @@
           </div>
         </section>
       </div>
-
-      <!-- 두 카드 중 하나가 아니라 양쪽 변경사항을 함께 저장하는 공통 기능이라 카드 밖,
-           화면 하단에 고정된 독립 바로 배치(2026-09-23) -->
-      <div id="save-bar" class="save-bar hidden">
-        <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
-        <p id="status-text" class="status-text"></p>
-      </div>
     </main>
+  </div>
+
+  <!-- 두 카드 중 하나가 아니라 양쪽 변경사항을 함께 저장하는 공통 기능이라 카드 밖,
+       화면 하단에 고정된 독립 바로 배치(2026-09-23) → 헤더와 짝을 맞춰 화면 전체 폭 바로 재변경(2026-09-29) -->
+  <div id="save-bar" class="save-bar hidden">
+    <div class="save-bar-inner">
+      <button id="save-btn" class="btn-primary" type="button">변경사항 저장</button>
+      <p id="status-text" class="status-text"></p>
+    </div>
   </div>
 
   <script src="js/sentence-parser.js"></script>

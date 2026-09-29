@@ -2,6 +2,7 @@
 // js/firebase-init.js가 노출하는 window.CloudSync, js/sentence-parser.js가 노출하는
 // window.parseSentencesText만 공유해서 쓴다.
 
+const pageHeaderEl = document.querySelector('.page-header');
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
 const loginBtn = document.getElementById('login-btn');
@@ -611,3 +612,8 @@ saveBtn.addEventListener('click', async () => {
     saveBtn.disabled = false;
   }
 });
+
+// 헤더가 화면 상단에 고정된 채로 스크롤되면 그림자를 더해 콘텐츠 위에 떠있는 느낌을 줌
+window.addEventListener('scroll', () => {
+  pageHeaderEl.classList.toggle('page-header--scrolled', window.scrollY > 4);
+}, { passive: true });

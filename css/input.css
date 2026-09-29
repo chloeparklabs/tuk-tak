@@ -35,8 +35,16 @@ body {
 /* 화면 전체 폭을 쓰는 흰 헤더 바 — 로고/화면이름(좌)과 로그인·로그아웃(우)을 항상 화면 최상단에 고정 노출.
    내부 .page-header-inner만 .page와 같은 max-width/패딩으로 맞춰 본문과 좌우 정렬을 일치시킴(2026-09-23) */
 .page-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   background-color: #FFFFFF;
   border-bottom: 1px solid #ECECEC;
+}
+
+/* 스크롤로 상단에서 떨어졌을 때만 그림자를 더해 "떠있는" 느낌을 줌(js/input.js가 토글) */
+.page-header--scrolled {
+  box-shadow: 0 4px 16px rgba(20, 23, 28, 0.12);
 }
 
 .page-header-inner {
@@ -130,6 +138,7 @@ body {
   font-size: 24px;
   font-weight: 700;
   color: #0C447C;
+  text-decoration: none;
 }
 
 .page-subtitle {
@@ -570,13 +579,12 @@ body {
 }
 
 .btn-primary {
-  width: 100%;
-  padding: 14px;
+  padding: 12px 36px;
   background-color: #378ADD;
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -584,15 +592,36 @@ body {
 
 /* 목록이 길어져도 저장 버튼을 찾기 쉽도록 화면 하단에 고정(2026-09-14) — 카드 2개로
    분리된 뒤로는 어느 한쪽에 속한 버튼이 아니라 둘 다 저장하는 공통 기능이라, 카드 밖의
-   독립된 floating 바로 변경(2026-09-23, 이제 .panel 패딩을 상쇄할 필요 없어 단순해짐) */
+   독립된 floating 바로 변경(2026-09-23) → 헤더와 짝을 맞춰 화면 전체 폭 바 형태로 재변경(2026-09-29) */
 .save-bar {
   position: sticky;
-  bottom: 16px;
+  bottom: 0;
   margin-top: 24px;
-  padding: 16px 24px calc(16px + env(safe-area-inset-bottom));
   background-color: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(20, 23, 28, 0.12);
+  border-top: 1px solid #ECECEC;
+  box-shadow: 0 -4px 16px rgba(20, 23, 28, 0.08);
+}
+
+.save-bar-inner {
+  max-width: 1296px;
+  margin: 0 auto;
+  padding: 16px 48px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .save-bar-inner {
+    max-width: 850px;
+    padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .save-bar-inner {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
 }
 
 .btn-primary:disabled {
@@ -601,10 +630,8 @@ body {
 }
 
 .status-text {
-  margin-top: 16px;
   font-size: 14px;
   color: #0C447C;
-  text-align: center;
   min-height: 20px;
 }
 
@@ -652,7 +679,7 @@ body {
 
 [data-theme="dark"] .save-bar {
   background-color: #1E222A;
-  border: 1px solid #333944;
+  border-top: 1px solid #333944;
   box-shadow: none;
 }
 
