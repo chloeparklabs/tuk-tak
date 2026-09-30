@@ -92,14 +92,6 @@ body {
   max-width: 100%;
 }
 
-.hero-desc {
-  max-width: 640px;
-  margin: 0 auto;
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 15px;
-  line-height: 1.6;
-}
-
 @media (max-width: 1024px) {
   .hero-banner-inner {
     max-width: 850px;
@@ -118,10 +110,6 @@ body {
 
   .hero-graphic {
     height: 70px;
-  }
-
-  .hero-desc {
-    font-size: 14px;
   }
 }
 
