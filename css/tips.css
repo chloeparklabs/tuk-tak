@@ -87,8 +87,8 @@ body {
 }
 
 .hero-graphic {
-  height: 130px;
-  width: auto;
+  width: 500px;
+  height: auto;
   max-width: 100%;
 }
 
@@ -99,7 +99,7 @@ body {
   }
 
   .hero-graphic {
-    height: 100px;
+    width: 385px;
   }
 }
 
@@ -109,7 +109,7 @@ body {
   }
 
   .hero-graphic {
-    height: 70px;
+    width: 270px;
   }
 }
 
