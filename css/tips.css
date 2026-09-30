@@ -145,10 +145,44 @@ body {
 }
 
 .tips-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0 0 16px;
   font-size: 20px;
   font-weight: 700;
   color: #0C447C;
+}
+
+/* 섹션 아이콘 배지 — 색상은 브랜드 팔레트 안에서 3색을 번갈아 써서 리듬감만 줌 */
+.tips-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.tips-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.tips-icon-blue {
+  background-color: #E6F1FB;
+  color: #378ADD;
+}
+
+.tips-icon-amber {
+  background-color: #FAEEDA;
+  color: #BA7517;
+}
+
+.tips-icon-coral {
+  background-color: #FBE7E0;
+  color: #D85A30;
 }
 
 .tips-section p {
@@ -231,6 +265,65 @@ body {
   display: none !important;
 }
 
+/* 푸터: 화면 전체 폭, 로고+링크+저작권을 가운데 정렬 */
+.page-footer {
+  border-top: 1px solid #ECECEC;
+  padding: 32px 48px 40px;
+}
+
+.page-footer-inner {
+  max-width: 1296px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.page-footer-logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0C447C;
+}
+
+.page-footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.page-footer-links a {
+  font-size: 13px;
+  color: #4B5D6B;
+  text-decoration: none;
+}
+
+.page-footer-links a:hover {
+  text-decoration: underline;
+}
+
+.page-footer-copy {
+  font-size: 12px;
+  color: #7C8A96;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .page-footer {
+    padding: 28px 24px 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-footer {
+    padding: 24px 16px 28px;
+  }
+
+  .page-footer-links {
+    gap: 16px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     background-color: #14171C;
@@ -268,5 +361,36 @@ body {
     background-color: #1A2434;
     border-color: #2A2E36;
     color: #3993FF;
+  }
+
+  .tips-icon-blue {
+    background-color: rgba(55, 138, 221, 0.16);
+    color: #6EB4F5;
+  }
+
+  .tips-icon-amber {
+    background-color: rgba(186, 117, 23, 0.18);
+    color: #E0A552;
+  }
+
+  .tips-icon-coral {
+    background-color: rgba(216, 90, 48, 0.18);
+    color: #E8916D;
+  }
+
+  .page-footer {
+    border-top-color: #2A2E36;
+  }
+
+  .page-footer-logo {
+    color: #E5E8ED;
+  }
+
+  .page-footer-links a {
+    color: #9CA4B0;
+  }
+
+  .page-footer-copy {
+    color: #7C8A96;
   }
 }
