@@ -113,32 +113,59 @@ body {
   }
 }
 
-/* 본문 패널이 히어로 배너 아래쪽에 얹히도록 음수 margin으로 끌어올림 */
+/* 본문 패널이 히어로 배너 위/아래 블루 영역에 둘 다 얹히도록 음수 margin으로 끌어올리고
+   끌어내림. position+z-index로 패널(.page)이 아래쪽 마감 띠(.closing-banner)보다 항상
+   위에 그려지게 해서, 블루가 패널의 둥근 모서리 바깥으로만 살짝 비치는 효과를 냄 */
 .page {
+  position: relative;
+  z-index: 2;
   max-width: 1296px;
-  margin: -96px auto 0;
-  padding: 0 48px 100px;
+  margin: -96px auto -96px;
+  padding: 0 48px;
 }
 
 @media (max-width: 1024px) {
   .page {
     max-width: 850px;
     margin-top: -80px;
-    padding: 0 24px 80px;
+    margin-bottom: -80px;
+    padding: 0 24px;
   }
 }
 
 @media (max-width: 480px) {
   .page {
     margin-top: -64px;
-    padding: 0 16px 64px;
+    margin-bottom: -64px;
+    padding: 0 16px;
+  }
+}
+
+/* 본문 패널 아래쪽 마감 띠 — 히어로 배너와 같은 브랜드 블루로 위아래를 감싸는 느낌,
+   높이는 히어로 배너 하단 여백과 동일하게 맞춰 톤을 통일함 */
+.closing-banner {
+  position: relative;
+  z-index: 1;
+  background-color: #378ADD;
+  height: 140px;
+}
+
+@media (max-width: 1024px) {
+  .closing-banner {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .closing-banner {
+    height: 96px;
   }
 }
 
 .panel {
   background-color: #FFFFFF;
   border-radius: 16px;
-  padding: 40px;
+  padding: 70px 50px;
   box-shadow: 0 4px 20px rgba(20, 23, 28, 0.08);
 }
 
@@ -155,10 +182,181 @@ body {
   }
 }
 
-.tips-section + .tips-section {
-  margin-top: 40px;
-  padding-top: 40px;
+.tips-section + .tips-section,
+.tips-card-section + .tips-card-section,
+.tips-card-section + .tips-section {
+  margin-top: 70px;
+  padding-top: 70px;
   border-top: 1px solid #ECECEC;
+}
+
+/* 카드형 섹션(시안 기반) — 색 배경은 아이콘을 감싸는 작은 프레임에만 적용하고, 본문 텍스트는
+   배경 없이 패널 위에 바로 얹음. 제목은 텍스트 칸 위쪽에 맞춰 정렬 */
+.tips-card-heading {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E2A38;
+}
+
+/* 지금은 레퍼런스 임시 아이콘(배경·여백이 이미지 안에 다 포함됨)을 쓰고 있어 프레임은
+   크기/둥근모서리만 담당 — 패딩 0, overflow:hidden으로 이미지를 꽉 채움. 나중에 배경 없는
+   투명 아이콘으로 교체하면 padding과 tips-card-icon-frame-blue/cream 배경색을 다시 살릴 것 */
+.tips-card-icon-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 190px;
+  height: 190px;
+  padding: 0;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.tips-card-icon-frame-blue {
+  background-color: #E6F1FB;
+}
+
+/* 섹션1만: 아이콘을 본문(텍스트 칸) 세로 중간에 맞춤 — 그리드 기본값(align-items:start)은
+   유지하고 이 아이콘만 align-self로 개별 재정렬 */
+.tips-card-icon-center {
+  align-self: center;
+}
+
+.tips-card-icon-frame-cream {
+  background-color: #FAEEDA;
+}
+
+.tips-card-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tips-card-photo {
+  width: 220px;
+  height: 165px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.tips-card-text {
+  min-width: 0;
+}
+
+.tips-card-text p {
+  margin: 0 0 16px;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #1E2A38;
+}
+
+.tips-card-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* 2단 그리드: 아이콘/사진은 고정폭 컬럼, 텍스트는 가변폭 컬럼. 그리드(아이콘·사진 왼쪽)는
+   섹션1·3, 그리드-리버스(아이콘 오른쪽)는 섹션2가 사용 — 컬럼 위치만 거울 대칭으로 뒤집음 */
+.tips-card-section-grid,
+.tips-card-section-grid-reverse {
+  display: grid;
+  column-gap: 40px;
+  row-gap: 16px;
+  align-items: start;
+}
+
+.tips-card-section-grid {
+  grid-template-columns: 220px 1fr;
+}
+
+.tips-card-section-grid-reverse {
+  grid-template-columns: 1fr 220px;
+}
+
+.tips-card-section-grid .tips-card-heading,
+.tips-card-section-grid-reverse .tips-card-heading {
+  grid-row: 1;
+}
+
+.tips-card-section-grid .tips-card-heading {
+  grid-column: 2;
+}
+
+.tips-card-section-grid-reverse .tips-card-heading {
+  grid-column: 1;
+}
+
+.tips-card-section-grid .tips-card-icon-frame,
+.tips-card-section-grid .tips-card-photo,
+.tips-card-section-grid-reverse .tips-card-icon-frame,
+.tips-card-section-grid-reverse .tips-card-photo {
+  grid-row: 2;
+  justify-self: center;
+}
+
+.tips-card-section-grid .tips-card-icon-frame,
+.tips-card-section-grid .tips-card-photo {
+  grid-column: 1;
+}
+
+.tips-card-section-grid-reverse .tips-card-icon-frame,
+.tips-card-section-grid-reverse .tips-card-photo {
+  grid-column: 2;
+}
+
+.tips-card-section-grid .tips-card-text,
+.tips-card-section-grid-reverse .tips-card-text {
+  grid-row: 2;
+}
+
+.tips-card-section-grid .tips-card-text {
+  grid-column: 2;
+}
+
+.tips-card-section-grid-reverse .tips-card-text {
+  grid-column: 1;
+}
+
+@media (max-width: 640px) {
+  .tips-card-icon-frame {
+    width: 120px;
+    height: 120px;
+    padding: 0;
+    border-radius: 18px;
+  }
+
+  .tips-card-photo {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .tips-card-section-grid,
+  .tips-card-section-grid-reverse {
+    grid-template-columns: 1fr;
+  }
+
+  .tips-card-section-grid .tips-card-heading,
+  .tips-card-section-grid-reverse .tips-card-heading {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .tips-card-section-grid .tips-card-icon-frame,
+  .tips-card-section-grid .tips-card-photo,
+  .tips-card-section-grid-reverse .tips-card-icon-frame,
+  .tips-card-section-grid-reverse .tips-card-photo {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .tips-card-section-grid .tips-card-text,
+  .tips-card-section-grid-reverse .tips-card-text {
+    grid-column: 1;
+    grid-row: 3;
+  }
 }
 
 .tips-section h2 {
@@ -204,7 +402,7 @@ body {
 
 .tips-section p {
   margin: 0 0 16px;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.8;
   color: #1E2A38;
 }
@@ -219,7 +417,7 @@ body {
 }
 
 .tips-section li {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.8;
   color: #1E2A38;
 }
@@ -292,10 +490,10 @@ body {
   max-width: 1296px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  text-align: center;
+  justify-content: space-between;
+  gap: 12px 20px;
 }
 
 .page-footer-logo {
@@ -357,13 +555,38 @@ body {
     box-shadow: none;
   }
 
-  .tips-section + .tips-section {
+  .tips-section + .tips-section,
+  .tips-card-section + .tips-card-section,
+  .tips-card-section + .tips-section {
     border-top-color: #2A2E36;
   }
 
   .tips-section p,
   .tips-section li {
     color: #F4F6F8;
+  }
+
+  .tips-card-heading {
+    color: #E5E8ED;
+  }
+
+  .tips-card-icon-frame-blue {
+    background-color: rgba(55, 138, 221, 0.16);
+  }
+
+  .tips-card-icon-frame-cream {
+    background-color: rgba(186, 117, 23, 0.18);
+  }
+
+  .tips-card-text p {
+    color: #F4F6F8;
+  }
+
+  /* 임시 아이콘은 배경·색이 이미지 안에 다 포함돼 있어 반전 필터를 걸면 더 이상해짐 —
+     배경 없는 투명 단색 아이콘으로 교체하면 반전 필터를 다시 넣을 것 */
+
+  .tips-card-photo {
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .tips-faq-a {
