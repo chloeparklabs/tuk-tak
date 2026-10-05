@@ -218,6 +218,33 @@ body {
   padding: 4px 8px;
 }
 
+/* 토글 버튼의 셰브런 아이콘과 바로 붙어 보여 "아이콘만 눌러야 동작한다"는 오해를 사던 문제 —
+   아이콘+글자를 한 덩어리 버튼으로 묶고 셰브런과의 간격을 띄워 클릭 영역을 명확히 함(2026-10-05) */
+.manage-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 12px;
+  border-radius: 8px;
+}
+
+.manage-refresh-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.manage-refresh-btn:hover {
+  background-color: rgba(55, 138, 221, 0.1);
+}
+
+.manage-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  background: none;
+}
+
 .section-heading {
   display: flex;
   justify-content: space-between;

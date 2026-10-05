@@ -488,9 +488,18 @@ async function loadManageList() {
   updateManageCount();
 }
 
-manageRefreshBtn.addEventListener('click', () => {
+manageRefreshBtn.addEventListener('click', async () => {
   if (manageDirty && !confirm('저장하지 않은 편집 내용이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return;
-  loadManageList();
+  const labelEl = manageRefreshBtn.querySelector('span');
+  const originalLabel = labelEl.textContent;
+  manageRefreshBtn.disabled = true;
+  labelEl.textContent = '불러오는 중...';
+  try {
+    await loadManageList();
+  } finally {
+    labelEl.textContent = originalLabel;
+    manageRefreshBtn.disabled = false;
+  }
 });
 
 // 목록은 접힌 상태에서도 로그인 시점에 이미 불러와져 있음(저장 시 이 목록이 그대로 반영돼야
