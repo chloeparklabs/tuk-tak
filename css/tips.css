@@ -235,8 +235,8 @@ body {
 }
 
 .tips-card-photo {
-  width: 220px;
-  height: 165px;
+  width: 440px;
+  height: 330px;
   border-radius: 12px;
   object-fit: cover;
 }
@@ -268,6 +268,12 @@ body {
 
 .tips-card-section-grid {
   grid-template-columns: 220px 1fr;
+}
+
+/* 노트 사진이 작아서 내용이 안 보인다는 피드백으로 사진만 2배 확대(2026-10-05)
+   — 섹션1 아이콘 컬럼(220px)과 공유하던 트랙폭을 사진 섹션만 별도로 넓힘 */
+.tips-card-section-grid--photo {
+  grid-template-columns: 440px 1fr;
 }
 
 .tips-card-section-grid-reverse {
