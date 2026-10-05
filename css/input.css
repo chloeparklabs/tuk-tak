@@ -574,6 +574,64 @@ body {
   border-color: #378ADD;
 }
 
+/* 클라우드 관리 목록 전용 — 여러 문장 체크 후 한 번에 삭제(2026-10-05).
+   "새 문장 추가" 행(.input-row)은 저장 전 임시 입력칸이라 선택삭제 대상이 아니므로
+   이 톱니바퀴 클래스(.manage-row)로만 좌측 패딩을 넓혀 체크박스 자리를 확보함 */
+.manage-row {
+  padding-left: 44px;
+}
+
+.manage-row-checkbox {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #378ADD;
+}
+
+.manage-bulk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.manage-select-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #4B5D6B;
+  cursor: pointer;
+}
+
+.manage-select-all input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #378ADD;
+}
+
+.manage-bulk-delete-btn {
+  background: none;
+  border: 1.5px solid #D85A30;
+  color: #D85A30;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.manage-bulk-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* 문장 길이와 무관하게 삭제 아이콘은 카드 우측 상단에 고정 */
 .input-row-delete {
   position: absolute;
@@ -703,7 +761,8 @@ body {
 }
 
 [data-theme="dark"] .panel-desc,
-[data-theme="dark"] .user-email {
+[data-theme="dark"] .user-email,
+[data-theme="dark"] .manage-select-all {
   color: #A6A6A6;
 }
 

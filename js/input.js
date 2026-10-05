@@ -33,6 +33,9 @@ const manageRefreshBtn = document.getElementById('manage-refresh-btn');
 const manageToggleBtn = document.getElementById('manage-toggle-btn');
 const manageContentEl = document.getElementById('manage-content');
 const manageLoadMoreBtn = document.getElementById('manage-load-more-btn');
+const manageSelectAllCheckbox = document.getElementById('manage-select-all-checkbox');
+const manageBulkDeleteBtn = document.getElementById('manage-bulk-delete-btn');
+const manageSelectedCountEl = document.getElementById('manage-selected-count');
 const modeSelectBtns = document.querySelectorAll('.mode-select-btn');
 
 const TRASH_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
@@ -377,10 +380,25 @@ function updateManageCount() {
   manageCountEl.textContent = manageRowsEl.children.length;
 }
 
+function updateManageBulkToolbar() {
+  const checkboxes = manageRowsEl.querySelectorAll('.manage-row-checkbox');
+  const checked = manageRowsEl.querySelectorAll('.manage-row-checkbox:checked');
+  manageSelectedCountEl.textContent = checked.length;
+  manageBulkDeleteBtn.disabled = checked.length === 0;
+  manageSelectAllCheckbox.checked = checkboxes.length > 0 && checked.length === checkboxes.length;
+  manageSelectAllCheckbox.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+}
+
 function createManageRow(sentence) {
   const row = document.createElement('div');
-  row.className = 'input-row';
+  row.className = 'input-row manage-row';
   row.dataset.id = String(sentence.id);
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'manage-row-checkbox';
+  checkbox.setAttribute('aria-label', '이 문장 선택');
+  checkbox.addEventListener('change', updateManageBulkToolbar);
 
   const krInput = document.createElement('textarea');
   krInput.rows = 1;
@@ -424,8 +442,10 @@ function createManageRow(sentence) {
     row.remove();
     manageDirty = true;
     updateManageCount();
+    updateManageBulkToolbar();
   });
 
+  row.appendChild(checkbox);
   row.appendChild(krInput);
   row.appendChild(enInput);
   row.appendChild(deleteBtn);
@@ -486,7 +506,26 @@ async function loadManageList() {
     manageEmptyEl.classList.remove('hidden');
   }
   updateManageCount();
+  updateManageBulkToolbar();
 }
+
+manageSelectAllCheckbox.addEventListener('change', () => {
+  const shouldCheck = manageSelectAllCheckbox.checked;
+  manageRowsEl.querySelectorAll('.manage-row-checkbox').forEach((cb) => {
+    cb.checked = shouldCheck;
+  });
+  updateManageBulkToolbar();
+});
+
+manageBulkDeleteBtn.addEventListener('click', () => {
+  const checkedBoxes = manageRowsEl.querySelectorAll('.manage-row-checkbox:checked');
+  if (checkedBoxes.length === 0) return;
+  if (!confirm(`선택한 ${checkedBoxes.length}개 문장을 목록에서 지울까요? "변경사항 저장"을 눌러야 실제로 반영됩니다.`)) return;
+  checkedBoxes.forEach((cb) => cb.closest('.manage-row').remove());
+  manageDirty = true;
+  updateManageCount();
+  updateManageBulkToolbar();
+});
 
 manageRefreshBtn.addEventListener('click', async () => {
   if (manageDirty && !confirm('저장하지 않은 편집 내용이 있습니다. 새로고침하면 사라집니다. 계속할까요?')) return;

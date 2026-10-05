@@ -132,6 +132,15 @@
           </button>
           <div id="manage-content" class="hidden">
             <p class="panel-desc">문장을 고치거나 삭제한 뒤 아래 "변경사항 저장"을 눌러야 반영돼요.</p>
+            <div id="manage-bulk-toolbar" class="manage-bulk-toolbar">
+              <label class="manage-select-all">
+                <input type="checkbox" id="manage-select-all-checkbox" />
+                <span>전체 선택</span>
+              </label>
+              <button id="manage-bulk-delete-btn" class="manage-bulk-delete-btn" type="button" disabled>
+                선택 삭제 (<span id="manage-selected-count">0</span>개)
+              </button>
+            </div>
             <div id="manage-rows" class="input-rows"></div>
             <!-- 문장이 많으면 한꺼번에 다 그리는 대신 일정 개수씩만 보여줌(2026-09-14) — 안 보이는
                  나머지도 DOM에는 그대로 남아있어 저장 시 정상 포함됨(위 manage-rows 주석 참고) -->
