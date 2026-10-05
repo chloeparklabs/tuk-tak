@@ -505,9 +505,12 @@ manageRefreshBtn.addEventListener('click', async () => {
 // 목록은 접힌 상태에서도 로그인 시점에 이미 불러와져 있음(저장 시 이 목록이 그대로 반영돼야
 // 하므로) — 다만 접혀있는(display:none) 동안 계산된 textarea 높이는 0으로 잘못 잡히므로
 // 펼칠 때마다 다시 계산해줘야 함
+const manageToggleLabelEl = document.getElementById('manage-toggle-label');
+
 manageToggleBtn.addEventListener('click', () => {
   const isExpanded = manageToggleBtn.getAttribute('aria-expanded') === 'true';
   manageToggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+  manageToggleLabelEl.textContent = isExpanded ? '펼쳐보기' : '접기';
   manageContentEl.classList.toggle('hidden', isExpanded);
   if (!isExpanded) {
     manageRowsEl.querySelectorAll('.input-kr, .input-en').forEach(autoGrow);

@@ -296,19 +296,14 @@ body {
   margin: 0;
 }
 
-.section-toggle-btn {
+/* 펼치기/접기 버튼 — "클라우드에 저장된 문장" 제목 줄과 분리해 아래에 가운데 정렬로 배치
+   (제목 옆 "다시 불러오기"와 셰브런이 붙어 있어 헷갈린다는 피드백으로 2026-10-05 분리) */
+.manage-toggle-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex: 1;
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .section-toggle-icon {
@@ -319,7 +314,11 @@ body {
   transition: transform 0.2s ease;
 }
 
-.section-toggle-btn[aria-expanded="true"] .section-toggle-icon {
+.manage-toggle-btn .section-toggle-icon {
+  color: inherit;
+}
+
+#manage-toggle-btn[aria-expanded="true"] .section-toggle-icon {
   transform: rotate(180deg);
 }
 
