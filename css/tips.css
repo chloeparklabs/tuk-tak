@@ -226,6 +226,13 @@ body {
   background-color: #FAEEDA;
 }
 
+/* 2번(studying) 아이콘만 원본 그림 비중이 작아 1번과 나란히 두면 작아 보여서 박스 자체를
+   키움(선 두께는 svg 쪽 stroke-width를 낮춰 1번과 같은 두께로 맞춰둠, 2026-10-05) */
+.tips-card-icon-frame-cream .tips-card-icon {
+  width: 120%;
+  height: 120%;
+}
+
 .tips-card-icon {
   width: 100%;
   height: 100%;
