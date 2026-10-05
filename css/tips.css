@@ -208,7 +208,7 @@ body {
   box-sizing: border-box;
   width: 190px;
   height: 190px;
-  padding: 40px;
+  padding: 30px;
   border-radius: 24px;
 }
 
@@ -326,7 +326,7 @@ body {
   .tips-card-icon-frame {
     width: 120px;
     height: 120px;
-    padding: 24px;
+    padding: 19px;
     border-radius: 18px;
   }
 
