@@ -433,6 +433,21 @@ body {
   color: #1E2A38;
 }
 
+/* "툭탁의 기능" 섹션처럼 소제목 아래 여러 줄 팁이 이어지는 경우 — 소제목은 리스트와 가깝게,
+   리스트는 다음 소제목과는 넉넉하게 띄워서 그룹을 구분(2026-10-06) */
+.tips-feature-label {
+  margin: 0 0 8px;
+}
+
+.tips-feature-list {
+  margin: 0 0 28px;
+  padding-left: 22px;
+}
+
+.tips-feature-list li + li {
+  margin-top: 6px;
+}
+
 .tips-faq-item + .tips-faq-item {
   margin-top: 20px;
 }
