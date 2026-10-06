@@ -291,7 +291,7 @@ body {
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #0C447C;
   margin: 0;
@@ -305,6 +305,12 @@ body {
   justify-content: center;
   gap: 6px;
   margin-top: 12px;
+}
+
+/* .btn-outline(14px)보다 뒤에서 선언되지만 클래스 조합(0,2,0)으로 특이성을 올려
+   소스 순서와 무관하게 항상 이 값이 적용되도록 함(2026-10-06) */
+.btn-outline.manage-toggle-btn {
+  font-size: 18px;
 }
 
 .section-toggle-icon {
