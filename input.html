@@ -77,17 +77,19 @@
       <!-- 로그인 상태: 빠른 입력 + 클라우드 저장. "새 문장 추가"와 "기존 문장 관리"는 서로 다른
            작업이라 흰 카드를 2개로 분리(2026-09-23) — 카드 사이는 .dashboard-sections의 gap으로 구분 -->
       <div id="dashboard-view" class="dashboard-sections hidden">
-        <section class="panel">
-          <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치, 접지 않고 항상 노출 -->
-          <div class="section-heading-static">
-            <span class="section-badge section-badge--add" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-            </span>
-            <h2 class="section-title">새 문장 추가</h2>
-          </div>
+        <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치. 카드 섹션 제목이
+             아니라 페이지 섹션 제목이라 흰 카드 바깥으로 분리(2026-10-06) -->
+        <div class="section-heading-static">
+          <span class="section-badge section-badge--add" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+          </span>
+          <h2 class="section-title">새 문장 추가</h2>
+        </div>
 
+        <section class="panel">
           <!-- 폰 앱의 [폼 입력/파일로/텍스트로] 3탭과 제목·순서를 맞춤(2026-10-06) — 탭 전환 없이
-               한 화면에 쭉 펼쳐 보여주는 구조는 유지, 이름만 동일하게 둬서 폰↔PC 오갈 때 헷갈리지 않도록 함 -->
+               한 화면에 쭉 펼쳐 보여주는 구조는 유지, 이름만 동일하게 둬서 폰↔PC 오갈 때 헷갈리지 않도록 함.
+               각 제목 앞 작은 바(.subsection-label::before)로 세 섹션이 동급임을 강조 -->
           <div class="subsection">
             <h3 class="subsection-label">파일로</h3>
             <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
@@ -102,8 +104,7 @@
           <div class="subsection">
             <h3 class="subsection-label">텍스트로</h3>
             <p class="panel-desc">손글씨는 카메라로 찍어서 AI에게 주고, 아래 프롬프트를 복사해서 같이 주세요. AI가 만들어준 텍스트를 아래에 붙여넣으면 됩니다.</p>
-            <pre class="ai-prompt-text">사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.
-코드블록으로 써줘</pre>
+            <p class="panel-desc">"사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.<br>코드블록으로 써줘"</p>
             <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
             <button id="paste-submit-btn" class="btn-outline" type="button">추가하기</button>
           </div>

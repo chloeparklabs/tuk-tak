@@ -456,11 +456,25 @@ body {
   margin-bottom: 36px;
 }
 
+/* "새 문장 추가" 제목이 카드 밖으로 빠지면서(2026-10-06) 파일로/텍스트로/폼 입력 3개가
+   동급 섹션임을 드러낼 구심점이 없어져, 제목 앞에 작은 색 바를 붙여 대신 강조 */
 .subsection-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 14px;
   font-size: 20px;
   font-weight: 700;
   color: #1E2A38;
+}
+
+.subsection-label::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  flex-shrink: 0;
+  background-color: #378ADD;
+  border-radius: 2px;
 }
 
 .import-dropzone {
@@ -512,20 +526,6 @@ body {
   margin: 10px 0 0;
   font-size: 18px;
   color: #0C447C;
-}
-
-/* 데스크탑에서는 복사 버튼 없이 바로 드래그 선택해서 복사할 수 있어 프롬프트를 텍스트로 노출(2026-10-06) */
-.ai-prompt-text {
-  margin: 0 0 14px;
-  padding: 14px 16px;
-  background-color: #F4F6F8;
-  border: 1.5px solid #D9D9D9;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 18px;
-  line-height: 1.6;
-  color: #1E2A38;
-  white-space: pre-wrap;
 }
 
 .paste-textarea {
@@ -839,12 +839,6 @@ body {
 
 [data-theme="dark"] .import-result {
   color: #7CB4EE;
-}
-
-[data-theme="dark"] .ai-prompt-text {
-  background-color: #14171C;
-  border-color: #333944;
-  color: #F4F6F8;
 }
 
 [data-theme="dark"] .input-row {
