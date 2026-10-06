@@ -22,8 +22,7 @@ const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const importFileInput = document.getElementById('import-file-input');
 const importDropzoneEl = document.getElementById('import-dropzone');
 const importResultEl = document.getElementById('import-result');
-const pasteToggleBtn = document.getElementById('paste-toggle-btn');
-const pastePanel = document.getElementById('paste-panel');
+const pasteAiPromptCopyBtn = document.getElementById('paste-ai-prompt-copy-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
 const manageRowsEl = document.getElementById('manage-rows');
@@ -341,13 +340,23 @@ importFileInput.addEventListener('change', () => {
 });
 
 // 텍스트 붙여넣기 — 카메라로 찍은 문장을 AI가 텍스트로 만들어준 결과 등을 파일로 저장하지
-// 않고 바로 붙여넣을 때 유용(2026-09-14). 버튼으로 패널을 펼치고/접고, 가져오면 패널은
-// 다시 접히고 내용은 비움(같은 텍스트를 실수로 중복 반영하지 않도록)
-pasteToggleBtn.addEventListener('click', () => {
-  const isHidden = pastePanel.classList.contains('hidden');
-  pastePanel.classList.toggle('hidden', !isHidden);
-  pasteToggleBtn.setAttribute('aria-expanded', String(isHidden));
-  if (isHidden) pasteTextarea.focus();
+// 않고 바로 붙여넣을 때 유용(2026-09-14)
+
+// 폰 앱 "텍스트로" 탭과 동일 문구(js/app.js의 PASTE_TAB_AI_PROMPT 참고) — 파일이 서로
+// 독립적이라 상수를 공유하지 않고 그대로 복제
+const PASTE_TAB_AI_PROMPT = `사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.
+코드블록으로 써줘`;
+
+pasteAiPromptCopyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(PASTE_TAB_AI_PROMPT);
+    pasteAiPromptCopyBtn.textContent = '복사됨';
+    setTimeout(() => {
+      pasteAiPromptCopyBtn.textContent = 'AI 프롬프트 복사하기';
+    }, 1500);
+  } catch {
+    alert('복사에 실패했습니다.');
+  }
 });
 
 pasteSubmitBtn.addEventListener('click', () => {
@@ -360,8 +369,6 @@ pasteSubmitBtn.addEventListener('click', () => {
   const { addedCount, skippedCount } = insertParsedRows(parsed);
   showImportResult(buildImportStatusText(addedCount, skippedCount));
   pasteTextarea.value = '';
-  pastePanel.classList.add('hidden');
-  pasteToggleBtn.setAttribute('aria-expanded', 'false');
 });
 
 // 예전 버전 백업에는 important/unfamiliar 필드가 없을 수 있어 불러올 때 보정(카드 앱과 같은 규칙)

@@ -86,10 +86,10 @@
             <h2 class="section-title">새 문장 추가</h2>
           </div>
 
-          <!-- 파일 가져오기(CSV/TSV/TXT) / 텍스트 붙여넣기(카메라로 찍은 문장을 AI가 텍스트로 만들어준 것 등을
-               바로 붙여넣을 때 유용, 2026-09-14) — 둘 다 아래 목록에 새 행으로 채워 넣고, 저장은 별도로 진행 -->
+          <!-- 폰 앱의 [폼 입력/파일로/텍스트로] 3탭과 제목·순서를 맞춤(2026-10-06) — 탭 전환 없이
+               한 화면에 쭉 펼쳐 보여주는 구조는 유지, 이름만 동일하게 둬서 폰↔PC 오갈 때 헷갈리지 않도록 함 -->
           <div class="subsection">
-            <h3 class="subsection-label">가져오기</h3>
+            <h3 class="subsection-label">파일로</h3>
             <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
             <div id="import-dropzone" class="import-dropzone" tabindex="0" role="button" aria-label="파일 가져오기 (CSV/TSV/TXT)">
               <svg class="import-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
@@ -97,16 +97,18 @@
               <p class="import-dropzone-hint">CSV · TSV · TXT · 한국어와 영어를 탭 또는 쉼표로 구분</p>
             </div>
             <p id="import-result" class="import-result hidden"></p>
-            <button id="paste-toggle-btn" class="btn-text paste-toggle-link" type="button" aria-expanded="false" aria-controls="paste-panel">또는 텍스트로 붙여넣기</button>
-            <div id="paste-panel" class="paste-panel hidden">
-              <p class="panel-desc">한 줄에 문장 하나씩, 한국어와 영어를 탭·쉼표로 구분해서 붙여넣으세요.</p>
-              <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
-              <button id="paste-submit-btn" class="btn-outline" type="button">가져오기</button>
-            </div>
           </div>
 
           <div class="subsection">
-            <h3 class="subsection-label">직접 입력</h3>
+            <h3 class="subsection-label">텍스트로</h3>
+            <p class="panel-desc">손글씨는 카메라로 찍어서 AI에게 주고, 아래 버튼으로 프롬프트를 복사해서 같이 주세요. AI가 만들어준 텍스트를 아래에 붙여넣으면 됩니다.</p>
+            <button id="paste-ai-prompt-copy-btn" class="btn-outline" type="button">AI 프롬프트 복사하기</button>
+            <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
+            <button id="paste-submit-btn" class="btn-outline" type="button">추가하기</button>
+          </div>
+
+          <div class="subsection">
+            <h3 class="subsection-label">폼 입력</h3>
             <div id="input-rows" class="input-rows"></div>
           </div>
         </section>

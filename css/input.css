@@ -505,16 +505,9 @@ body {
   color: #0C447C;
 }
 
-.paste-toggle-link {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 4px 0;
-  font-size: 18px;
-  text-decoration: underline;
-}
-
-.paste-panel {
-  margin-top: 10px;
+/* 폰 앱 "텍스트로" 탭의 AI 프롬프트 복사 버튼과 동일 — 아래 textarea와 간격만 추가 */
+#paste-ai-prompt-copy-btn {
+  margin-bottom: 10px;
 }
 
 .paste-textarea {
