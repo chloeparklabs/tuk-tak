@@ -276,14 +276,6 @@ body {
   }
 }
 
-.section-heading-static {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-  margin-bottom: 16px;
-}
-
 .section-toggle-label {
   display: flex;
   align-items: center;

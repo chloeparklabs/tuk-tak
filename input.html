@@ -77,18 +77,12 @@
       <!-- 로그인 상태: 빠른 입력 + 클라우드 저장. "새 문장 추가"와 "기존 문장 관리"는 서로 다른
            작업이라 흰 카드를 2개로 분리(2026-09-23) — 카드 사이는 .dashboard-sections의 gap으로 구분 -->
       <div id="dashboard-view" class="dashboard-sections hidden">
-        <!-- 이 페이지의 핵심 목적(빠르게 새 문장 던져 넣기)이라 맨 위에 배치. 카드 섹션 제목이
-             아니라 페이지 섹션 제목이라 흰 카드 바깥으로 분리(2026-10-06) -->
-        <div class="section-heading-static">
-          <h2 class="section-title">새 문장 추가</h2>
-        </div>
-
         <section class="panel">
-          <!-- 폰 앱의 [폼 입력/파일로/텍스트로] 3탭과 제목·순서를 맞춤(2026-10-06) — 탭 전환 없이
-               한 화면에 쭉 펼쳐 보여주는 구조는 유지, 이름만 동일하게 둬서 폰↔PC 오갈 때 헷갈리지 않도록 함.
-               각 제목 앞 작은 바(.subsection-label::before)로 세 섹션이 동급임을 강조 -->
+          <!-- 폰 앱의 [폼 입력/파일로/텍스트로] 3탭과 용어를 맞춤(2026-10-06) — 탭 전환 없이
+               한 화면에 쭉 펼쳐 보여주는 구조는 유지. "새 문장 추가" 상위 제목을 없애는 대신
+               각 소제목을 "~로 문장 추가하기" 완결된 문장으로 바꿔 무엇을 하는 카드인지 자체 설명되게 함 -->
           <div class="subsection">
-            <h3 class="subsection-label">파일로</h3>
+            <h3 class="subsection-label">파일로 문장 추가하기</h3>
             <input id="import-file-input" type="file" accept=".csv,.tsv,.txt" class="hidden" />
             <div id="import-dropzone" class="import-dropzone" tabindex="0" role="button" aria-label="파일 가져오기 (CSV/TSV/TXT)">
               <svg class="import-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
@@ -99,14 +93,14 @@
           </div>
 
           <div class="subsection">
-            <h3 class="subsection-label">텍스트로</h3>
+            <h3 class="subsection-label">텍스트로 문장 추가하기</h3>
             <p class="panel-desc">손글씨는 카메라로 찍어서 AI에게 주고, 아래 프롬프트를 복사해서 같이 주세요. AI가 만들어준 텍스트를 아래에 붙여넣으면 됩니다.<br>"사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.<br>코드블록으로 써줘"</p>
             <textarea id="paste-textarea" class="paste-textarea" placeholder="오늘 날씨가 어때?	How is the weather?"></textarea>
             <button id="paste-submit-btn" class="btn-outline" type="button">추가하기</button>
           </div>
 
           <div class="subsection">
-            <h3 class="subsection-label">폼 입력</h3>
+            <h3 class="subsection-label">폼 입력으로 문장 추가하기</h3>
             <div id="input-rows" class="input-rows"></div>
           </div>
         </section>
