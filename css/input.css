@@ -307,12 +307,6 @@ body {
   margin-top: 12px;
 }
 
-/* .btn-outline(14px)보다 뒤에서 선언되지만 클래스 조합(0,2,0)으로 특이성을 올려
-   소스 순서와 무관하게 항상 이 값이 적용되도록 함(2026-10-06) */
-.btn-outline.manage-toggle-btn {
-  font-size: 18px;
-}
-
 .section-toggle-icon {
   width: 18px;
   height: 18px;
@@ -493,7 +487,7 @@ body {
 
 .import-result {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 18px;
   color: #0C447C;
 }
 
@@ -514,7 +508,7 @@ body {
   min-height: 100px;
   margin: 8px 0;
   padding: 12px 14px;
-  font-size: var(--input-font-size, 15px);
+  font-size: var(--input-font-size, 18px);
   font-family: inherit;
   line-height: 1.5;
   background-color: #FFFFFF;
@@ -531,7 +525,7 @@ body {
   color: #378ADD;
   border: 1.5px solid #378ADD;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -560,7 +554,7 @@ body {
 .input-en {
   width: 100%;
   padding: 12px 14px;
-  font-size: var(--input-font-size, 15px);
+  font-size: var(--input-font-size, 18px);
   font-family: inherit;
   line-height: 1.5;
   background-color: #FFFFFF;
@@ -611,7 +605,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 18px;
   color: #4B5D6B;
   cursor: pointer;
 }
@@ -629,7 +623,7 @@ body {
   color: #D85A30;
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -715,7 +709,7 @@ body {
 }
 
 .status-text {
-  font-size: 14px;
+  font-size: 18px;
   color: #0C447C;
   min-height: 20px;
 }
