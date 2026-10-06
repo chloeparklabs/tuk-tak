@@ -22,7 +22,6 @@ const fontSizeDots = document.querySelectorAll('.font-size-dot');
 const importFileInput = document.getElementById('import-file-input');
 const importDropzoneEl = document.getElementById('import-dropzone');
 const importResultEl = document.getElementById('import-result');
-const pasteAiPromptCopyBtn = document.getElementById('paste-ai-prompt-copy-btn');
 const pasteTextarea = document.getElementById('paste-textarea');
 const pasteSubmitBtn = document.getElementById('paste-submit-btn');
 const manageRowsEl = document.getElementById('manage-rows');
@@ -340,24 +339,8 @@ importFileInput.addEventListener('change', () => {
 });
 
 // 텍스트 붙여넣기 — 카메라로 찍은 문장을 AI가 텍스트로 만들어준 결과 등을 파일로 저장하지
-// 않고 바로 붙여넣을 때 유용(2026-09-14)
-
-// 폰 앱 "텍스트로" 탭과 동일 문구(js/app.js의 PASTE_TAB_AI_PROMPT 참고) — 파일이 서로
-// 독립적이라 상수를 공유하지 않고 그대로 복제
-const PASTE_TAB_AI_PROMPT = `사진 속 문장들을 한국어를 먼저, 영어를 나중에 쓰고 그 사이를 탭으로 구분해서 한 줄에 한 문장씩 정리해줘.
-코드블록으로 써줘`;
-
-pasteAiPromptCopyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(PASTE_TAB_AI_PROMPT);
-    pasteAiPromptCopyBtn.textContent = '복사됨';
-    setTimeout(() => {
-      pasteAiPromptCopyBtn.textContent = 'AI 프롬프트 복사하기';
-    }, 1500);
-  } catch {
-    alert('복사에 실패했습니다.');
-  }
-});
+// 않고 바로 붙여넣을 때 유용(2026-09-14). 데스크탑은 복사 버튼 없이 바로 드래그 선택해서
+// 복사할 수 있어 프롬프트는 .ai-prompt-text로 화면에 바로 노출(2026-10-06)
 
 pasteSubmitBtn.addEventListener('click', () => {
   const parsed = window.parseSentencesText(pasteTextarea.value);
