@@ -7081,3 +7081,52 @@ Claude가 "모바일 가독성" 근거로 Tips-1을 먼저 추천했으나, 사�
 2. 교체된 기본 제공 문장 100개가 실제 앱에서 정상 노출되는지 확인(2026-10-03 이월 항목, 기존 `source:'default'` 로컬 데이터 영향 범위 미점검) — 계속 이월
 3. 스몰뎁 매칭 테스터 이메일 Play Console 반영 + 맞품앗이 마무리(14일 카운트다운), 결제 게이팅(프로덕션 액세스 승인 후 재개) — 계속 이월
 4. `tips.html` 검수용 워드 문서(2026-10-06 생성분) 기준 콘텐츠 검수 — 사용자 진행 대기 중
+
+---
+
+## 세션: 2026-10-07 — Firebase Hosting 이전 (Vercel Hobby 플랜 상업적 사용 금지 약관 선행 해결)
+
+### 세션 시작: 보고
+`PROGRESS.md` 마지막 세션(2026-10-06 이어서, input.html 글자크기 통일) 요약 보고. 이어서 사용자가 "Firebase Hosting 이전부터 시작하자"로 범위 지정(메모리 `project_domain_hosting_migration`에 기록돼 있던 추천 작업 순서 3번).
+
+### 배경
+결제 게이팅을 켜는 순간 Vercel Hobby 플랜 약관(상업적 사용 금지)에 걸리는 문제가 2026-10-06에 발견돼 있었음 — 이미 Firebase Auth/Firestore를 쓰고 있어 생태계가 겹치는 Firebase Hosting+Cloud Functions로 이전하기로 결정된 상태였고, 이번 세션에서 실제 이전을 진행함.
+
+### 1단계: 파일 작업(Claude)
+- `firebase.json`/`.firebaserc` 신규 생성 — Hosting(`public:"."`)+Functions(`source:"functions"`), 프로젝트는 기존 `tuk-tak-2c172`(Firestore/Auth와 동일) 그대로 사용
+- `functions/package.json`/`functions/index.js`/`functions/generate-variations.js`/`functions/ai-variation-usage.js` 신규 — `api/generate-variations.js`/`api/ai-variation-usage.js`(Vercel)를 Cloud Functions 2세대(`onRequest`, 리전 `asia-northeast3`)로 1:1 포팅. 핵심 변경점: Cloud Functions는 같은 Firebase 프로젝트 안에서 실행되므로 Vercel판이 쓰던 `FIREBASE_SERVICE_ACCOUNT_KEY`(서비스계정 키)가 완전히 불필요해짐(`initializeApp()`만으로 자동 인증) — `ANTHROPIC_API_KEY`만 Secret Manager(`defineSecret`)로 재등록. 로직·응답 계약은 완전히 동일해 `js/app.js` 클라이언트 코드는 수정 없음
+- 기존 `api/` 폴더는 삭제하지 않고 그대로 둠(Vercel 롤백 여지 유지)
+- **중요 발견**: Firebase Hosting 기본 ignore 패턴(`"**/.*"`)을 그대로 쓰면 `.well-known/assetlinks.json`(TWA 스토어 앱 주소창 인증 파일)까지 배포에서 빠짐(GitHub firebase-tools#7685로 확인된 알려진 함정) — 일괄 dotfile 무시 대신 `.git`/`.env*`/`.vercel`/`.firebaserc`/`.gitignore`만 개별 나열해 `.well-known`은 자연히 포함되도록 `firebase.json` ignore 목록 구성
+
+### 2단계: 사용자 계정/빌링 작업
+- Firebase CLI 설치(`npm install -g firebase-tools`)+`firebase login` — 로그인 성공, 프로젝트 `tuk-tak-2c172` 접근 확인(`firebase projects:list`)
+- `tuk-tak-2c172`를 Blaze(종량제) 요금제로 업그레이드 — 기존 Play Console 결제 프로필("박지연 / Play용 개인 프로필") 재사용해 Cloud Billing 계정 연결, 예산 알림 10,000원 설정. Cloud Functions가 외부 네트워크(Claude API)를 호출하려면 Blaze 필수(Spark 무료 등급은 외부 호출 자체가 막혀있음)
+- Anthropic 콘솔에서 새 API 키(`tuk-tak-firebase`, 범위 "기본 워크스페이스"=Default, 만료 "안 함") 발급 → `firebase functions:secrets:set ANTHROPIC_API_KEY`로 등록
+  - **키 등록 과정에서 혼선 발생**: 처음엔 클립보드 문제로 전혀 다른 값("sk-ant-usr-..."가 3번 중복된 문자열)이 들어가 재시도를 요청했는데, 재시도 후에도 같은 "sk-ant-usr-" 접두사가 나와 Claude가 "`sk-ant-api03-`가 아니다"라며 또 틀렸다고 판단 — 실제로는 **Anthropic이 워크스페이스 범위로 새로 발급하는 키가 `sk-ant-usr-` 접두사를 쓰는 경우가 있다는 것을 Claude가 몰랐던 것**이 원인. 사용자 확인("아까 그 키가 sk-ant-usr-로 시작해")을 받고, curl로 실제 Anthropic API(`/v1/messages`)에 직접 호출해 HTTP 200 확인 — 접두사 패턴 매칭 대신 실제 호출 검증이 맞는 방법이었음. 이 과정에서 **Claude가 비밀 값 확인용으로 돌린 명령어의 마스킹(sed 패턴)이 예상한 접두사(`sk-ant-api03-`)만 가정하고 있어서 실제 값(`sk-ant-usr-...`)을 가려내지 못해 대화 기록에 평문으로 노출된 사고가 있었음** — 이후 모든 확인 작업은 값을 파일/변수에만 담고 길이·접두사 등 메타정보만 출력하는 방식으로 전환
+- 교훈: 비밀값 검증 시 "형식이 내가 아는 패턴과 다르다"는 이유만으로 틀렸다고 단정하지 말고, 실제 호출/동작으로 검증할 것. 비밀값을 다루는 명령은 항상 노출 가능성을 전제로 마스킹을 설계할 것(특정 패턴 가정 금지)
+
+### 3단계: 로컬 에뮬레이터 검증(Claude 1차)
+- `functions/` 의존성 설치(`npm install`, EBADENGINE 경고는 로컬 Node 24 vs 지정 Node 20 차이뿐이라 무해)
+- `firebase emulators:start --only hosting,functions`로 로컬 구동 → 정적 루트(`/`)·`.well-known/assetlinks.json`(올바른 `content-type: application/json`)까지는 200 확인, `/api/ai-variation-usage`는 404
+- **원인 발견**: 함수가 `asia-northeast3`에 뜨는데 Hosting 리라이트는 기본 리전 `us-central1`로 요청을 보내 매칭 실패(에뮬레이터 로그의 "Rewriting ... to .../us-central1/..." 라인에서 확인) → `firebase.json` 리라이트를 문자열(`"function": "generateVariations"`)에서 객체(`"function": {"functionId":"...","region":"asia-northeast3"}`)로 변경해 해결
+- 에뮬레이터 재시작 후 로그인 없이 두 API 호출 시 404가 아니라 원래 Vercel판과 동일한 401 `{"error":"로그인이 필요합니다."}` 확인 — 리라이트/리전/핸들러 로직까지 정상 연결됐음을 확인하고 에뮬레이터 종료
+
+### 4단계: 실제 배포
+- `firebase deploy --only hosting,functions` 1차 실행 — Functions는 생성 성공했으나 "asia-northeast3 리전에 cleanup policy가 없다"는 경고가 에러로 처리되며 비정상 종료, 이 때문에 **Hosting release(실제 반영) 단계까지 도달하지 못함**(`tuk-tak-2c172.web.app`이 여전히 404임을 curl로 확인)
+- `firebase functions:artifacts:setpolicy` 단독 실행은 "저장소가 아직 없다"며 실패(첫 배포 전이라 Artifact Registry 저장소 자체가 안 만들어진 상태) → 안내된 대로 `firebase deploy --only hosting,functions --force`로 재배포(이 `--force`는 "확인 생략" 의미가 아니라 Firebase CLI가 안내한, cleanup policy 자동 설정 전용 옵션) → 정리 정책 자동 설정 + Hosting "version finalized"/"release complete"까지 전부 성공
+- curl로 `tuk-tak-2c172.web.app`의 루트/`tips.html`/`input.html`/`.well-known/assetlinks.json`(전부 200), `/api/ai-variation-usage`(401, 정상 동작 확인)까지 재검증
+
+### 5단계: 사용자 실기기 2차 확인
+`tuk-tak-2c172.web.app`에서 Google 로그인(도메인 승인 문제 없이 바로 성공 — Firebase가 자체 Hosting 도메인을 Auth 승인 도메인에 자동 등록해둔 덕분으로 추정) → "클라우드에 백업" → AI 문장변형(실제 Claude API 호출, 평생 100개 한도 중 1개 소모) → `input.html` 로그인+클라우드 조회까지 4가지 전부 사용자가 직접 확인("3개 모두 확인완료").
+
+### 반영
+- 신규: `firebase.json`, `.firebaserc`, `functions/package.json`, `functions/.gitignore`, `functions/index.js`, `functions/generate-variations.js`, `functions/ai-variation-usage.js`
+- `CLAUDE.md`: 상단 브리핑에 이전 완료 항목 추가, "기술 스택" 섹션에 Firebase Hosting 이전 배경+새 인프라 함정 4건(dotfile ignore, 리라이트 리전, firebase-tools Windows 크래시, Anthropic 키 접두사) 기록
+- 아직 커밋 전(이번 세션 작업물 커밋 여부는 다음 턴에 사용자 확인 필요)
+
+### 다음 세션 시작 시 최우선
+1. 이번 세션 변경사항(`firebase.json`/`.firebaserc`/`functions/`/`CLAUDE.md`) 커밋 여부 확인 — git status 그대로 남아있음
+2. **다음은 메모리 `project_domain_hosting_migration`의 4단계**: Cloudflare에서 Firebase Hosting으로 DNS 연결(`tuk-tak.kr` 커스텀 도메인) + `help@` 이메일 라우팅은 이미 완료된 상태 유지. 연결 후 Firebase Auth "승인된 도메인"과 Google OAuth 동의 화면 승인된 도메인에 새 도메인 추가 필수(빠뜨리기 쉬움)
+3. 그 이후 5단계(새 도메인+새 호스팅에서 로그인/AI변형/클라우드백업 재검증) → 기존 Play Console 파이프라인(14일 테스터 요건 2026-10-14)과 합류
+4. `purchased` 확인 연동 + `input.html` noindex 처리(보류 중, 계속 이월)
+5. 교체된 기본 제공 문장 100개가 실제 앱에서 정상 노출되는지 확인(2026-10-03 이월 항목, 미점검 계속 이월)
