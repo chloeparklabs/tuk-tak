@@ -7130,3 +7130,43 @@ Claude가 "모바일 가독성" 근거로 Tips-1을 먼저 추천했으나, 사�
 3. 그 이후 5단계(새 도메인+새 호스팅에서 로그인/AI변형/클라우드백업 재검증) → 기존 Play Console 파이프라인(14일 테스터 요건 2026-10-14)과 합류
 4. `purchased` 확인 연동 + `input.html` noindex 처리(보류 중, 계속 이월)
 5. 교체된 기본 제공 문장 100개가 실제 앱에서 정상 노출되는지 확인(2026-10-03 이월 항목, 미점검 계속 이월)
+
+---
+
+## 세션: 2026-10-08 — 커스텀 도메인 `tuk-tak.kr` → Firebase Hosting 연결
+
+### 세션 시작: 보고
+`PROGRESS.md` 마지막 세션(2026-10-07, Firebase Hosting 이전) 요약 보고. 이어서 전날 세션 끝에 미커밋 상태였던 `firebase.json`/`.firebaserc`/`functions/`/`CLAUDE.md`가 이미 커밋(`91d6bec`)돼 있음을 git status로 확인 — 1번 항목은 완료된 채로 시작. 사용자가 "해야 할일"로 포괄적으로 질문해 CLAUDE.md 브리핑+PROGRESS.md 이월 항목 기준 6개 후보를 보고하자 "1번"(커스텀 도메인 연결, 메모리 `project_domain_hosting_migration` 4단계)을 선택.
+
+### 진행 방식
+사용자가 Firebase/Cloudflare/Google Cloud 콘솔 화면을 스크린샷으로 캡처해 파일로 저장(`temp/image*.png`, PowerShell `&` 호출 또는 경로만 붙여넣는 방식) → Claude가 Read 도구로 스크린샷을 읽고 다음 클릭 위치를 안내하는 방식으로 진행(Claude가 직접 콘솔에 로그인할 수 없으므로). 중간에 DNS 전파는 Bash `nslookup`(Google 8.8.8.8/Cloudflare 1.1.1.1/`tuk-tak.kr`의 실제 네임서버인 Cloudflare 자체까지 교차 확인)으로, 실제 사이트 응답은 `curl`로 Claude가 직접 검증.
+
+### 1단계: Firebase Hosting 커스텀 도메인 추가
+Firebase 콘솔 > Hosting > "커스텀 도메인 추가" > `tuk-tak.kr` 입력 → "빠른 설정" 모드로 A 레코드(`199.36.158.100`)+TXT 레코드(`hosting-site=tuk-tak-2c172`) 발급받음.
+
+### 2단계: Cloudflare DNS 레코드 추가
+Cloudflare DNS > Records에 두 레코드 추가 — **A 레코드는 Proxy status를 반드시 "DNS only"(회색 구름)로 설정**해야 함(Cloudflare 기본값은 프록시 켜짐인데, 그 상태면 Firebase가 실제 IP를 못 보고 소유권/SSL 검증에 실패함). 기존 이메일 라우팅용 MX(`route1~3.mx.cloudflare.net`)·SPF·DKIM TXT 레코드와 공존 확인. 추가 직후 `nslookup`으로 Google/Cloudflare/도메인 자체 네임서버 3곳 모두에서 정상 조회됨을 확인.
+
+### 3단계: Firebase 소유권 확인 지연 → SSL 발급 → 연결 완료
+DNS는 전파됐는데도 Firebase 쪽 "레코드가 아직 감지되지 않음(마지막 확인 시간: 방금)" 상태가 한동안 유지됨 — 설정 실수가 아니라 Firebase 자체 재확인 주기가 실제 DNS 전파보다 늦게 따라오는 것으로 판단, 기다렸다가 재확인하도록 안내. 이후 "인증서 발급 중" → "연결됨"으로 순차 전환. `curl`로 `https://tuk-tak.kr/`(루트)·`/tips.html`·`/input.html`·`/.well-known/assetlinks.json` 전부 200 확인(SSL 정상 적용).
+
+### 4단계: Firebase Authentication 승인된 도메인 추가
+Authentication > 설정 > 승인된 도메인에 `tuk-tak.kr` 추가(기존: `localhost`/`tuk-tak-2c172.firebaseapp.com`/`tuk-tak-2c172.web.app`/`tuk-tak-six.vercel.app`).
+
+### 5단계: Google OAuth 동의 화면(Google 인증 플랫폼) 승인된 도메인 추가 — UI 개편으로 헤맴
+Google Cloud Console의 OAuth 동의 화면이 최근 "Google 인증 플랫폼"으로 개편되면서 메뉴 구조가 바뀌어 있었음. 처음엔 "대상"(Audience) 탭에서 찾았으나 승인된 도메인 섹션이 없었고("스크롤 없어" 확인), **"브랜딩"(Branding) 탭 하단**에 있는 것을 발견 — 거기서 "+ 도메인 추가"로 `tuk-tak.kr` 추가. 저장 버튼이 비활성화되는 문제 발생 → 원인은 "개발자 연락처 정보 이메일 주소" 필수 필드가 비어있던 것(사용자가 이메일 2개 입력 후에도 여전히 비활성화) → "애플리케이션 홈페이지"/"애플리케이션 개인정보처리방침 링크" 필수 필드도 비어있던 게 추가 원인으로 판단, Claude가 레포에서 `privacy.html` 존재+`https://tuk-tak.kr/privacy.html` 200 응답을 확인한 뒤 홈페이지는 `https://tuk-tak.kr/tips.html`, 개인정보처리방침은 `https://tuk-tak.kr/privacy.html`로 입력 안내 → 저장 성공.
+
+### 6단계: 새 도메인 실사용 검증(사용자)
+`https://tuk-tak.kr`에서 Google 로그인 성공, "클라우드에 백업" 정상 작동, `https://tuk-tak.kr/input.html`에서도 로그인+클라우드 문장 조회 정상 작동까지 사용자가 직접 확인 완료.
+
+### 반영
+- `CLAUDE.md`: 상단 브리핑 14번 항목을 "Firebase Hosting 이전 완료"+"커스텀 도메인 연결 완료"로 분리 갱신, "기술 스택" 섹션에 배포 상태 업데이트 + 새 항목(`커스텀 도메인 tuk-tak.kr 연결`)으로 전체 과정(Cloudflare 레코드 설정 함정, Firebase 소유권 확인 지연, Google 인증 플랫폼 UI 개편으로 "브랜딩" 탭 이동, 필수 필드 미입력으로 저장 안 되는 문제) 기록
+- `PROGRESS.md`(이 세션 기록) — 커밋 전, 다음 턴에 사용자 확인 필요
+- 메모리 `project_domain_hosting_migration` 갱신 필요(다음 턴)
+
+### 다음 세션 시작 시 최우선
+1. 이번 세션 CLAUDE.md 변경사항 커밋 여부 확인
+2. 실서비스 주소를 Vercel→`tuk-tak.kr`로 전환하는 작업(manifest.json/twa-manifest.json/Play Console 검증 도메인)은 **결제 게이팅 Bubblewrap 재빌드와 함께 처리** 예정 — 아직 미착수, 지금 당장 급하지 않음
+3. Play Console 14일 테스터 요건 재확인(2026-10-08 기준 대시보드에 "13일째, 테스터 12명"으로 표시됨 — 하루 더 필요)
+4. `purchased` 확인 연동 + `input.html` noindex 처리(보류 중, 계속 이월)
+5. 교체된 기본 제공 문장 100개가 실제 앱에서 정상 노출되는지 확인(2026-10-03 이월 항목, 미점검 계속 이월)
