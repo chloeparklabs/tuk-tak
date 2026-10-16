@@ -707,7 +707,7 @@ const cloudRestoreInfoBtn = document.getElementById('cloud-restore-info-btn');
 const cloudDeleteBtn = document.getElementById('cloud-delete-btn');
 const cloudDeleteInfoBtn = document.getElementById('cloud-delete-info-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
-const cardMarkBar = document.getElementById('card-mark-bar');
+const cardInteractionsEl = document.getElementById('card-interactions');
 const cardStarBtn = document.getElementById('card-star-btn');
 const cardFlagBtn = document.getElementById('card-flag-btn');
 const cardSpeakerBtn = document.getElementById('card-speaker-btn');
@@ -845,8 +845,7 @@ function renderCard() {
   if (isEmpty) {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
-    cardMarkBar.classList.add('hidden');
-    cardVariationBtn.classList.add('hidden');
+    cardInteractionsEl.classList.add('hidden');
     // AI 변형 보관함 학습 중 마지막 항목까지 삭제하면 도달하는 케이스 — 평소 안내문과 구분
     emptyStateMsg.innerHTML = aiVariationBankModeActive
       ? '보관함에 저장된 변형 문장이 없습니다.'
@@ -872,12 +871,12 @@ function renderCard() {
   cardEl.classList.toggle('revealed', revealed);
   checkBtn.classList.toggle('revealed', revealed);
 
-  // 마킹 아이콘 바 노출은 정답을 확인한 뒤에만 — 보관함 모드에서는 별표/깃발/수정/삭제 대신
-  // 승격("내 카드덱에 추가")/보관함 삭제만 노출(별표·미암기 개념이 안 맞고, 기존 삭제는 sentences
-  // 배열 대상이라 이 모드에 그대로 못 씀)
-  cardMarkBar.classList.toggle('hidden', !revealed);
-  // card-normal-only가 아니라 별도 처리: 보관함 학습 모드에서는 변형-의-변형이 의미 없어 숨김
-  cardVariationBtn.classList.toggle('hidden', !revealed || aiVariationBankModeActive);
+  // 마킹 아이콘 바+문장변형 버튼 묶음 노출은 정답을 확인한 뒤에만 — 보관함 모드에서는 별표/깃발/
+  // 수정/삭제 대신 승격("내 카드덱에 추가")/보관함 삭제만 노출(별표·미암기 개념이 안 맞고, 기존
+  // 삭제는 sentences 배열 대상이라 이 모드에 그대로 못 씀)
+  cardInteractionsEl.classList.toggle('hidden', !revealed);
+  // 문장변형 버튼만 별도 처리: 보관함 학습 모드에서는 변형-의-변형이 의미 없어 숨김
+  cardVariationBtn.classList.toggle('hidden', aiVariationBankModeActive);
   cardNormalOnlyEls.forEach((el) => el.classList.toggle('hidden', aiVariationBankModeActive));
   cardBankOnlyEls.forEach((el) => el.classList.toggle('hidden', !aiVariationBankModeActive));
 
