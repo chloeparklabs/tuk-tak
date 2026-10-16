@@ -325,8 +325,9 @@ button {
    ========================================================================== */
 #card-screen {
   display: grid;
-  /* 상단바 - 백업 리마인더 배너 - 미니 학습 배너(둘 다 평소엔 숨김 처리로 0높이) - 카드 영역(남는 공간) - 이전/확인/다음 버튼 순서 */
-  grid-template-rows: auto auto auto 1fr auto;
+  /* 상단바 - 백업 리마인더 배너 - 미니 학습 배너(둘 다 평소엔 숨김 처리로 0높이) - 카드 영역(남는 공간) -
+     문장변형 CTA(평소 숨김 처리로 0높이) - 이전/확인/다음 버튼 순서 */
+  grid-template-rows: auto auto auto 1fr auto auto;
   /* minmax(0, 1fr) 명시 필요(2026-09-11) — 안 쓰면 그리드 트랙의 자동 최소 크기가
      내부 콘텐츠(예: 마킹 아이콘 바)의 min-content로 강제돼, 그 콘텐츠가 넓어지면
      이 화면 전체가 뷰포트보다 넓어지며 옆으로 밀리는 "그리드 블로우아웃" 버그 발생 */
@@ -339,7 +340,7 @@ button {
    카드 화면 상단바 (로고 + 더보기 메뉴)
    ========================================================================== */
 .card-topbar {
-  /* #card-screen 5행 grid에서 항상 1행 고정 — 명시하지 않으면 배너들이
+  /* #card-screen 6행 grid에서 항상 1행 고정 — 명시하지 않으면 배너들이
      display:none일 때 자동 배치가 한 칸씩 당겨져 카드 영역이 밀려 올라가는 문제가 있었음(2026-08-27) */
   grid-row: 1;
   display: flex;
@@ -659,7 +660,7 @@ button {
 /* grid의 위/아래 1fr 두 행이 항상 같은 크기로 나뉘어, 가운데(auto) 행인 영어 박스가
    한국어 문장·마킹 아이콘 바 길이와 무관하게 항상 화면(헤더~버튼바) 정중앙에 오게 됨 */
 .card {
-  /* #card-screen 5행 grid에서 항상 4행(1fr) 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  /* #card-screen 6행 grid에서 항상 4행(1fr) 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
   grid-row: 4;
   display: grid;
   grid-template-rows: 1fr auto 1fr;
@@ -782,7 +783,7 @@ button {
    백업 리마인더 배너 (마지막 백업/닫기 이후 7일 경과 또는 내 문장 10개 이상 추가 시 노출)
    ========================================================================== */
 .backup-reminder-banner {
-  /* #card-screen 5행 grid에서 항상 2행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-28) */
+  /* #card-screen 6행 grid에서 항상 2행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-28) */
   grid-row: 2;
   position: relative;
   display: flex;
@@ -853,7 +854,7 @@ button {
    미니 학습 배너 (15-2 AI 변형으로 추가한 문장만 임시로 학습할 때 노출)
    ========================================================================== */
 .mini-session-banner {
-  /* #card-screen 5행 grid에서 항상 3행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+  /* #card-screen 6행 grid에서 항상 3행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
   grid-row: 3;
   display: flex;
   align-items: center;
@@ -886,9 +887,46 @@ button {
 /* ==========================================================================
    하단 버튼 바
    ========================================================================== */
-.control-bar {
-  /* #card-screen 5행 grid에서 항상 5행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27) */
+/* 문장변형 CTA — 카드 학습 중 "이 문장을 AI로 변형해보고 싶다"는 욕구를 문장관리까지 가서
+   찾지 않고 바로 해소하도록 함(2026-10-16). 마킹 아이콘 바(무채색)와 달리 유일하게 색이 들어간
+   요소라 "툭탁만의 차별 기능"이라는 각인 효과를 주려는 의도 — 로그인 여부와 무관하게 항상 노출
+   (비로그인 탭 시 안내는 generateAiVariationFor가 처리), 정답 확인 후에만 노출(마킹 아이콘 바와
+   동일 조건), AI 변형 보관함 학습 모드에서는 숨김(js/app.js renderCard에서 직접 토글) */
+.card-variation-btn {
+  /* #card-screen 6행 grid에서 항상 5행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-10-16) */
   grid-row: 5;
+  justify-self: center;
+  align-self: center;
+  width: auto;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-cta-text);
+  background: var(--color-cta-fill);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.card-variation-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.card-variation-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.control-bar {
+  /* #card-screen 6행 grid에서 항상 6행 고정 — .card-topbar와 같은 이유로 명시 필요(2026-08-27,
+     2026-10-16 문장변형 CTA 행 추가로 5행→6행) */
+  grid-row: 6;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -621,6 +621,10 @@ let miniSessionIds = [];
 let aiVariationBankModeActive = false;
 let aiVariationBankStudyIds = null;
 
+// AI 변형 미리보기 화면의 "뒤로가기" 복귀 대상 — 문장변형 탭에서 들어왔으면 그 탭으로,
+// 카드 화면에서 바로 들어왔으면 카드 화면으로(2026-10-16, 두 진입점을 지원하며 추가)
+let aiVariationPreviewFromCard = false;
+
 // ==========================================================================
 // DOM 요소
 // ==========================================================================
@@ -709,6 +713,7 @@ const cardFlagBtn = document.getElementById('card-flag-btn');
 const cardSpeakerBtn = document.getElementById('card-speaker-btn');
 const cardEditBtn = document.getElementById('card-edit-btn');
 const cardDeleteBtn = document.getElementById('card-delete-btn');
+const cardVariationBtn = document.getElementById('card-variation-btn');
 const cardBankPromoteBtn = document.getElementById('card-bank-promote-btn');
 const cardBankDeleteBtn = document.getElementById('card-bank-delete-btn');
 const cardNormalOnlyEls = document.querySelectorAll('.card-normal-only');
@@ -841,6 +846,7 @@ function renderCard() {
     enTextEl.classList.add('hidden');
     cardEl.classList.remove('revealed');
     cardMarkBar.classList.add('hidden');
+    cardVariationBtn.classList.add('hidden');
     // AI 변형 보관함 학습 중 마지막 항목까지 삭제하면 도달하는 케이스 — 평소 안내문과 구분
     emptyStateMsg.innerHTML = aiVariationBankModeActive
       ? '보관함에 저장된 변형 문장이 없습니다.'
@@ -870,6 +876,8 @@ function renderCard() {
   // 승격("내 카드덱에 추가")/보관함 삭제만 노출(별표·미암기 개념이 안 맞고, 기존 삭제는 sentences
   // 배열 대상이라 이 모드에 그대로 못 씀)
   cardMarkBar.classList.toggle('hidden', !revealed);
+  // card-normal-only가 아니라 별도 처리: 보관함 학습 모드에서는 변형-의-변형이 의미 없어 숨김
+  cardVariationBtn.classList.toggle('hidden', !revealed || aiVariationBankModeActive);
   cardNormalOnlyEls.forEach((el) => el.classList.toggle('hidden', aiVariationBankModeActive));
   cardBankOnlyEls.forEach((el) => el.classList.toggle('hidden', !aiVariationBankModeActive));
 
@@ -945,6 +953,20 @@ cardDeleteBtn.addEventListener('click', () => {
   const sentence = getCardOrderedSentences()[currentIndex];
   if (!sentence) return;
   confirmDeleteSingle(sentence.id);
+});
+
+// 카드 화면에서 바로 이 문장을 AI 변형(15-2) — 문장관리에서 찾을 필요 없이 한 번에 연결(2026-10-16).
+// generateAiVariationFor는 "내 문장 변형하기" 목록의 아이콘 버튼과 완전히 재사용(로그인 체크/한도/
+// 에러 처리 전부 공통), 여기서는 버튼에 글자가 있어 요청 중임을 "변형 생성 중..."으로 보여줌
+cardVariationBtn.addEventListener('click', () => {
+  const sentence = getCardOrderedSentences()[currentIndex];
+  if (!sentence) return;
+  aiVariationPreviewFromCard = true;
+  const originalHtml = cardVariationBtn.innerHTML;
+  cardVariationBtn.innerHTML = '<span>변형 생성 중...</span>';
+  generateAiVariationFor(sentence, cardVariationBtn).finally(() => {
+    cardVariationBtn.innerHTML = originalHtml;
+  });
 });
 
 // AI 변형 보관함 학습 모드 전용 — 별표/미암기/수정/삭제(sentences 대상) 대신 승격/보관함 삭제.
@@ -2253,7 +2275,10 @@ variationMySentenceListEl.addEventListener('click', (e) => {
   if (!aiBtn) return;
   const item = aiBtn.closest('.sentence-list-item');
   const sentence = sentences.find((s) => String(s.id) === item.dataset.id);
-  if (sentence) generateAiVariationFor(sentence, aiBtn);
+  if (sentence) {
+    aiVariationPreviewFromCard = false;
+    generateAiVariationFor(sentence, aiBtn);
+  }
 });
 
 // "AI 변형 보관함 학습하기" 진입 버튼 — 보관함이 비어있으면 숨김(23번 필터 학습 버튼과 같은 패턴)
@@ -2379,7 +2404,10 @@ function showAiVariationPreview(parsed) {
   aiVariationParsedItems = parsed;
   aiVariationSelectedIndexes = new Set(parsed.map((_, i) => i)); // 기본값: 전체 선택
 
-  variationListScreen.classList.add('hidden');
+  // 문장변형 탭/카드 화면 중 어디서 들어왔든 안전하게 전환되도록 모든 화면을 먼저 숨김
+  // (기존엔 variationListScreen만 숨겼는데, 카드 화면에서 직접 호출하면 카드 화면이 뒤에
+  // 그대로 남아 두 화면이 겹쳐 보이는 문제가 있었음, 2026-10-16)
+  document.querySelectorAll('.screen').forEach((el) => el.classList.add('hidden'));
   aiVariationPreviewScreen.classList.remove('hidden');
   renderAiVariationPreview();
 }
@@ -2488,7 +2516,11 @@ function renderAiVariationPreview() {
 
 aiVariationPreviewBackBtn.addEventListener('click', () => {
   aiVariationPreviewScreen.classList.add('hidden');
-  variationListScreen.classList.remove('hidden');
+  if (aiVariationPreviewFromCard) {
+    goToCardScreen();
+  } else {
+    variationListScreen.classList.remove('hidden');
+  }
 });
 
 aiVariationPreviewListEl.addEventListener('click', (e) => {
