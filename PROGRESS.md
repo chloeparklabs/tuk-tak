@@ -7221,3 +7221,28 @@ Google Cloud Console의 OAuth 동의 화면이 최근 "Google 인증 플랫폼"�
 3. `purchased` 확인 연동 + `input.html` noindex + 실서비스 주소 Vercel→`tuk-tak.kr` 전환은 여전히 프로덕션 액세스 승인 이후로 보류, 먼저 제안하지 말 것
 4. (참고) 2026-10-09~10-16 사이 Play Console 재시도 세부 진행(반려 사유 분석, 스몰뎁 재모집, 크몽 대행 검토 등)은 메모리에만 있고 이 파일엔 세션 기록이 비어있음 — 필요시 메모리 쪽에서 가져올 것
 5. (참고) 주소 전환 완료 시점을 기록해두고 그 3주 후 Vercel 프로젝트+`api/` 폴더 정리를 제안할 것(메모리 `project_domain_hosting_migration` 참고)
+
+---
+
+## 세션: 2026-10-16 (이어서) — Anthropic API 키 로테이션
+
+### 발단
+사용자가 Claude Console에서 받은 이메일 스크린샷 공유 — 기존 API 키 `chloe-api-key`가 2026-10-17(다음날, UTC 기준)에 만료 예정이라는 알림. 이 키는 15-2 AI 자동변형 기능이 쓰는 `ANTHROPIC_API_KEY`로, Vercel(`api/generate-variations.js`)과 Firebase Functions(`functions/generate-variations.js`) 양쪽에 등록돼 있어 만료 시 AI 문장변형 기능이 전부 인증 오류로 멈추는 상황.
+
+### 진행
+1. 새 키는 Console 웹 UI에서만 발급 가능(Claude가 직접 접근 불가) — 사용자가 직접 "API 키 받기" → 키 생성 다이얼로그에서 이름 `chloe-api-key-2026-10`, **만료 "안 함"**으로 설정(이번처럼 깜빡하고 만료되는 사고 재발 방지)해 발급, 생성된 키 값을 Claude에게 전달
+2. Vercel 프로덕션 환경변수 교체: `vercel env rm ANTHROPIC_API_KEY production` → 새 값을 임시 파일(스크래치패드)에 담아 `vercel env add ANTHROPIC_API_KEY production < 파일`로 등록(CLAUDE.md 인프라 함정 메모대로 대시보드 직접입력 대신 파일 경유) → `vercel --prod`로 프로덕션 재배포(환경변수는 재배포해야 실제 반영됨을 사용자에게 설명)
+3. Firebase Functions 시크릿 교체: `firebase functions:secrets:set ANTHROPIC_API_KEY --data-file <같은 임시파일>`로 새 시크릿 버전 생성 → `firebase deploy --only functions`로 `generateVariations(asia-northeast3)` 재배포(`aiVariationUsage`는 이 키를 안 써서 변경 없이 스킵됨)
+4. 키 값을 담았던 임시 파일은 등록 직후 삭제
+5. 검증 2단계: (1) Claude가 새 키로 Anthropic API에 직접 curl 테스트(`"say OK"` → `"OK"` 응답 확인)로 키 자체 유효성 1차 확인 (2) 사용자가 실제 앱에서 로그인 → 문장변형 > 내 문장 변형하기 → AI 아이콘으로 실제 변형 생성까지 성공 — 2차 확인 완료
+
+### 사이드 설명 — 비용 구조
+사용자가 Console 화면에 보이는 비용이 뭘로 지불되는지 질문 → Anthropic Console의 "조직 크레딧"(선불 잔액, 스크린샷 기준 US$4.34)에서 API 호출마다 차감되는 구조이고, "자동 충전"이 꺼져 있어 카드 자동결제가 아니라 **잔액 소진 시 서비스가 그냥 멈추는 방식**임을 설명. 결제 게이팅 적용 전(현재 무료 공개 상태)이라 사용자 트래픽이 늘면 이 크레딧이 먼저 바닥날 수 있다는 점도 함께 언급 — 지금 당장 조치 필요는 없고 소진 속도 보면서 추후 판단.
+
+### 결과
+- Vercel(`tuk-tak-six.vercel.app`)·Firebase Functions(`generateVariations`) 둘 다 새 키(`chloe-api-key-2026-10`, 만료 없음)로 전환 완료, 재배포 완료, 실사용 검증 완료
+- 기존 키(`chloe-api-key`)는 만료를 기다릴 필요 없이 Console에서 바로 삭제 가능하다고 안내 — **삭제는 Console 웹 UI 전용 작업이라 Claude가 대신 할 수 없음**, 사용자가 직접 진행하기로 함(이 세션 종료 시점 기준 삭제 여부 미확인, 다음 세션에서 확인 불필요— 사용자 재량)
+
+### 다음 세션 시작 시 최우선
+이전 세션("카드 화면 문장변형 바로가기") 기록의 "다음 세션 시작 시 최우선" 1~5번 그대로 유효 — 이번 세션은 그 사이에 끼어든 긴급 인프라 작업이라 체크리스트/우선순위에 변동 없음. 추가로:
+6. (참고) 다음에 Anthropic API 키를 다시 발급/교체할 일이 있으면 이번 세션의 절차(Vercel `env rm`→`env add <파일`→`--prod` 재배포, Firebase `secrets:set --data-file`→`deploy --only functions`, 키 값은 항상 임시파일 경유 후 즉시 삭제)를 그대로 재사용할 것
