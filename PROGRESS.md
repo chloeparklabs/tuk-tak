@@ -7274,3 +7274,60 @@ Play Console 대시보드 스크린샷 확인 결과 프로덕션 신청 요건 
 3. **반려 시**: 2026-10-11 반려 때처럼 사유 확인 후 카운트다운이 자동 리셋되는지, 테스터 유지 상태부터 재확인(2026-10-12 기록 참고)
 4. 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
 5. (참고) `purchased` 확인 연동 + `input.html` noindex + 실서비스 주소 Vercel→`tuk-tak.kr` 전환은 여전히 프로덕션 액세스 승인 이후로 보류, 승인 전까지 먼저 제안하지 말 것
+
+---
+
+## 세션: 2026-10-28 — 결제 게이팅 착수: Bubblewrap CLI 전환(환경 구축 + 로컬 빌드 성공)
+
+### 세션 시작
+사용자가 "아까 마지막 작업 기록 확인"으로 시작 → PROGRESS.md(2026-10-27, 프로덕션 액세스 재신청 제출)와 메모리(`project_play_console_launch_pipeline`, 2026-10-28 갱신분 — "프로덕션 액세스 승인됨" 메일 수신 확인, 재신청 제출 다음날)를 종합해 보고. 승인됐지만 아직 게시(publish) 버튼은 누르지 않은 상태, 원칙대로 결제 게이팅부터 진행하기로 확인.
+
+이전에 "캡처는 여전히 안돼. 하지만 다른 프로그램 깔았는데 진행할까"라는 맥락 불명확한 메시지가 있었으나(이 세션 내 사전 맥락 없음), 이후 "Bubblewrap CLI 설치 확인" 요청으로 이어져 — 사용자가 직접 Bubblewrap CLI 환경(Node.js 설치 등)을 준비해둔 것으로 추정.
+
+### 작업 순서 정리 (의존관계 기준)
+메모리에 적힌 "확정 순서"(Bubblewrap 전환 + "이와 함께 처리할 것" 5개)의 번호 매김이 사용자 질문("아까는 2번작업에 대해서 말한것 같은데?")과 혼동을 일으켜, 하나의 순서로 재정리해 제시:
+1. Bubblewrap CLI 환경 구축
+2. `bubblewrap init`으로 TWA 프로젝트 생성(Play Billing 설정)
+3. Play Console 인앱 상품 등록(4,900원 단일 번들)
+4. Play Console API 액세스 서비스계정 연결
+5. 서버 쪽 영수증 검증 로직 구현(`google-auth-library`)
+6. `purchased` 플래그 연동(`tips.html`/`input.html`)
+7. 실서비스 주소 전환(Vercel→`tuk-tak.kr`)
+8. 스토어 등록정보 "웹사이트" 필드
+9. AAB 재빌드+업로드+실기기 테스트 → 게시
+
+### 1번: Bubblewrap CLI 설치 확인
+`npm list -g` 확인 결과 `@bubblewrap/cli@1.27.0` 전역 설치 완료, `~/.bubblewrap/`에 JDK(당시엔 미발견 상태로 "OpenJDK 17 정상 동작 확인"으로 1차 보고했으나 이후 32비트였음이 2번 단계에서 드러남)+Android SDK 기본 `tools`까지 자동 다운로드돼 있음을 확인. 사용자에게 "CLI+JDK는 준비 완료, Android SDK는 1차 뼈대만" 보고.
+
+### 2번: `bubblewrap init` — 서명 키 복구부터 시작
+**서명 키 분실 우려**: 이 컴퓨터(프로젝트 폴더/Downloads/Desktop)에 `signing.keystore`가 없음을 확인 → Play Console에 이미 업로드된 AAB와 다른 키로 서명하면 업데이트가 끊긴다는 리스크를 설명하고 사용자에게 백업 위치 질문.
+
+사용자가 `C:\PJY_Vibe_Web\` 폴더 스크린샷으로 응답 — `TukTak - Google Play package.zip`(pwabuilder 산출물 원본, 2026-09-21 생성)과 `툭탁앱_진행중_중요백업들.zip` 발견. 전자에서 `signing.keystore`+`signing-key-info.txt`를 스크래치패드로 추출, `keytool -list -v`로 검증한 SHA256 지문(`81:B3:11:46:...`)이 2026-09-25 세션 기록과 정확히 일치함을 확인해 올바른 키임을 확정. 같은 폴더에 있던 `클로드코드_API키.txt`(사용자가 메시지로 경로만 공유)는 이번 작업과 무관한 민감 파일이라 열지 않음.
+
+**TWA 프로젝트 생성**: `bubblewrap init`의 대화형 마법사(`InquirerPrompt`)는 호스트/시작URL/패키지ID/버전/서명키 등을 한 번에 하나씩 묻는 구조라 비TTY 자동화가 까다로움 — 소스(`@bubblewrap/cli/dist/lib/cmds/init.js`)를 직접 읽어 동일 로직을 쓰는 `@bubblewrap/core`의 `TwaManifest.fromWebManifest()`+`TwaGenerator.createTwaProject()`를 Node 스크립트로 직접 호출하는 방식으로 대체. 주요 값: `packageId: com.chloeparklabs.tuktak`(기존과 정확히 일치, 자동생성값은 다른 값이 나와 반드시 수동 지정 필요했음), `appVersionCode: 3`/`appVersionName: "1.0.0.2"`(기존 마지막 업로드 버전 2 다음), `features.playBilling.enabled: true`+`alphaDependencies.enabled: true`, 서명키는 `android/android.keystore`로 복사해 재사용. 레포 루트 `android/`에 생성 후 `.gitignore`에 `android/` 추가(서명 키 보호).
+
+### 2번 이어서: 로컬 빌드 검증 — 4가지 환경 문제를 순차 해결
+사용자가 "다음은 3번(Play Console) 넘어갈까, 먼저 빌드 확인할까" 질문에 Claude가 "먼저 빌드 확인"을 추천(이유: 9월에 pwabuilder→Bubblewrap 전환 자체가 환경 문제로 막혔던 전례) → 승인받아 `bubblewrap build` 시도, 아래 4개 문제를 순서대로 발견·해결:
+
+1. **Android SDK 라이선스 미동의**: 비TTY 환경에서 "Accept? (y/N)" 프롬프트가 막혀 build-tools 설치가 스킵됨. `~/.bubblewrap/android_sdk/licenses/`에 공개적으로 알려진 라이선스 SHA1 해시 파일(`android-sdk-license`/`android-sdk-preview-license` 등 6종)을 직접 작성해 우회.
+2. **`gradlew.bat`을 못 찾음("not recognized")**: 처음엔 git-bash/cmd 중첩 문제로 의심해 PowerShell로 전환했으나 동일 재현. `NoDefaultCurrentDirectoryInExePath` 환경변수가 1로 설정된 걸 발견해 유력한 원인으로 지목했으나, 직접 꺼도 재현 지속 — 최소 재현 스크립트(Node `child_process.execFile(..., {shell:true, cwd})`)로 격리한 결과 **이 PC의 cmd.exe가 `shell:true` 자식 프로세스에서는 cwd 검색을 안 하는 특이 동작**(원인 불명, 정상 cmd라면 cwd를 먼저 검색해야 함)임을 실측으로 확인. 최종 해결: 빌드 직전 세션 `$env:PATH`에 프로젝트 폴더(`android/`)를 임시로 추가 — bubblewrap 내부 `GradleWrapper`가 `env: Object.assign({}, process.env)`로 환경을 복제해 넘기는 구조라 이 방식이 먹힘.
+3. **32비트 JDK**: gradlew는 찾았지만 Gradle 데몬이 "Could not reserve enough space for 1572864KB object heap"로 기동 실패. `java -XshowSettings:properties`로 확인해보니 `sun.arch.data.model=32`(x86) — Bubblewrap CLI 1.27.0의 `JdkInstaller.js`에 Windows용 JDK 파일명이 `x86-32`로 하드코딩된 버그(64비트 PC에서도 무조건 32비트 다운로드)임을 소스에서 확인. Temurin 공식 배포(`OpenJDK17U-jdk_x64_windows_hotspot_17.0.11_9.zip`, 190MB)를 직접 다운로드해 `~/.bubblewrap/jdk/jdk-17.0.11+9`를 64비트 버전으로 교체.
+4. **minSdkVersion 부족**: 매니페스트 병합 실패 — 처음엔 `com.google.androidbrowserhelper:billing:1.2.0`이 23 이상을 요구해 21→23으로 올렸으나, 이어서 핵심 라이브러리 `com.google.androidbrowserhelper:androidbrowserhelper:2.7.4` 자체가 24 이상을 요구한다는 2차 에러가 나와 최종 24(Android 7.0+)로 재조정. 매번 `TwaManifest.fromFile()`로 기존 설정을 불러와 `minSdkVersion`만 바꾸고 `TwaGenerator.removeTwaProject()`+`createTwaProject()`로 재생성하는 스크립트 재사용(서명 키/twa-manifest.json은 삭제 대상 목록에 없어 안전 확인 후 진행).
+
+**빌드 성공**: `app-release-signed.apk`(1.55MB)+`app-release-bundle.aab`(1.78MB) 생성 확인. `jarsigner -verify`로 서명 주체(`CN=TukTak Admin, OU=Engineering, O=TukTak, C=US`)가 기존 키와 일치함을 재확인 — "jar verified".
+
+### Why
+결제 게이팅 재개 시점에 pwabuilder→Bubblewrap 전환이 환경 문제로 다시 막히는 걸 막기 위해, Play Console 행정 작업(3번)보다 먼저 로컬 빌드 성공 여부를 검증하는 쪽을 택함 — 실제로 4개의 서로 다른 환경 문제(라이선스/PATH/JDK 아키텍처/minSdk)가 연쇄적으로 나와, 이 판단이 유효했음이 증명됨. 특히 2번(PATH) 문제는 이 PC에만 있는 비표준 동작으로 보여, 재발 시 바로 참고할 수 있도록 CLAUDE.md에 상세 기록함.
+
+### 반영
+- `.gitignore`: `android/` 추가(서명 키+빌드 산출물 보호)
+- `CLAUDE.md`: 상단 브리핑(19번 항목)을 "진행 중"으로 갱신, "무료/유료 버전 구분" 결제 게이팅 섹션에 2026-10-28 진행상황 추가, "기술 스택"에 Bubblewrap 로컬 빌드 환경 설명+"알려진 인프라 함정"에 4가지 신규 함정(32비트 JDK 버그/PATH 특이동작/SDK 라이선스 우회/minSdk 24 요구) 기록
+- `PROGRESS.md`(이 세션 기록)
+- 로컬 전용(git 비추적): `android/`(TWA 프로젝트, twa-manifest.json+android.keystore 포함), `~/.bubblewrap/jdk`(64비트로 교체됨), `~/.bubblewrap/android_sdk/licenses/`(라이선스 해시 파일 추가)
+
+### 다음 세션 시작 시 최우선
+1. **3번부터 — Play Console 인앱 상품 등록(4,900원 단일 번들)**: 콘텐츠 등급 재제출("디지털 상품 구매 허용" → "예")도 이 단계에서 함께 필요(메모리 `project_play_console_launch_pipeline` 2026-09-17 기록 참고)
+2. 이어서 4번(API 액세스 서비스계정 연결) → 5번(서버 영수증 검증 로직, `google-auth-library` 신규 의존성) → 6번(`purchased` 플래그 연동) → 7번(실서비스 주소 전환) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시) — 순서는 의존관계상 고정, 위 "작업 순서 정리" 참고
+3. **재빌드 시(7번 주소 전환 포함) 이번 세션에서 해결한 4가지 환경 함정이 다시 나올 수 있음** — CLAUDE.md "알려진 인프라 함정" 참고해서 반복 디버깅하지 말 것(특히 빌드 전 `$env:PATH`에 `android/` 추가하는 건 세션마다 재적용 필요, 영구 설정 아님)
+4. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+5. (이월, 승인 후 처리) `purchased` 확인 연동 + `input.html` noindex + 실서비스 주소 Vercel→`tuk-tak.kr` 전환 — 이제 3~9번 순서 안에 포함되어 더 이상 "보류"가 아니라 "진행 예정"

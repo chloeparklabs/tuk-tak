@@ -4,6 +4,9 @@ temp/
 # 웹/앱엔 직접 쓰지 않는 사진·일러스트 원본 보관용 — 용량 때문에 git엔 올리지 않음
 assets-source/
 
+# Bubblewrap TWA 프로젝트 — 서명 키/빌드 산출물은 git에 올리지 않음(twa-manifest.json 등 설정 파일은 추후 선별 커밋 검토)
+android/
+
 .vercel
 .env*.local
 node_modules/
