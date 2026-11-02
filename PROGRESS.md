@@ -7647,3 +7647,29 @@ API 활성화 직후 로그를 다시 수집하며 사용자에게 앱 재오픈
 2. 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시) 순서로 진행 — 9번 재빌드 시 홈아이콘/스플래시 분리(`icon-512x512-home.png`) 반드시 반영
 3. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
 4. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
+
+## 세션: 2026-11-02 (세 번째) — 7번(실서비스 주소 전환) 완료: TWA를 tuk-tak.kr로 전환한 새 AAB 빌드
+
+### 작업 전 확인
+`tuk-tak-six.vercel.app` 문자열을 레포 전체(docs 제외)에서 검색 — 웹 앱 소스(HTML/JS/manifest.json)에는 하드코딩된 곳이 전혀 없고, 오직 `android/`(twa-manifest.json, build.gradle, strings.xml 등 빌드 산출물)에만 있음을 확인. 즉 "7번 실서비스 주소 전환"은 사실상 TWA 재빌드(9번) 없이는 완결될 수 없다는 걸 확인하고, 9번의 선행사항(홈아이콘/스플래시 분리)까지 한 번에 처리하기로 계획.
+
+`tuk-tak.kr/.well-known/assetlinks.json`을 먼저 확인한 결과 **이미 올바른 패키지명(`com.chloeparklabs.tuktak`)과 지문 3개가 등록돼 있었음**(2026-10-08 도메인 연결 세션 때 미리 준비해둔 것으로 추정) — `android/app-release-bundle.aab`에서 `keytool -printcert -jarfile`로 직접 추출한 서명 지문과 대조해 그중 하나(`81:B3:11:...`)와 정확히 일치함을 확인, 도메인 인증 관련 추가 작업 불필요함을 미리 확인하고 진행.
+
+### 작업 내용
+1. `android/twa-manifest.json` 수정: `host`→`tuk-tak.kr`, `webManifestUrl`→`https://tuk-tak.kr/manifest.json`, `fullScopeUrl`→`https://tuk-tak.kr/`, `iconUrl`→`https://tuk-tak.kr/icons/icon-512x512-home.png`(슬로건 없는 홈아이콘 전용판, 9번 선행사항), `appVersionCode` 3→4, `appVersionName`/`appVersion` "1.0.0.2"→"1.0.0.3"
+2. `bubblewrap update --manifest=./twa-manifest.json --skipVersionUpgrade` 실행 → `build.gradle`/`strings.xml` 등 재생성. 첫 시도는 `EBUSY: resource busy or locked, rmdir .../res` 에러(원인 불명, 일시적 파일 잠금으로 추정) → 재시도로 바로 성공. `build.gradle`에 `hostName: 'tuk-tak.kr'`/`versionCode 4`/`versionName "1.0.0.3"`/Play Billing 설정이 정확히 반영된 것 확인
+3. **스플래시 이미지 수동 교체**: `bubblewrap update`가 `res` 폴더를 통째로 재생성하면서 스플래시도 홈아이콘 기준 기본값으로 덮어씀 — PowerShell `System.Drawing`(`Bitmap`+`Graphics.DrawImage`, `HighQualityBicubic` 보간)으로 `icons/icon-1200x1200.png`(슬로건 버전)를 5개 밀도별 크기(mdpi 300/hdpi 450/xhdpi 600/xxhdpi 900/xxxhdpi 1200px — 기존 파일의 PNG 헤더를 Node로 직접 읽어 목표 크기 확인)로 리사이즈해 `app/src/main/res/drawable-*/splash.png`에 덮어씀. 로컬에 ImageMagick/sharp 등이 없어 `System.Drawing`으로 대체 — PNG 헤더 직접 읽기로 크기 검증까지 완료
+4. `bubblewrap build --manifest=./twa-manifest.json --skipPwaValidation` 실행 — 사용자가 `TukTak - Google Play package\signing-key-info.txt`에서 키스토어 비밀번호를 직접 읽어와 `BUBBLEWRAP_KEYSTORE_PASSWORD`/`BUBBLEWRAP_KEY_PASSWORD` 환경변수로 전달(채팅에 노출하지 않고 파일에서 바로 읽어 사용). **1차 시도는 APK 생성 후 번들 서명 단계(`jarsigner`)에서 "명령을 찾을 수 없음"으로 실패** — JDK `bin` 폴더가 세션 PATH에 없어서였음(기존에 알려진 "gradlew.bat PATH 문제"와는 별개의 PATH 이슈). `android/` 폴더뿐 아니라 `~/.bubblewrap/jdk/jdk-17.0.11+9/bin`도 PATH에 추가해 재시도 → `app-release-signed.apk`+`app-release-bundle.aab` 둘 다 정상 생성
+5. **최종 검증**: `keytool -printcert -jarfile app-release-bundle.aab`로 새로 빌드한 AAB의 SHA256 지문이 `tuk-tak.kr`의 assetlinks.json에 등록된 지문과 정확히 일치하는 것 재확인(서명키 재사용이 의도대로 됐음을 재검증)
+
+### 반영
+- `android/twa-manifest.json`, `android/app/build.gradle`(및 bubblewrap 재생성 파일들), `android/app/src/main/res/drawable-*/splash.png`, `android/app-release-bundle.aab`/`app-release-signed.apk`(모두 `.gitignore` 대상, git 비커밋)
+- `CLAUDE.md`: 상단 브리핑에 7번 완료 내용 추가, "기술 스택" 섹션에 이번에 발견한 인프라 함정 2가지(res 폴더 EBUSY, jarsigner PATH) + 스플래시 재교체 필요성 기록
+- `PROGRESS.md`(이 세션 기록)
+- **이번에 생성한 AAB는 아직 Play Console에 업로드하지 않음** — 8번(스토어 웹사이트 필드)·9번(실제 업로드+실기기 테스트+게시)은 사용자 확인 후 별도 진행
+
+### 다음 작업 제안
+1. 8번(Play Console 스토어 등록정보의 웹사이트 필드를 Vercel 주소에서 `tuk-tak.kr`로 변경) — Play Console UI 작업, 간단함
+2. 9번(이번에 만든 AAB를 Play Console 비공개 테스트 트랙에 업로드 → 실기기에서 새 버전 설치 확인 → 결제까지 재검증 → 이상 없으면 프로덕션 게시) — 게시는 반드시 사용자 최종 확인 후 진행
+3. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+4. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
