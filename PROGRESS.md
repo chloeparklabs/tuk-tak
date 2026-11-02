@@ -7601,3 +7601,49 @@ implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.4'
 5. (이월) 7번(실서비스 주소 전환)~9번(최종 재빌드) — 이번 세션으로 네이티브 브리지 전환이 불필요해져 순서 조정 불필요, 원래 계획대로 진행 가능
 6. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
 7. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
+
+## 세션: 2026-11-02 (이어서) — 결제 게이팅 6번(클라이언트 결제 연동) 코드 수정+배포+실기기 2차 확인까지 전체 완료
+
+### 작업 순서
+사용자가 "먼저 프로세스에 중요내용 기록하고 커밋푸시 한다음에 시작해줘"로 요청(컴퓨터가 가끔 멈춰서 세션이 끊길 경우 대비한 체크포인트) → 위 재진단 기록을 CLAUDE.md/PROGRESS.md/메모리에 반영 → 커밋 `845433c`(문서 갱신 + 그동안 쌓여있던 미커밋 결제 연동 코드 전체 체크포인트, `images/사무엘상 22.png`는 앱과 무관한 개인 파일로 판단해 커밋에서 제외) → 사용자 승인 후 코드 수정 착수.
+
+### 코드 수정
+`js/app.js`:
+1. `submitPurchaseTokenWithRetry(purchaseToken, attempts=3, delayMs=1500)` 신규 — 재시도 가능한 멱등 구조(서버가 이미 처리한 구매를 다시 검증해도 안전)
+2. `purchasePremium()`/`reconcilePendingPurchase()` 둘 다 기존 `submitPurchaseToken()` 단발 호출을 이 재시도 함수로 교체
+3. `reconcilePendingPurchase()`의 임시 디버그 alert 3곳을 `console.error`로 정리
+4. `document.addEventListener('visibilitychange', ...)` 신규 — 설정 화면에 들어가지 않아도 앱이 포그라운드로 복귀하면(네이티브 결제 UI에서 돌아오는 경우 포함) 로그인+미구매 상태일 때 곧바로 `reconcilePendingPurchase()` 실행
+
+`node -c js/app.js` 문법 검증 통과 확인 후 커밋 `40c12c0` → push → `vercel --prod`(Production: `tuk-tak-six.vercel.app`)+`firebase deploy --only hosting`(`tuk-tak-2c172.web.app`) 양쪽 배포, `curl`로 배포된 `js/app.js`에 새 함수명이 포함된 것까지 확인.
+
+### 실기기 재테스트 1차 — 새로운 문제 발견: "유효하지 않은 구매 정보입니다"
+재시도 로직 배포 후 사용자가 재구매 시도 → 이번엔 다른 에러("유효하지 않은 구매 정보입니다", 서버가 Play Developer API 조회 실패 시 보내는 메시지) 발생. `vercel logs tuk-tak-six.vercel.app`를 백그라운드로 띄워 실시간 런타임 로그를 스크래치패드 파일로 수집(Hobby 플랜은 과거 로그 조회가 안 돼 라이브 테일만 가능, 사용자에게 재시도를 요청하며 캡처) — 정확한 서버 에러 확인:
+```
+Play Developer API 조회 실패: Google Play Android Developer API has not been used in project 206884017307 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/androidpublisher.googleapis.com/overview?project=206884017307 then retry.
+```
+`firebase projects:list`로 `206884017307`이 `tuk-tak-2c172`의 프로젝트 번호임을 확인 — **Android Publisher API(Play Developer API)가 이 GCP 프로젝트에서 한 번도 활성화된 적이 없었음**(4~5번 작업 당시 서비스 계정 권한 부여에만 집중하고 API 자체 활성화는 누락됐던 것으로 추정). 이 환경엔 `gcloud` CLI가 없어 Claude가 직접 활성화할 수 없음 → 사용자에게 Google Cloud Console 링크 안내.
+
+### 사용자가 "이미 보유하고 있는 아이템입니다"로 재시도 — 원인 교차 확인
+API 미활성화 상태에서의 구매 시도가 Play 쪽엔 정상 기록됐지만 서버 승인(acknowledge)이 계속 실패해온 상태라, 추가 구매 시도 시 Play가 "이미 보유 중"으로 막은 것 — 3분 자동환불 전이라 여전히 "소유 중" 상태였음을 보여주는 교차 증거. 사용자가 Google Cloud Console에서 "Google Play Android Developer API" 페이지의 **"사용" 버튼을 클릭**(스크린샷으로 활성화 전/후 확인).
+
+### 실기기 재테스트 2차 — 전파 대기 중 구매가 또 자동환불됨
+API 활성화 직후 로그를 다시 수집하며 사용자에게 앱 재오픈(재구매 없이 `visibilitychange` 복구 기대)을 요청 → `/api/verify-purchase` 호출 자체가 로그에 안 찍힘(= `listPurchases()`가 빈 배열) → API 전파를 기다리는 동안 이전 미승인 구매가 다시 3분 자동환불된 것으로 판단, 새로 구매하도록 안내.
+
+### 최종 성공
+사용자가 새로 "프리미엄 구매하기" 진행 → **"프리미엄 구매가 완료됐어요! PC 빠른입력과 AI 자동변형을 바로 이용할 수 있어요."** 알럿 정상 노출(스크린샷 확인) → 설정 화면이 "이용 중"으로 전환된 것까지 사용자가 확인. **6번(클라이언트 결제 연동) 전체 완료, 사용자 실기기 2차 확인까지 끝남.**
+
+### Why
+처음엔 "Chrome 외부 버그"로 결론 냈던 문제가 사실은 두 가지 서로 다른 원인(①클라이언트 재시도/복구 타이밍 부족 ②서버 측 API 미활성화)이 겹쳐 있었던 것으로 드러남 — ①만 고쳤을 때 "유효하지 않은 구매 정보"라는 전혀 다른 에러가 나온 게 그 증거. 매번 "서버 로그로 정확한 에러 문구를 직접 확인"하는 방식이 두 원인을 순서대로 가려내는 데 결정적이었음(Vercel Hobby 플랜은 과거 로그 조회가 안 되므로, 사용자의 재시도 타이밍에 맞춰 로그 수집을 미리 띄워두는 패턴이 유효했음).
+
+### 반영
+- `js/app.js`(코드 수정, 커밋 `40c12c0`), Vercel+Firebase Hosting 재배포
+- Google Cloud Console: Android Publisher API 활성화(`tuk-tak-2c172` 프로젝트, 사용자가 직접 진행) — 코드/배포 변경 아님, 콘솔 설정값이라 별도 커밋 없음
+- `CLAUDE.md`: 상단 브리핑 + "무료/유료 버전 구분" 6번 섹션을 "전체 완료" + 최종 원인(재시도 타이밍+API 미활성화) 2가지로 갱신
+- `PROGRESS.md`(이 세션 기록)
+- 커밋 전: Claude 메모리 `project_monetization_strategy.md`/`MEMORY.md` 갱신 예정(다음 작업)
+
+### 다음 작업 제안
+1. 이번 세션 문서 갱신분 커밋+push
+2. 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시) 순서로 진행 — 9번 재빌드 시 홈아이콘/스플래시 분리(`icon-512x512-home.png`) 반드시 반영
+3. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+4. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
