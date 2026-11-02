@@ -2910,6 +2910,26 @@ async function submitPurchaseToken(purchaseToken) {
   return { ok: response.ok && data.purchased, data };
 }
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// 라이선스 테스터 테스트구매는 미승인(acknowledge) 시 3분 내 자동환불되는데, 결제 직후 1회
+// 호출만으로는 그 창을 놓칠 수 있어(일시적 네트워크 오류 등) 짧은 간격으로 재시도한다.
+async function submitPurchaseTokenWithRetry(purchaseToken, attempts = 3, delayMs = 1500) {
+  let result = { ok: false, data: { error: '구매 확인에 실패했습니다.' } };
+  for (let i = 0; i < attempts; i++) {
+    try {
+      result = await submitPurchaseToken(purchaseToken);
+      if (result.ok) return result;
+    } catch (err) {
+      result = { ok: false, data: { error: err.message } };
+    }
+    if (i < attempts - 1) await wait(delayMs);
+  }
+  return result;
+}
+
 // Google 공식 가이드 권장 패턴: 결제창이 뜬 사이 TWA 페이지가 백그라운드로 밀려 자바스크립트
 // 실행이 끊기면(구매 자체는 Play에 성공 기록되지만) purchasePremium()의 서버 검증 단계가
 // 못 끝날 수 있음 — 그렇게 "결제는 됐는데 서버엔 기록 안 된" 미승인 구매가 남지 않도록,
@@ -2920,16 +2940,16 @@ async function reconcilePendingPurchase() {
     const service = await window.getDigitalGoodsService('https://play.google.com/billing');
     const purchases = await service.listPurchases();
     const list = Array.from(purchases);
-    // TODO(임시 디버그): 원인 파악 후 제거할 것
-    alert(`[디버그] listPurchases 결과 ${list.length}건: ${JSON.stringify(list)}`);
     const pending = list.find((p) => p.itemId === PREMIUM_PRODUCT_ID);
     if (!pending) return;
 
-    const { ok, data } = await submitPurchaseToken(pending.purchaseToken);
-    alert(`[디버그] verify-purchase 결과: ok=${ok}, ${JSON.stringify(data)}`);
-    if (ok) premiumPurchased = true;
+    const { ok } = await submitPurchaseTokenWithRetry(pending.purchaseToken);
+    if (ok) {
+      premiumPurchased = true;
+      renderPremiumSection();
+    }
   } catch (err) {
-    alert(`[디버그] 미완료 구매 재확인 실패: ${err && err.name}: ${err && err.message}`);
+    console.error('미완료 구매 재확인 실패:', err);
   }
 }
 
@@ -3000,7 +3020,7 @@ async function purchasePremium() {
   }
 
   try {
-    const { ok, data } = await submitPurchaseToken(paymentResponse.details.purchaseToken);
+    const { ok, data } = await submitPurchaseTokenWithRetry(paymentResponse.details.purchaseToken);
 
     if (ok) {
       await paymentResponse.complete('success');
@@ -3019,6 +3039,15 @@ async function purchasePremium() {
 }
 
 premiumBuyBtn.addEventListener('click', purchasePremium);
+
+// 설정 화면에 들어가야만 복구가 실행되면 테스트구매 3분 자동환불 창을 놓칠 수 있어,
+// 앱이 포그라운드로 돌아올 때마다(네이티브 결제 UI에서 복귀하는 경우 포함) 곧바로 재확인한다.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (premiumPurchased) return;
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) return;
+  reconcilePendingPurchase();
+});
 
 // ==========================================================================
 // 글자 크기 (5단계 도트 + 스테퍼, 설정 화면에 상시 노출)
