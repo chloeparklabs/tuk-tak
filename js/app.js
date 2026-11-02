@@ -706,6 +706,9 @@ const cloudBackupInfoBtn = document.getElementById('cloud-backup-info-btn');
 const cloudRestoreInfoBtn = document.getElementById('cloud-restore-info-btn');
 const cloudDeleteBtn = document.getElementById('cloud-delete-btn');
 const cloudDeleteInfoBtn = document.getElementById('cloud-delete-info-btn');
+const premiumNotPurchasedView = document.getElementById('premium-not-purchased-view');
+const premiumPurchasedView = document.getElementById('premium-purchased-view');
+const premiumBuyBtn = document.getElementById('premium-buy-btn');
 const emptyStateMsg = document.getElementById('empty-state-msg');
 const cardInteractionsEl = document.getElementById('card-interactions');
 const cardStarBtn = document.getElementById('card-star-btn');
@@ -2429,12 +2432,9 @@ async function requestAiVariations(prompt) {
 }
 
 // "내 문장 변형하기" 목록의 AI 아이콘 탭 → 프롬프트 화면 없이 곧바로 서버 호출(평생 누적 100개
-// 한도, 결제 게이팅은 이번 범위 밖 — 로그인만 하면 이용 가능). iconBtn은 요청 중 중복 탭 방지용
+// 한도, 로그인+프리미엄 구매 둘 다 필요 — requirePremium이 확인). iconBtn은 요청 중 중복 탭 방지용
 async function generateAiVariationFor(sentence, iconBtn) {
-  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
-    alert('AI 자동변형은 로그인 후 이용할 수 있어요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.');
-    return;
-  }
+  if (!(await requirePremium('AI 자동변형'))) return;
 
   const prompt = buildAiVariationPrompt(sentence);
   iconBtn.disabled = true;
@@ -2636,6 +2636,7 @@ settingsOpenBtn.addEventListener('click', () => {
   cardScreen.classList.add('hidden');
   settingsScreen.classList.remove('hidden');
   renderStorageUsage();
+  refreshPremiumStatus();
 });
 
 settingsBackBtn.addEventListener('click', () => {
@@ -2774,6 +2775,7 @@ function setupCloudSync() {
   window.CloudSync.onAuthChange((user) => {
     cloudUser = user;
     renderCloudAccountView();
+    refreshPremiumStatus();
   });
 }
 setupCloudSync();
@@ -2881,6 +2883,142 @@ cloudDeleteBtn.addEventListener('click', async () => {
     alert(`삭제에 실패했습니다: ${err.message}`);
   }
 });
+
+// ==========================================================================
+// 프리미엄 구매 게이팅 (결제 게이팅 6번) — 18(클라우드 백업)은 계속 무료, 19(PC 빠른입력)+
+// 15-2(AI 자동변형)만 purchased 플래그로 잠금. 구매는 Google Play Billing(Digital Goods API)으로만
+// 가능해 TWA(설치된 Android 앱) 안에서만 동작 — 데스크톱 브라우저에서는 구매 버튼이 안내만 하고 끝남.
+// ==========================================================================
+const PREMIUM_PRODUCT_ID = 'tuk_tak_premium_bundle';
+let premiumPurchased = false;
+
+function renderPremiumSection() {
+  premiumNotPurchasedView.classList.toggle('hidden', premiumPurchased);
+  premiumPurchasedView.classList.toggle('hidden', !premiumPurchased);
+}
+
+// 서버에 구매 토큰을 보내 검증 + Firestore purchased 플래그 기록까지 맡기는 공용 호출
+// (정상 구매 흐름과 아래 미완료 구매 재확인 흐름이 똑같이 재사용)
+async function submitPurchaseToken(purchaseToken) {
+  const idToken = await window.CloudSync.getIdToken();
+  const response = await fetch('/api/verify-purchase', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ purchaseToken }),
+  });
+  const data = await response.json();
+  return { ok: response.ok && data.purchased, data };
+}
+
+// Google 공식 가이드 권장 패턴: 결제창이 뜬 사이 TWA 페이지가 백그라운드로 밀려 자바스크립트
+// 실행이 끊기면(구매 자체는 Play에 성공 기록되지만) purchasePremium()의 서버 검증 단계가
+// 못 끝날 수 있음 — 그렇게 "결제는 됐는데 서버엔 기록 안 된" 미승인 구매가 남지 않도록,
+// purchased가 아직 false일 때마다 Digital Goods API로 기존 구매 내역을 다시 확인해 복구한다.
+async function reconcilePendingPurchase() {
+  if (!('getDigitalGoodsService' in window)) return;
+  try {
+    const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+    const purchases = await service.listPurchases();
+    const list = Array.from(purchases);
+    // TODO(임시 디버그): 원인 파악 후 제거할 것
+    alert(`[디버그] listPurchases 결과 ${list.length}건: ${JSON.stringify(list)}`);
+    const pending = list.find((p) => p.itemId === PREMIUM_PRODUCT_ID);
+    if (!pending) return;
+
+    const { ok, data } = await submitPurchaseToken(pending.purchaseToken);
+    alert(`[디버그] verify-purchase 결과: ok=${ok}, ${JSON.stringify(data)}`);
+    if (ok) premiumPurchased = true;
+  } catch (err) {
+    alert(`[디버그] 미완료 구매 재확인 실패: ${err && err.name}: ${err && err.message}`);
+  }
+}
+
+// 설정 화면 진입 시마다(저장공간 표시와 같은 패턴) + 로그인 상태 바뀔 때 재조회
+async function refreshPremiumStatus() {
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
+    premiumPurchased = false;
+    renderPremiumSection();
+    return;
+  }
+  try {
+    premiumPurchased = await window.CloudSync.getPurchasedStatus();
+    if (!premiumPurchased) await reconcilePendingPurchase();
+  } catch {
+    premiumPurchased = false;
+  }
+  renderPremiumSection();
+}
+
+// 19(input.html)/15-2(AI 자동변형) 양쪽에서 재사용할 공용 게이팅 체크 — 구매 완료 상태면 true
+async function requirePremium(featureLabel) {
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
+    alert(`${featureLabel}은 로그인 후 이용할 수 있어요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.`);
+    return false;
+  }
+  if (premiumPurchased) return true;
+
+  const purchased = await window.CloudSync.getPurchasedStatus().catch(() => false);
+  premiumPurchased = purchased;
+  if (purchased) return true;
+
+  if (confirm(`${featureLabel}은 프리미엄 구매 후 이용할 수 있어요. 지금 구매하시겠어요?`)) {
+    await purchasePremium();
+  }
+  return false;
+}
+
+async function purchasePremium() {
+  if (!window.CloudSync || !window.CloudSync.getCurrentUser()) {
+    alert('프리미엄 구매는 로그인 후 가능해요. 설정 > 클라우드 백업에서 먼저 로그인해주세요.');
+    return;
+  }
+  if (!('getDigitalGoodsService' in window)) {
+    alert('프리미엄 구매는 Play 스토어로 설치한 툭탁 앱에서만 가능해요.');
+    return;
+  }
+
+  let paymentResponse;
+  try {
+    const service = await window.getDigitalGoodsService('https://play.google.com/billing');
+    const detailsMap = await service.getDetails([PREMIUM_PRODUCT_ID]);
+    const details = Array.from(detailsMap.values ? detailsMap.values() : detailsMap)[0];
+    if (!details) {
+      alert('상품 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    const request = new PaymentRequest(
+      [{ supportedMethods: 'https://play.google.com/billing', data: { sku: PREMIUM_PRODUCT_ID } }],
+      { total: { label: '툭탁 프리미엄', amount: { currency: details.price.currency, value: details.price.value } } }
+    );
+    paymentResponse = await request.show();
+  } catch (err) {
+    if (err && err.name === 'AbortError') return; // 사용자가 구매창을 직접 닫음
+    console.error('결제창 호출 실패:', err);
+    alert('결제창을 여는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+
+  try {
+    const { ok, data } = await submitPurchaseToken(paymentResponse.details.purchaseToken);
+
+    if (ok) {
+      await paymentResponse.complete('success');
+      premiumPurchased = true;
+      renderPremiumSection();
+      alert('프리미엄 구매가 완료됐어요! PC 빠른입력과 AI 자동변형을 바로 이용할 수 있어요.');
+    } else {
+      await paymentResponse.complete('fail');
+      alert(data.error || '구매 확인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  } catch (err) {
+    console.error('구매 확인 실패:', err);
+    try { await paymentResponse.complete('fail'); } catch {}
+    alert('구매 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+}
+
+premiumBuyBtn.addEventListener('click', purchasePremium);
 
 // ==========================================================================
 // 글자 크기 (5단계 도트 + 스테퍼, 설정 화면에 상시 노출)

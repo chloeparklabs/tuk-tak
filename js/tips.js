@@ -1,5 +1,6 @@
 // tips.html 전용 스크립트 — Google 로그인 상태에 따라 input.html 바로가기를 노출한다.
-// 결제 게이팅이 아직 없어 로그인 여부만 확인(purchased 플래그 연동은 결제 게이팅 착수 시 추가)
+// 여기서는 로그인 여부만 확인(이 버튼 자체는 단순 링크라 우회해도 위험 없음) — 실제 purchased
+// 게이팅은 input.html 쪽(js/input.js renderAuthView)에서 처리, 미구매면 안내 화면만 보여줌
 const loginBtn = document.getElementById('login-btn');
 const headerAccountEl = document.getElementById('header-account');
 const userEmailEl = document.getElementById('user-email');

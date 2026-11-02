@@ -7379,3 +7379,225 @@ Play Console 대시보드 스크린샷 확인 결과 프로덕션 신청 요건 
 2. 이어서 4번(Play Console API 액세스 서비스계정 연결) → 5번(서버 영수증 검증 로직, `google-auth-library` 신규 의존성) → 6번(`purchased` 플래그 연동) → 7번(실서비스 주소 전환) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시)
 3. 비공개 테스트 Alpha 트랙이 버전 3(Play Billing 포함, minSdk 24)으로 실제 갱신됐다는 점 기억할 것 — 이후 재빌드(9번) 때는 이번에 만든 임시 빌드(홈아이콘/스플래시 분리 미반영 상태)가 아니라 그 작업을 반영한 최종 빌드로 다시 올려야 함
 4. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+
+## 세션: 2026-10-29 — 결제 게이팅 3번 마무리: 콘텐츠 등급 재제출 완료
+
+### 세션 시작
+사용자가 "보고"로 시작 → PROGRESS.md 2026-10-28(이어서) 세션 기록(Play Console 인앱 상품 등록 완료, 콘텐츠 등급 재제출만 미완료) 기준으로 요약+다음 작업 제안 보고. 이어서 "해야할 순서대로 알려줘" 질문에 결제 게이팅 1~9번 전체 순서 재정리해 안내, "응, 시작해줘"로 콘텐츠 등급 재제출부터 착수 승인받음.
+
+### 진행 방식
+Play Console 화면을 사용자가 스크린샷으로 캡처해 공유 → Claude가 Read로 확인하고 다음 클릭을 안내하는 방식으로 진행(기존 세션들과 동일 패턴).
+
+### 메뉴 위치 찾기 (최근 UI 개편으로 이동)
+"정책 및 프로그램 > 앱 콘텐츠" 메뉴가 예상 위치(사이드바 상단)에 없어, 몇 차례 스크린샷으로 탐색 — 최종적으로 **"모니터링 및 개선" > "정책 및 프로그램" > "앱 콘텐츠"** 하위에 있음을 확인(최근 Play Console 개편으로 위치 이동된 것으로 추정). "앱 콘텐츠" 목록에서 "콘텐츠 등급" 항목의 "관리" 클릭 → "새 설문지 시작"으로 진입.
+
+### 설문지 재작성
+1. **카테고리**: 이메일 `chloepark.labs@gmail.com`, "다른 모든 앱 유형" 선택(기존 등급도 낮은 연령대였던 것과 일관)
+2. **설문지**: "다운로드한 앱"/"사용자 컨텐츠 공유"/"온라인 콘텐츠"/"연령이 제한된 제품이나 활동의 홍보 또는 판매" 4개 섹션은 전부 기존과 동일하게 "아니요" 유지. **"기타" 섹션의 "앱에서 사용자의 디지털 상품 구매를 허용합니까?"만 "아니요"→"예"로 변경**(이번 재제출의 핵심 목적) — 이 변경으로 새로 나타난 후속 질문("이러한 구매는... 랜덤 아이템(확률형 아이템 등)을 포함할 수 있습니까?")에는 "아니요"(툭탁 프리미엄은 확정 기능을 정가로 구매, 랜덤 요소 없음). 나머지 "기타" 하위 질문(위치 공유/현금 보상·NFT/브라우저 또는 검색엔진/뉴스 또는 교육용 제품)도 전부 기존과 동일하게 "아니요" 유지.
+
+### 발견한 UI 함정: "저장"을 먼저 눌러야 "다음"이 활성화됨
+모든 질문에 답했는데도 설문지 2단계(설문지) 하단의 "다음" 버튼이 계속 비활성화(회색)로 남아있는 문제 발생 — 처음엔 미답변 질문이 남아있는지 의심해 전체 섹션을 재확인했으나 전부 "완료됨" 표시로 정상. 사용자가 "저장" 버튼(옆에 있던, 비활성화 아닌 버튼)을 먼저 눌러보자 그제서야 "다음"이 활성화됨 — **Play Console 콘텐츠 등급 설문지는 "저장"을 거쳐야 "다음" 버튼의 검증 상태가 갱신되는 구조**로 보임. 다음에 비슷한 상황(버튼이 모든 입력 완료 후에도 비활성)을 마주치면 저장부터 시도해볼 것.
+
+### 3단계(요약) 확인 → 저장 → 제출
+요약 화면에서 "카테고리: 다른 모든 앱 유형", **"기타: 디지털 상품 구매 가능"**이 정확히 반영된 것을 확인. "내 등급"에서도 브라질(14세 이상)·기타 다수 국가(3세 이상) 공통으로 **"상호작용 요소: 앱에서 바로 구매"**가 새로 추가된 것을 확인(의도한 변경이 등급에 정확히 반영됨). 하단 "저장" 클릭 → "게시 개요" 화면으로 이동, "앱 콘텐츠 > 콘텐츠 등급 - 새 설문지 제출"이 "변경사항이 아직 검토를 위해 제출되지 않음" 목록에 등록된 것 확인. 우측 상단 **"검토를 위해 변경사항 1개 제출"** 클릭 → "검토 중인 변경사항"으로 상태 전환 확인, 제출 완료.
+
+### Why
+콘텐츠 등급은 "디지털 상품 구매 허용" 답변이 실제 인앱 상품 판매 가능 여부와 직결되는 정책 요건이라, 3번(인앱 상품 등록) 작업의 마지막 퍼즐 조각이었음. 질문 답변 시 "기타"의 나머지 질문들(위치 공유, NFT/암호화폐, 랜덤 아이템)을 전부 사실대로 "아니요"로 유지해, 불필요하게 높은 연령 등급이 매겨지는 것을 방지함.
+
+### 반영
+- Play Console 콘텐츠 등급 설문지 재제출(코드 변경 없음, Google 검토 대기 중)
+- `CLAUDE.md`: 상단 브리핑 19번 항목 + "무료/유료 버전 구분" 결제 게이팅 섹션의 "콘텐츠 등급 재제출 미완료" 문구를 "완료(2026-10-29)"로 갱신, 설문지 작성 세부사항과 "저장 먼저 눌러야 다음 활성화" UI 함정 메모 추가
+- `PROGRESS.md`(이 세션 기록)
+
+### 다음 세션 시작 시 최우선
+1. **4번부터 — Play Console API 액세스 서비스계정 연결**
+2. 이어서 5번(서버 영수증 검증 로직, `google-auth-library` 신규 의존성) → 6번(`purchased` 플래그 연동) → 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시)
+3. 9번 재빌드 시 홈아이콘/스플래시 분리(`icon-512x512-home.png` 등)를 반드시 반영할 것(2026-10-28 세션에 만든 android/ 프로젝트엔 아직 미반영 상태)
+4. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+5. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과(승인/반려) 확인되면 이어서 기록할 것
+
+## 세션: 2026-10-29 (이어서) — 결제 게이팅 4번: Play Console API 액세스 서비스계정 연결 완료
+
+### 세션 시작
+콘텐츠 등급 재제출(3번 마무리) 완료 직후, "기록 먼저 하고 다음 작업 안내" 요청으로 CLAUDE.md/PROGRESS.md/메모리에 3번 완료를 기록한 뒤 이어서 4번(Play Console API 액세스 서비스계정 연결) 착수.
+
+### 메뉴 찾기 — "API 액세스"가 사라지고 "사용자 및 권한"으로 통합됨
+"설정 어디에서 들어가?" 질문에 안내하며 탐색한 결과, Play Console 최근 UI 개편으로 **예전의 독립 "API 액세스" 메뉴가 사라지고, 서비스 계정도 "계정 관리 > 사용자 및 권한"에서 일반 사용자처럼 이메일로 초대하는 방식**으로 통합돼 있음을 확인(여러 화면 캡처로 "계정 세부정보"/"사용자 및 권한"/"Android 개발자 인증" 등을 훑으며 탐색). 이 과정에서 사용자가 "API 액세스는 무엇과 관련된거야"로 질문 — 구매 영수증 검증을 위해 서버가 Google Play Developer API를 호출하려면 그 호출 주체를 인증할 서비스 계정이 필요하다는 배경을 설명.
+
+### Google Cloud Console에서 서비스 계정 생성
+1. `console.cloud.google.com` → Firebase 프로젝트와 동일한 `tuk-tak`(프로젝트 ID `tuk-tak-2c172`) 선택
+2. "IAM 및 관리자 > 서비스 계정" → 기존 계정 3개 확인(`App Engine default`, `Default compute`, `firebase-adminsdk-fbsvc`) — **기존 `firebase-adminsdk-fbsvc`를 재사용하지 않고 전용 신규 계정을 만들기로 결정**(Firestore/Auth 관리 권한과 결제 검증 권한을 분리하는 최소 권한 원칙)
+3. "서비스 계정 만들기": 이름 `play-billing-verifier`, 설명 "Google Play 구매 영수증 검증용 (input.html/15-2 결제 게이팅)" → 이메일 `play-billing-verifier@tuk-tak-2c172.iam.gserviceaccount.com` 생성 완료(권한/액세스 단계는 비워두고 "만들고 닫기")
+4. 해당 계정 "키" 탭 → "키 추가 > 새 키 만들기 > JSON" → 키 파일 자동 다운로드(Google의 "워크로드 아이덴티티 제휴를 권장" 경고는 일반적 보안 권고이며, 이 프로젝트 규모(개인 프로젝트, 서버 환경변수로 비공개 보관)에선 JSON 키 방식이 실용적이라 판단해 그대로 진행). **사용자가 다운로드 폴더에서 git 저장소 바깥의 안전한 위치로 직접 이동 보관**(Claude는 키 파일 내용을 읽거나 노출하지 않음 — 민감정보 취급 원칙)
+
+### Play Console에서 서비스 계정 초대 + 권한 부여
+1. "계정 관리 > 사용자 및 권한 > 신규 사용자 초대" → 이메일에 `play-billing-verifier@tuk-tak-2c172.iam.gserviceaccount.com` 입력
+2. "앱 권한" 탭에서 "애플리케이션 추가" → Tuk Tak 앱 선택 → "적용"
+3. 세부 권한 목록에서: "앱 액세스 권한"(필수)은 기본값 "앱 정보 보기(읽기 전용)" 그대로 유지, **"재무 데이터" 섹션의 "재무 데이터 보기"만 추가 체크** — 설명에 "...구매 API에 액세스..."라고 명시되어 있어 이게 구매 검증에 필요한 정확한 권한임을 확인. "주문 및 구독 관리"(환불 처리·정기결제 취소까지 가능)는 불필요한 과한 권한이라 제외
+4. "적용" → "사용자 초대" 클릭 → "사용자 및 권한" 목록에 `play-billing-verifier@...`가 "활성" 상태로 추가된 것 확인(서비스 계정은 사람과 달리 초대 수락 절차 없이 즉시 활성화됨)
+
+### Why
+서비스 계정을 기존 `firebase-adminsdk-fbsvc`와 분리해 새로 만든 이유는, 결제 검증이라는 민감한 권한을 Firestore/Auth 전체 관리 권한과 같은 키에 묶어두지 않기 위함 — 한쪽 키가 유출돼도 다른 쪽 피해를 분리할 수 있음. 권한도 "재무 데이터 보기" 하나만 부여해 최소 권한 원칙을 지킴.
+
+### 반영
+- Google Cloud Console: 서비스 계정 `play-billing-verifier` 신규 생성 + JSON 키 발급(로컬 보관, git 비추적)
+- Play Console: "사용자 및 권한"에 서비스 계정 초대 + Tuk Tak 앱 "재무 데이터 보기" 권한 부여
+- `CLAUDE.md`: 상단 브리핑 19번 항목 + "무료/유료 버전 구분" 결제 게이팅 섹션에 4번 완료 내용 추가(서비스 계정 이메일, 권한 선택 근거, "API 액세스 메뉴가 사용자 및 권한으로 통합됨" UI 변경 메모 포함)
+- `PROGRESS.md`(이 세션 기록)
+
+### 다음 세션 시작 시 최우선
+1. **5번부터 — 서버 쪽 영수증 검증 로직 구현**: `google-auth-library` npm 의존성 신규 설치(사용자 승인 필요, 지금까지 `firebase-admin`이 유일한 서버 의존성이었음), 다운로드한 JSON 키를 Firebase Functions 시크릿으로 등록(`firebase functions:secrets:set`, 기존 `ANTHROPIC_API_KEY` 등록 때와 같은 패턴), Google Play Developer API(`purchases.products.get`)로 구매 영수증(purchase token) 검증하는 서버리스 함수 신규 작성
+2. 이어서 6번(`purchased` 플래그 연동, Firestore `users/{uid}.purchased`) → 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시)
+3. 9번 재빌드 시 홈아이콘/스플래시 분리(`icon-512x512-home.png` 등) 반드시 반영할 것(아직 미반영 상태)
+4. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+5. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
+
+## 세션: 2026-10-29 (세 번째) — 결제 게이팅 5번: 서버 쪽 영수증 검증 로직 구현+배포 완료
+
+### 세션 시작
+4번(API 액세스 서비스계정 연결) 완료 기록 직후, "승인"으로 `google-auth-library` 설치 승인받고 5번(서버 쪽 영수증 검증 로직) 착수. 계획 설명("이번 단계에서는 Google Play 구매 영수증을 서버가 검증해 Firestore에 purchased 플래그를 기록하는 Cloud Functions 엔드포인트를 신규 구현") 후 "진행" 승인받아 구현.
+
+### 구현
+기존 `functions/generate-variations.js`/`functions/ai-variation-usage.js` 패턴(Cloud Functions 2세대, Firebase ID 토큰 검증 → 로직 → JSON 응답)을 그대로 따라 작성:
+
+1. **`functions/package.json`**: `google-auth-library` 의존성 추가(`npm view`로 최신 버전 `11.3.2` 확인 후 반영), `npm install` 실행
+2. **`functions/verify-purchase.js`(신규)**:
+   - POST만 허용, Firebase ID 토큰 필수(없으면 401)
+   - 클라이언트가 보낸 `purchaseToken` 필수(빈 값이면 400)
+   - **구매 토큰 중복사용 방지**: Firestore `purchases/{purchaseToken}` 문서에 `uid`를 귀속시켜, 이미 다른 계정에 귀속된 토큰이 재사용되면 409 거부(구매 1건=계정 1개 고정, 영수증 재탕 방지)
+   - `google-auth-library`의 `GoogleAuth`(서비스계정 자격증명, `androidpublisher` 스코프)로 인증한 클라이언트로 Play Developer API 호출 — `GET .../purchases/products/{productId}/tokens/{token}`(패키지 `com.chloeparklabs.tuktak`, 상품 `tuk_tak_premium_bundle`)
+   - `purchaseState !== 0`(구매 미완료/취소)이면 400 거부
+   - `acknowledgementState === 0`(미승인)이면 `:acknowledge` POST로 자동 승인(Google 정책상 3일 내 미승인 시 자동환불되는 걸 방지) — 승인 실패는 치명적이지 않다고 보고 로그만 남기고 계속 진행
+   - 검증 통과 시 Firestore `users/{uid}.purchased = true` 기록, `{ purchased: true }` 응답
+3. **`functions/index.js`**: `exports.verifyPurchase = require('./verify-purchase').verifyPurchase;` 추가
+4. **`firebase.json`**: Hosting 리라이트에 `/api/verify-purchase` → `verifyPurchase` 함수(asia-northeast3) 추가
+
+### 배포 및 비밀키 등록
+1. `node -c`로 신규/수정 파일 문법 검증 통과 확인
+2. 사용자가 보관 중이던 서비스 계정 JSON 키 파일 위치(`C:\PJY_Vibe_Web`)를 알려줌 → `ls`로 파일명 확인(`tuk-tak-2c172-aa14c70c870d.json`, 생성일자가 당일이라 올바른 키임을 확인, 내용은 열람하지 않음) → `firebase functions:secrets:set PLAY_SERVICE_ACCOUNT_KEY --data-file <경로>`로 시크릿 등록 성공(버전 1 생성)
+3. `firebase deploy --only functions:verifyPurchase,hosting`으로 배포 — 함수 생성 성공(`https://asia-northeast3-tuk-tak-2c172.cloudfunctions.net/verifyPurchase`), 시크릿 접근 권한(`roles/secretmanager.secretAccessor`) 자동 부여 확인, Hosting도 604개 파일 재배포 완료
+
+### 1차 확인 (Claude, curl)
+`curl -X POST https://tuk-tak-2c172.web.app/api/verify-purchase`를 인증 토큰 없이 호출 → `401 {"error":"로그인이 필요합니다."}` 정상 응답 확인. 라우팅(Hosting 리라이트)·함수 배포·시크릿 권한 전부 정상 동작하는 것을 확인한 수준이며, **실제 구매 토큰을 통한 전체 검증 흐름(Play Developer API 조회→Firestore 플래그 기록)은 아직 미확인** — 6번(클라이언트 결제 연동)을 완성한 뒤 실제 테스트 구매로 2차 확인 예정.
+
+### Why
+서비스 계정을 기존 Firebase Admin SDK 계정과 분리한 2026-10-29(이어서) 결정 덕분에, 이번 영수증 검증 로직에 전용 최소 권한(재무 데이터 보기)만 사용하도록 깔끔하게 연결됨. 구매 토큰 중복사용 방지 로직은 설계 단계(2026-09-19)에선 언급 안 됐던 추가 안전장치 — 한 번 결제한 영수증이 여러 계정에서 재사용되는 걸 막기 위해 이번 구현에서 새로 추가함.
+
+### 반영
+- `functions/package.json`(`google-auth-library` 추가), `functions/verify-purchase.js`(신규), `functions/index.js`, `firebase.json` — 코드 변경, 배포 완료(git 커밋은 아직 안 함, 다음에 커밋 필요)
+- Firebase Secret Manager: `PLAY_SERVICE_ACCOUNT_KEY` 신규 등록
+- `CLAUDE.md`: 상단 브리핑 19번 항목 + "무료/유료 버전 구분" 결제 게이팅 섹션에 5번 완료 내용 추가
+- `PROGRESS.md`(이 세션 기록)
+
+### 다음 세션 시작 시 최우선
+1. **코드 변경사항 git 커밋**(아직 미완료 — `functions/package.json`/`functions/verify-purchase.js`/`functions/index.js`/`firebase.json`)
+2. **6번부터 — 클라이언트 결제 연동**: 폰 앱(`app.js` 또는 적절한 화면)에 Google Play 결제(Play Billing/Digital Goods API)를 실제로 띄우는 UI+로직 추가, 결제 완료 시 받은 `purchaseToken`을 `/api/verify-purchase`로 전송 → 성공 시 `purchased: true` 확인 → `tips.html`/`input.html`의 로그인 확인 로직에 `purchased` 플래그 체크 추가(현재는 로그인만 확인, 구매 여부 미확인 상태)
+3. 6번 완성 후, 실제 테스트 구매(Play Console 라이선스 테스트 계정 또는 실구매)로 5번 서버 로직의 전체 흐름(영수증 검증→Firestore 플래그 기록)까지 2차 확인할 것
+4. 이어서 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시)
+5. 9번 재빌드 시 홈아이콘/스플래시 분리(`icon-512x512-home.png` 등) 반드시 반영할 것(아직 미반영 상태)
+6. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+7. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
+
+## 세션: 2026-10-29 (네 번째) — 결제 게이팅 6번: 클라이언트 결제 연동 구현, 실기기 테스트에서 Chrome 외부 버그 발견
+
+### 세션 시작
+5번(서버 쪽 영수증 검증 로직) 완료 기록 직후 "승인"으로 `google-auth-library` 설치 승인받고 6번(클라이언트 결제 연동) 착수. 먼저 "구매 버튼을 보통 어디에 두는지" 질문에 설정 화면 상시 노출 + 기능 진입 시점 안내 조합을 추천, "둘 다 적용해줘"로 승인.
+
+### 설계 확인 — AskUserQuestion으로 두 가지 핵심 질문 해결
+코드베이스 탐색 중 두 가지 설계 모호점 발견해 확인:
+1. **18번(클라우드 백업)도 게이팅할지**: CLAUDE.md 브리핑("18번도 번들 출시 시점 게이팅")과 2026-09-19 설계 메모("19+15-2만 게이팅")가 서로 어긋나 있었음. `input.html`이 `window.CloudSync`(18번과 동일 Firestore 데이터)를 그대로 재사용한다는 기술적 사실을 짚은 뒤, 사용자가 "클라우드 백업(무료)으로 문장이 쌓이다 보면 PC 빠른입력(유료)의 필요성을 느끼게 되는 퍼널 구조"라고 직접 정리 → **18번은 계속 무료, 19번+15-2만 게이팅으로 확정**
+2. **테스트 전략**: 설치된 Alpha 테스트 빌드가 Vercel 주소를 보고 있어, Firebase Functions만으론 지금 당장 실기기 테스트가 불가능함을 확인 → **`api/verify-purchase.js`를 Vercel에도 포팅해 즉시 테스트 가능하게 하는 쪽으로 결정**(7번 주소전환 때 정리 예정이라는 기존 계획과 자연스럽게 맞물림)
+
+### 구현
+1. **기존 버그 발견·수정(`js/firebase-init.js`)**: `backupSentences()`가 `setDoc()`을 `merge` 옵션 없이 호출해, "클라우드에 백업" 누를 때마다 같은 문서의 `aiVariationCount`/(신규) `purchased` 필드가 통째로 사라지는 문제 발견 → `{merge:true}`로 수정. `deleteBackup()`도 `deleteDoc()`으로 문서 전체를 삭제해 같은 문제가 있어 → `setDoc(..., {sentences: deleteField(), updatedAt: deleteField()}, {merge:true})`로 변경(구매 기록 보존). `getPurchasedStatus()` 신규 추가 + `window.CloudSync`에 노출.
+2. **`api/verify-purchase.js`(신규, Vercel 포팅판)**: `functions/verify-purchase.js`와 동일 로직, `FIREBASE_SERVICE_ACCOUNT_KEY`(기존 패턴)로 Admin SDK 인증. `package.json`에 `google-auth-library` 추가 + `npm install`. Vercel 환경변수 `PLAY_SERVICE_ACCOUNT_KEY`를 `vercel env add ... production < <키파일경로>`로 등록(사용자가 Downloads에서 옮겨둔 `tuk-tak-2c172-aa14c70c870d.json` 파일 경로를 `ls`로 찾아 사용, 내용은 열람 안 함).
+3. **`index.html`**: 설정 화면 "클라우드 백업" 섹션 바로 위에 "프리미엄" 섹션 신규(미구매 뷰: 설명+"프리미엄 구매하기 (4,900원)" 버튼 / 구매완료 뷰: "이용 중" 문구).
+4. **`js/app.js`**: `purchasePremium()`(Digital Goods API `getDigitalGoodsService('https://play.google.com/billing')`+`service.getDetails()`+`PaymentRequest`로 구매창 호출 → 완료 시 `submitPurchaseToken()`으로 서버 검증), `requirePremium(featureLabel)`(로그인+구매 여부 확인하는 공용 게이팅, 미구매면 confirm으로 즉시 구매 유도), `reconcilePendingPurchase()`(앱 로드 시 `listPurchases()`로 미완료 구매 자동 복구, Google 공식 권장 패턴). 기존 `generateAiVariationFor`의 로그인-only 체크를 `requirePremium('AI 자동변형')`으로 교체(카드 화면 "문장변형하기" 바로가기도 같은 함수 공유라 자동 적용됨).
+5. **`input.html`/`js/input.js`**: 로그인은 했지만 미구매인 상태를 위한 `#premium-required-view` 패널 신규(Play Billing은 설치된 Android 앱 안에서만 가능해 PC에선 구매 버튼 없이 "폰 앱에서 구매해주세요" 안내만). `renderAuthView`를 async로 전환해 `getPurchasedStatus()` 확인 후 로그인뷰/프리미엄안내뷰/대시보드뷰 3단 분기.
+6. 전부 `node -c` 문법 검증 통과 확인 후 Vercel(`vercel --prod`)+Firebase Hosting(`firebase deploy --only hosting`) 양쪽 배포.
+
+### 실기기 테스트 — 여러 단계의 문제를 순차로 발견·해결하며 진행
+**사전 준비**: Play Console "라이선스 테스트"에 `chloepark.labs@gmail.com` 등록(기존 "툭탁 비공개 테스트" 이메일 목록 재사용, 비공개 테스트 Alpha 트랙 테스터 목록과 동일 — 추가 설정 불필요 확인). 기존에 다른 계정으로 설치돼 있던 앱 삭제 → 폰 Play 스토어 계정을 `chloepark.labs@gmail.com`으로 전환 → 비공개 테스트 옵트인 링크(`https://play.google.com/apps/testing/com.chloeparklabs.tuktak`, 표준 스토어 링크와 형식이 다름을 사용자가 처음에 혼동)로 재설치.
+
+**1차 실패 — `OperationError: clientAppUnavailable`**: 구매 버튼 탭 시 "결제창을 여는 중 오류가 발생했습니다" — 원인 파악을 위해 `purchasePremium()` catch 블록에 임시로 `err.name`/`err.message`를 노출하는 디버그 alert 추가 후 재배포해 정확한 에러명 확인. WebSearch로 GitHub(`bubblewrap`/`android-browser-helper`) 이슈 다수 확인 — TWA+Play Billing 조합에서 흔히 보고되는 플레이키 버그, 확실한 근본 원인 불명. **폰 재부팅으로 해결**(커뮤니티 보고와 일치하는 우연한 해결 패턴).
+
+**2차 — 결제 자체는 성공, 서버 기록 실패**: 재부팅 후 재시도 → 정상적으로 결제창이 뜨고 "테스트 주문이므로 청구되지 않습니다" 확인(라이선스 테스터 설정 정상 작동 확인) → "원탭 구매" → "결제 완료" + 구매 후 인증요구 설정 팝업까지 정상 진행. 그런데 설정 화면은 여전히 "구매하기" 버튼 상태였고, 재클릭 시 **"이미 보유하고 있는 아이템입니다"** — 즉 Google Play 쪽은 구매를 정상 처리했지만, 우리 서버(`/api/verify-purchase`)에는 기록이 안 된 상태로 추정.
+
+**`reconcilePendingPurchase()` 추가**: 앱 로드 시 `listPurchases()`로 미완료 구매를 자동으로 다시 찾아 서버에 보내는 안전장치를 새로 구현(Google 공식 가이드 권장 패턴 — TWA 페이지가 네이티브 결제 UI 뒤에서 백그라운드로 밀리며 JS 실행이 끊기는 경우를 대비). 배포 후 재시도 → **`listPurchases()`가 빈 배열(`[]`)을 반환** — 복구도 실패.
+
+**adb logcat으로 근본 원인 확진**: 폰 USB 디버깅 연결(제조사별 "빌드번호" 위치 혼동, USB 연결 모드 "파일 전송" 전환, adb 데몬 재시작 등 몇 차례 시행착오 끝에 연결 성공, 기기 `SM_A245N`/갤럭시 A24). `adb logcat`으로 필터링한 결과 핵심 로그 발견:
+```
+E/chromium: [ERROR:mojo/public/cpp/bindings/lib/interface_endpoint_client.cc:652] Message 1 rejected by interface payments.mojom.DigitalGoods
+```
+`adb shell dumpsys package com.android.chrome`로 확인한 결과 이 폰의 Chrome이 **테스트 당일(2026-10-29) Play 스토어를 통해 156.0.8078.49로 자동 업데이트**된 직후부터 증상이 시작된 것으로 추정됨. WebSearch로 GitHub 이슈(`GoogleChromeLabs/bubblewrap` #640, #805, `GoogleChrome/android-browser-helper` #631) 확인 — Chrome 154~ 버전대에서 동일 증상(`clientAppUnavailable`, `listPurchases()` 빈 배열) 다수 보고, **확실한 해결책 없이 미해결 상태**. Google Maven(`dl.google.com/dl/android/maven2`)에서 `com.google.androidbrowserhelper:billing` 최신 버전을 직접 조회한 결과 **1.2.0이 최신**(우리가 이미 쓰는 버전) — 라이브러리 업데이트로 해결할 수 없는 상황임을 확인.
+
+### 사용자와의 논의 — 범위 정정 + 대응 방향 결정
+사용자가 "결제가 안되면 다른 앱들은 어떻게 판매하냐, 구글이 방치하냐"고 질문 → Claude가 **범위를 정정**: Android 앱 대다수는 네이티브 Play Billing Library를 OS 차원에서 직접 호출해 이 문제와 무관하고, 이번 문제는 TWA가 Chrome을 거쳐 결제를 중계하는 **"alpha" 공식 표시 전용 경로**(`alphaDependencies.enabled`가 그 증거)에서만 발생하는 좁은 범위임을 설명.
+
+"Chrome 버그 풀릴 때까지 기다리는 게 확실하냐"는 재질문에 **"아니다, 해결 시점을 전혀 통제 못 하는 도박"**이라고 정정 답변. 대안으로 **"TWA Digital Goods API 결제 브리지를 포기하고 WebView+네이티브 Play Billing Library 하이브리드로 전환"**을 제안(순수 웹코드는 유지, 결제 모듈만 네이티브 Kotlin 브리지로 교체) — 공수는 전체 네이티브 재작성보다 훨씬 작지만(수일~1주 추정) 이 프로젝트 최초의 네이티브 Android 코드가 되는 변화. **사용자가 이 방향으로 확정**, 다음 세션에서 이 설계부터 착수하기로 결정.
+
+### Why
+Chrome의 TWA 결제 브리지가 외부 요인으로 막혀있는 상황에서 "기다리기"는 해결 시점을 전혀 통제할 수 없어 출시 일정 리스크가 크다고 판단 — 대신 우리가 직접 통제 가능한 네이티브 브리지 전환으로 방향을 바꿔, 일정 예측 가능성을 확보하는 쪽을 택함. 네이티브 `BillingClient`는 Chrome Mojo 브리지를 거치지 않아 이번 "붕 뜬" 테스트 구매(Play는 인정, 서버는 미기록)도 자동으로 다시 찾아낼 수 있을 것으로 기대됨 — 전환 시 부수적으로 해결될 가능성.
+
+### 반영
+- `js/firebase-init.js`, `index.html`, `js/app.js`, `input.html`, `js/input.js`, `api/verify-purchase.js`, `package.json` — 코드 변경(**git 커밋 아직 안 함**)
+- Vercel 환경변수 `PLAY_SERVICE_ACCOUNT_KEY` 등록, Vercel+Firebase Hosting 양쪽에 디버그 빌드 배포 완료(기능엔 지장 없음)
+- Play Console "라이선스 테스트"에 `chloepark.labs@gmail.com` 등록
+- `CLAUDE.md`: 상단 브리핑 + "무료/유료 버전 구분" 결제 게이팅 섹션에 6번 진행상황+Chrome 버그+다음 방향 상세 기록
+- `PROGRESS.md`(이 세션 기록)
+
+### 다음 세션 시작 시 최우선
+1. **TWA Digital Goods API → WebView+네이티브 Play Billing Library 하이브리드 브리지 전환 설계부터 착수**(이번 세션 끝에 확정된 결정). 순수 웹 코드(UI/클라우드동기화/AI변형 등)는 그대로 유지, 결제 호출 부분만 네이티브 Kotlin으로 교체하고 JS↔네이티브 메시지 브리지 필요. 기존 Bubblewrap TWA 프로젝트(`android/`) 자체를 어디까지 재사용할 수 있을지(커스텀 Activity 추가가 Bubblewrap 생성 구조와 호환되는지)부터 조사 필요 — 미검증.
+2. `js/app.js`의 `reconcilePendingPurchase()`에 남아있는 **임시 디버그 alert 3곳** 정리 필요(네이티브 브리지로 대체되며 이 함수 자체가 통째로 바뀔 가능성 높음 — 그때 함께 정리)
+3. 코드 변경사항 git 커밋 여부 확인
+4. 네이티브 브리지 완성 후, 이번에 "붕 뜬" 테스트 구매(`chloepark.labs@gmail.com`, Play는 보유 인정하지만 서버 미기록)가 `BillingClient.queryPurchasesAsync()`로 정상 조회되는지 확인 — 자동 해결 여부 검증
+5. 이어서 7번(실서비스 주소 전환, Vercel→`tuk-tak.kr`) → 8번(스토어 웹사이트 필드) → 9번(최종 재빌드+업로드+실기기 테스트+게시) — 단, 7/9번은 네이티브 브리지 전환 작업과 함께 재빌드가 필요해 순서가 조정될 수 있음
+6. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+7. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것
+
+## 세션: 2026-11-02 — 결제 게이팅 6번 재진단: "Chrome 외부 버그" 결론 철회, 실제 원인은 테스트구매 3분 자동환불 타이밍 문제
+
+### 배경
+지난 세션(2026-10-29 네 번째) 요약을 보고한 뒤, 사용자가 "TWA에서도 Google Play 인앱결제를 쓸 수 있다"며 (다른 AI와 상담한 내용을 바탕으로) 네이티브 브리지 전환 결정에 이의를 제기. 결제 자체(Play 쪽 결제창·상품명·가격 노출·"결제 완료")는 분명히 성공했으니, TWA 결제 경로 자체가 막힌 게 아니라 **"결제 후 처리" 단계의 문제**일 가능성을 짚음. "Claude Code가 말한 네이티브 전환이 하이브리드(2번)냐 전체 네이티브(3번)냐"는 확인 질문도 포함됨.
+
+### 재조사 1 — 라이브러리 버전 재확인
+WebSearch로 `com.google.androidbrowserhelper:billing`/`androidbrowserhelper` 최신 버전과 "Play Billing Library v7 요구사항(2025-08-31 시행)" 관계를 재확인. 로컬 `android/app/build.gradle`을 직접 열어 실제 사용 버전 확인:
+```
+implementation 'com.google.androidbrowserhelper:billing:1.2.0'
+implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.4'
+```
+`billing:1.2.0`은 내부적으로 Play Billing Library **v8.3.0**을 써서 v7+ 요건을 이미 충족(GitHub 릴리스 노트로 확인), `androidbrowserhelper:2.7.4`도 공식 마지막 릴리스(2024-10-02 이후 신규 릴리스 없음) — **"라이브러리가 낡아서 생긴 문제"라는 가능성은 처음부터 성립하지 않았음**을 확인.
+
+### 재조사 2 — "Chrome 외부 버그" 근거 재검증
+지난 세션에 "GitHub에 동일 증상 다수 보고, 미해결"로 기록했던 부분을 WebFetch로 다시 확인(`GoogleChromeLabs/bubblewrap` #640, #805). 두 이슈 모두 **`clientAppUnavailable`** 에러(원인: 스코프 불일치/assetlinks 문제 등 제각각)였고, 실제로 우리가 로그에서 본 `payments.mojom.DigitalGoods rejected by interface`라는 정확한 문구로 추적되는 공개 이슈는 찾지 못함. 즉 지난 세션의 "확실한 외부 회귀 버그" 결론은 "그날 우연히 Chrome 업데이트와 겹친 1회성 재현"을 과대 해석했을 가능성이 높다고 판단.
+
+### 사용자의 핵심 가설과 검증
+사용자가 "acknowledge를 제때 안 해서 테스트 구매가 자동환불된 것 아니냐, 라이선스 테스터는 3분 안에 미승인이면 환불된다"는 가설 제시. WebSearch로 **"라이선스 테스터 구매는 미승인 시 3분 내 자동환불"**이 Google 공식 문서 기준 정확한 수치임을 확인(실사용자는 3일).
+
+### 코드 재검토로 가설 확정
+- `functions/verify-purchase.js`: `consume()` 호출 없음(비소모성 올바름), `acknowledgementState === 0`일 때 Play Developer API `:acknowledge`를 정확히 호출 — **서버 쪽 설계 자체는 처음부터 정상**이었음.
+- `js/app.js`의 `purchasePremium()`(2970~3019행): `request.show()`로 결제창을 띄운 직후 `submitPurchaseToken()`(서버 검증+acknowledge 트리거)을 **재시도 없이 1회만** 호출. 실패하면 catch 블록(3014~3017행)이 알럿만 띄우고 끝남.
+- `reconcilePendingPurchase()`(2917~2934행, 임시 디버그 alert 3곳 포함)는 **설정 화면에 들어가야만** 실행됨(`refreshPremiumStatus`가 설정 진입 시에만 호출) — 재부팅하고 다시 설정에 들어가기까지 3분을 넘겼을 가능성이 높음.
+
+### 최종 확정 — Gmail 증거 확인
+사용자가 라이선스 테스터 계정(`chloepark.labs@gmail.com`) Gmail 스크린샷 제공: "테스트: Google Play 주문 취소 영수증(2026.10.29.)" 메일, 본문 "이 테스트 구매는 확인되지 않았기 때문에 취소되었습니다", 주문번호 `GPA.3301-3652-3894-26502`, 주문 날짜 2026-10-29 오후 4시 5분 39초, 환불 금액 ₩4,900. **원인 확정**: `submitPurchaseToken()`이 3분 안에 성공하지 못해 테스트 구매가 자동환불됐고, 그 뒤 `reconcilePendingPurchase()`의 `listPurchases()`는 이미 사라진 구매를 찾으려 했으니 빈 배열을 반환한 것이 자연스러운 결과였음.
+
+### 결론
+- 지난 세션 결정("TWA Digital Goods API 포기 → WebView+네이티브 Play Billing Library 하이브리드 브리지로 전환")은 **철회**. TWA Digital Goods API 방식 그대로 유지.
+- "네이티브 전환이 2번(하이브리드)이냐 3번(전체 네이티브)이냐"는 질문엔 **2번(하이브리드, 웹코드 유지+결제모듈만 네이티브)**이 맞다고 답변(단, 이번 결론 철회로 더 이상 불필요해짐).
+
+### 반영
+- `CLAUDE.md`: 상단 브리핑 19번 항목 + "무료/유료 버전 구분" 결제 게이팅 섹션(6번) — Chrome 버그/네이티브 전환 서술을 전부 "3분 자동환불 타이밍 문제"로 정정, "다음 세션 최우선"을 재시도/visibilitychange/디버그alert 제거 3가지로 교체
+- Claude 메모리 `project_monetization_strategy.md`: 2026-10-29(네 번째) 섹션 제목에 철회 표시 추가 + 2026-11-02 정정 섹션 신규 추가
+- Claude 메모리 `MEMORY.md`: 인덱스 줄 갱신
+- `PROGRESS.md`(이 세션 기록)
+- 코드 수정은 아직 착수 전(다음 항목), git 커밋 전
+
+### 다음 작업 제안 (사용자 승인 후 바로 착수 예정)
+1. `js/app.js`의 `purchasePremium()` → `submitPurchaseToken()` 호출에 짧은 재시도(1~2초 간격 2~3회) 추가
+2. `reconcilePendingPurchase()`를 설정 화면 진입 시뿐 아니라 `visibilitychange`(앱 포그라운드 복귀)에도 연결해 복구 타이밍을 3분 이내로 단축
+3. 원인 확정됐으니 `reconcilePendingPurchase()`의 임시 디버그 alert 3곳(2924/2929/2932행) 제거
+4. 위 변경 후 재배포 → 실기기 재테스트로 2차 확인
+5. (이월) 7번(실서비스 주소 전환)~9번(최종 재빌드) — 이번 세션으로 네이티브 브리지 전환이 불필요해져 순서 조정 불필요, 원래 계획대로 진행 가능
+6. (이월) 교체된 기본 제공 문장 100개 실노출 확인(2026-10-03 이월, 계속 미착수)
+7. (참고) 콘텐츠 등급 재제출은 Google 검토 대기 중 — 결과 확인되면 이어서 기록할 것

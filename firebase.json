@@ -26,7 +26,8 @@
     ],
     "rewrites": [
       { "source": "/api/generate-variations", "function": { "functionId": "generateVariations", "region": "asia-northeast3" } },
-      { "source": "/api/ai-variation-usage", "function": { "functionId": "aiVariationUsage", "region": "asia-northeast3" } }
+      { "source": "/api/ai-variation-usage", "function": { "functionId": "aiVariationUsage", "region": "asia-northeast3" } },
+      { "source": "/api/verify-purchase", "function": { "functionId": "verifyPurchase", "region": "asia-northeast3" } }
     ]
   },
   "functions": [

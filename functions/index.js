@@ -8,3 +8,4 @@ if (getApps().length === 0) {
 
 exports.generateVariations = require('./generate-variations').generateVariations;
 exports.aiVariationUsage = require('./ai-variation-usage').aiVariationUsage;
+exports.verifyPurchase = require('./verify-purchase').verifyPurchase;

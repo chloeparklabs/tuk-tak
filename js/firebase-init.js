@@ -14,7 +14,7 @@ import {
   doc,
   setDoc,
   getDoc,
-  deleteDoc,
+  deleteField,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js';
 
@@ -36,10 +36,12 @@ const googleProvider = new GoogleAuthProvider();
 async function backupSentences(sentenceList) {
   const user = auth.currentUser;
   if (!user) throw new Error('로그인이 필요합니다.');
-  await setDoc(doc(db, 'users', user.uid), {
-    sentences: sentenceList,
-    updatedAt: serverTimestamp(),
-  });
+  // merge:true 필수 — 아니면 같은 문서에 저장된 aiVariationCount/purchased 등 다른 필드가 덮어써져 사라짐.
+  await setDoc(
+    doc(db, 'users', user.uid),
+    { sentences: sentenceList, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
 }
 
 async function restoreSentences() {
@@ -52,11 +54,24 @@ async function restoreSentences() {
 }
 
 // 클라우드 백업 삭제(체크리스트 18번 보완 3번) — 이 기기의 로컬 문장에는 영향 없이,
-// Firestore에 저장된 백업 문서만 삭제한다. Google Play "계정 및 데이터 자기서비스 삭제" 정책 대비 목적도 있음
+// Firestore에 저장된 문장 백업만 지운다(문서 전체 삭제 아님 — purchased/aiVariationCount 등
+// 다른 필드는 보존해야 구매 기록이 함께 날아가지 않음).
 async function deleteBackup() {
   const user = auth.currentUser;
   if (!user) throw new Error('로그인이 필요합니다.');
-  await deleteDoc(doc(db, 'users', user.uid));
+  await setDoc(
+    doc(db, 'users', user.uid),
+    { sentences: deleteField(), updatedAt: deleteField() },
+    { merge: true }
+  );
+}
+
+// 결제 게이팅(19번/15-2): users/{uid}.purchased 필드만 조회(백업 로직과 무관한 읽기 전용 호출).
+async function getPurchasedStatus() {
+  const user = auth.currentUser;
+  if (!user) return false;
+  const snap = await getDoc(doc(db, 'users', user.uid));
+  return snap.exists() && snap.data().purchased === true;
 }
 
 window.CloudSync = {
@@ -72,6 +87,7 @@ window.CloudSync = {
     if (!auth.currentUser) return Promise.reject(new Error('로그인이 필요합니다.'));
     return auth.currentUser.getIdToken();
   },
+  getPurchasedStatus,
 };
 
 // js/app.js는 일반 스크립트라 이 모듈보다 먼저 실행될 수 있어(모듈 스크립트는

@@ -3,6 +3,7 @@
 // window.parseSentencesText만 공유해서 쓴다.
 
 const loginView = document.getElementById('login-view');
+const premiumRequiredView = document.getElementById('premium-required-view');
 const dashboardView = document.getElementById('dashboard-view');
 const loginBtn = document.getElementById('login-btn');
 const headerAccountEl = document.getElementById('header-account');
@@ -546,24 +547,38 @@ manageToggleBtn.addEventListener('click', () => {
   }
 });
 
-// 대시보드가 로그아웃→로그인 전환으로 처음 나타나는 순간에만 첫 입력칸에 자동 포커스
-// (매 auth 상태 갱신마다 포커스를 뺏어가지 않도록 이전 로그인 상태와 비교)
-let wasLoggedIn = false;
-function renderAuthView(user) {
+// 대시보드가 (로그인 전/프리미엄 미구매)→(로그인+프리미엄 구매) 전환으로 처음 나타나는 순간에만
+// 첫 입력칸에 자동 포커스(매 auth 상태 갱신마다 포커스를 뺏어가지 않도록 이전 상태와 비교)
+let wasDashboardShown = false;
+async function renderAuthView(user) {
   const isLoggedIn = !!user;
   loginView.classList.toggle('hidden', isLoggedIn);
-  dashboardView.classList.toggle('hidden', !isLoggedIn);
-  saveBarEl.classList.toggle('hidden', !isLoggedIn);
   loginBtn.classList.toggle('hidden', isLoggedIn);
   headerAccountEl.classList.toggle('hidden', !isLoggedIn);
-  if (isLoggedIn) {
-    userEmailEl.textContent = user.email;
+
+  if (!isLoggedIn) {
+    premiumRequiredView.classList.add('hidden');
+    dashboardView.classList.add('hidden');
+    saveBarEl.classList.add('hidden');
+    wasDashboardShown = false;
+    return;
+  }
+
+  userEmailEl.textContent = user.email;
+
+  // 결제 게이팅 6번: 로그인만으론 부족, 프리미엄 구매(purchased)까지 확인해야 대시보드 노출
+  const purchased = await window.CloudSync.getPurchasedStatus().catch(() => false);
+  premiumRequiredView.classList.toggle('hidden', purchased);
+  dashboardView.classList.toggle('hidden', !purchased);
+  saveBarEl.classList.toggle('hidden', !purchased);
+
+  if (purchased) {
     loadManageList();
-    if (!wasLoggedIn) {
+    if (!wasDashboardShown) {
       inputRowsEl.querySelector('.input-kr')?.focus();
     }
   }
-  wasLoggedIn = isLoggedIn;
+  wasDashboardShown = purchased;
 }
 
 function setupCloudSync() {
