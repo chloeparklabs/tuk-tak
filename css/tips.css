@@ -29,7 +29,9 @@ body {
   padding: 20px 48px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
+  row-gap: 10px;
   gap: 16px;
 }
 
@@ -85,12 +87,30 @@ body {
 .header-account {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 12px;
 }
 
 .user-email {
   font-size: 14px;
   color: #4B5D6B;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* PC 전용 기능 바로가기라 모바일(좁은 화면)에서는 노출하지 않음 — 좁은 헤더에서
+   다른 요소를 밀어내 레이아웃이 깨지는 원인이기도 했음(2026-11-11) */
+@media (max-width: 640px) {
+  #input-link {
+    display: none !important;
+  }
+
+  .user-email {
+    max-width: 140px;
+  }
 }
 
 /* 로그인 상단 안내 배너 — 브랜드 블루 배경 위 큰 워드마크가 가운데, 아래 여백은 본문 패널이
@@ -563,11 +583,13 @@ ul.tips-feature-list li + li {
   font-family: inherit;
   cursor: pointer;
   padding: 4px 8px;
+  white-space: nowrap;
 }
 
 /* 로그인 후 노출되는 input.html 바로가기 — 이 페이지의 유일한 게이팅 CTA라 눈에 띄게 채움 처리 */
 .btn-primary-link {
   display: inline-block;
+  white-space: nowrap;
   padding: 8px 16px;
   background-color: #378ADD;
   color: #FFFFFF;
