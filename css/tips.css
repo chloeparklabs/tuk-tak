@@ -50,12 +50,36 @@ body {
   font-size: 24px;
   font-weight: 700;
   color: #0C447C;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .page-header-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 16px;
+}
+
+/* 헤더 상시 노출 Play 스토어 링크 — 로그인 상태와 무관하게 항상 보이는 설치 유도 CTA */
+.btn-playstore-header {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #378ADD;
+  color: #FFFFFF;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .btn-playstore-header {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
 }
 
 .header-account {
@@ -92,6 +116,19 @@ body {
   max-width: 100%;
 }
 
+/* 히어로의 큰 설치 CTA — 배경이 브랜드 블루라 흰 채움으로 대비를 둠 */
+.hero-playstore-btn {
+  display: inline-block;
+  margin-top: 28px;
+  padding: 14px 32px;
+  background-color: #FFFFFF;
+  color: #0C447C;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 @media (max-width: 1024px) {
   .hero-banner-inner {
     max-width: 850px;
@@ -100,6 +137,12 @@ body {
 
   .hero-graphic {
     width: 347px;
+  }
+
+  .hero-playstore-btn {
+    margin-top: 24px;
+    padding: 12px 28px;
+    font-size: 15px;
   }
 }
 
@@ -110,6 +153,12 @@ body {
 
   .hero-graphic {
     width: 243px;
+  }
+
+  .hero-playstore-btn {
+    margin-top: 20px;
+    padding: 11px 24px;
+    font-size: 14px;
   }
 }
 
@@ -461,6 +510,31 @@ ul.tips-feature-list li + li {
   color: #4B5D6B !important;
 }
 
+/* 본문 마지막 — FAQ 다음, 패널이 끝나기 전 마무리 설치 CTA */
+.tips-cta-section {
+  text-align: center;
+  padding-top: 24px;
+  border-top: none;
+}
+
+.tips-cta-text {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E2A38;
+}
+
+.btn-playstore-large {
+  display: inline-block;
+  padding: 16px 40px;
+  background-color: #378ADD;
+  color: #FFFFFF;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .btn-google {
   display: flex;
   align-items: center;
@@ -659,5 +733,9 @@ ul.tips-feature-list li + li {
 
   .page-footer-copy {
     color: #7C8A96;
+  }
+
+  .tips-cta-text {
+    color: #F4F6F8;
   }
 }
